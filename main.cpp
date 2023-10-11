@@ -7,6 +7,60 @@
 #include <poll.h>  // For poll
 #include <cstdlib>  // For atoi
 
+struct User
+{
+    std::string nickname;
+    std::string username;
+    std::string realname;
+    bool is_registered;
+};
+
+bool handle_nick(User& user, const std::string& message)
+{
+    // Extract nickname from message
+    // Format: NICK <nickname>
+    size_t space_pos = message.find(' ');
+    if(space_pos == std::string::npos || space_pos + 1 == message.size())
+	{
+        // Invalid message format
+        return false;
+    }
+    std::string nickname = message.substr(space_pos + 1);
+
+	//check if nickname already in user
+    // If it is, return false
+	if(user.nickname == nickname)
+		return false;
+	
+    user.nickname = nickname;
+    return true;
+}
+
+
+bool handle_user(User& user, const std::string& message)
+{
+    // Extract user details from message
+    // Format: USER <username> <hostname> <servername> :<realname>
+    size_t space_pos = message.find(' ');
+    // Invalid message format
+    if(space_pos == std::string::npos || space_pos + 1 == message.size())
+        return false;
+    std::string rest_of_message = message.substr(space_pos + 1);
+    size_t colon_pos = rest_of_message.find(':');
+    // Invalid message format
+    if(colon_pos == std::string::npos)
+        return (false);
+
+    // Extracting and setting username and realname
+    std::string username = rest_of_message.substr(0, rest_of_message.find(' '));
+    std::string realname = rest_of_message.substr(colon_pos + 1);
+
+    user.username = username;
+    user.realname = realname;
+    return (true);
+}
+
+
 int main(int ac, char **av)
 {
 	if(ac != 3)
@@ -14,9 +68,10 @@ int main(int ac, char **av)
 		std::cerr << "Usage: " << av[0] << " <port> <password>" << std::endl;
 		return 1;
 	}
-	
+
 	const int port = std::atoi(av[1]);
 	// Password is stored in av[2]
+	// Need to do implementation to check password
 	
 	// Socket creation
 	int server_fd;
@@ -46,7 +101,7 @@ int main(int ac, char **av)
 	{
 		std::cerr << "Error: Cannot bind socket" << std::endl;
 		close(server_fd);
-		return 1;
+		return (1);
 	}
 
 	// Listening
@@ -54,7 +109,7 @@ int main(int ac, char **av)
 	{
 		std::cerr << "Error: Cannot listen on socket" << std::endl;
 		close(server_fd);
-		return 1;
+		return (1);
 	}
 	
 	// Polling setup
@@ -87,15 +142,59 @@ int main(int ac, char **av)
 					std::cerr << "Error: Cannot accept client" << std::endl;
 				else
 				{
+					// Client connected
 					std::cout << "Client connected" << std::endl;
-					// Add client communication
 
+					User user;
+					user.is_registered = false;
+
+					char buffer[512];
+					while(!user.is_registered)
+					{
+						// Receive message from client
+						ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+						if(n <= 0)
+						{
+							std::cerr << "Error: Failed to receive message or client disconnected" << std::endl;
+							close(client_fd);
+							break;
+						}
+						buffer[n] = '\0';  // Null terminate the received message
+
+						std::string message(buffer);
+
+						if(message.find("NICK") == 0)
+						{
+							// Send error message to client
+							if(!handle_nick(user, message))
+								send(client_fd, "ERROR :Nickname is already in use or not valid\r\n", 37, MSG_NOSIGNAL);
+						}
+						else if(message.find("USER") == 0)
+						{
+							// Send error message to client
+							if(!handle_user(user, message))
+								send(client_fd, "ERROR :Username is invalid\r\n", 29, MSG_NOSIGNAL);
+						}
+
+						// Check if user is now registered
+						if(!user.nickname.empty() && !user.username.empty())
+						{
+							user.is_registered = true;
+
+							// Send welcome messages...
+							std::string welcome_message = "Welcome to the Internet Relay Network " + user.nickname + "!" + user.username + "@" + user.username + "\r\n";
+							send(client_fd, welcome_message.c_str(), welcome_message.length(), MSG_NOSIGNAL);
+							std::string your_host_message = "Your host is " + std::string(av[0]) + ", running version 1.0\r\n";
+							send(client_fd, your_host_message.c_str(), your_host_message.length(), MSG_NOSIGNAL);
+							std::string created_message = "This server was created abaiao-r and joao-per\r\n";
+							send(client_fd, created_message.c_str(), created_message.length(), MSG_NOSIGNAL);
+						}
+					}
 					close(client_fd);
 				}
 			}
 		}
 	}
-	
 	close(server_fd);
 	return (0);
 }
