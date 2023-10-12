@@ -45,6 +45,8 @@ int main(int ac, char **av)
 	}
 
 	// Listening
+	/* The `listen` function is
+	used to make the server socket start listening for incoming client connections. */
 	if(listen(server_fd, 5) == -1)
 	{
 		std::cerr << "Error: Cannot listen on socket" << std::endl;
