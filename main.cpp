@@ -12,6 +12,7 @@ struct User
     std::string nickname;
     std::string username;
     std::string realname;
+	bool has_authenticated;
     bool is_registered;
 };
 
@@ -58,6 +59,27 @@ bool handle_user(User& user, const std::string& message)
     user.username = username;
     user.realname = realname;
     return (true);
+}
+
+bool handle_pass(User& user, const std::string& message, const std::string& server_password)
+{
+    // Extract password from message
+    // Format: PASS <password>
+    size_t space_pos = message.find(' ');
+    // Invalid message format
+    if(space_pos == std::string::npos || space_pos + 1 == message.size())
+        return false;
+	
+    std::string provided_password = message.substr(space_pos + 1);
+	provided_password.resize(provided_password.size() - 1); //Delete new line
+
+    if(provided_password.compare(server_password) == 0)
+	{
+		std::cout << "Passwords match!" << std::endl;
+        user.has_authenticated = true;
+        return (true);
+    }
+    return (false);
 }
 
 
@@ -149,6 +171,30 @@ int main(int ac, char **av)
 					user.is_registered = false;
 
 					char buffer[512];
+					// Handle PASS authentication first
+					int retry_count = 0;
+					const int max_retries = 3;  // Example limit
+
+					while (retry_count < max_retries && !user.has_authenticated)
+					{
+						ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+						buffer[n] = '\0';  // Null terminate the received message
+
+						std::string message(buffer);
+						
+						if (message.find("PASS") != 0 || !handle_pass(user, message, av[2]))
+						{
+							send(client_fd, "ERROR: Invalid password. Please try again.\r\n", 46, MSG_NOSIGNAL);
+							retry_count++;
+							if (retry_count >= max_retries)
+							{
+								send(client_fd, "ERROR: Too many incorrect attempts. Closing connection.\r\n", 60, MSG_NOSIGNAL);
+								close(client_fd);
+								return (1);  // Or continue to wait for another client connection
+							}
+						}
+					}
+
 					while(!user.is_registered)
 					{
 						// Receive message from client
@@ -157,7 +203,7 @@ int main(int ac, char **av)
 						{
 							std::cerr << "Error: Failed to receive message or client disconnected" << std::endl;
 							close(client_fd);
-							break;
+							break ;
 						}
 						buffer[n] = '\0';  // Null terminate the received message
 
