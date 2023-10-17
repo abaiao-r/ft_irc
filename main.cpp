@@ -132,16 +132,20 @@ int main(int ac, char **av)
 						if(message.find("NICK") == 0)
 						{
 							if(!handle_nick(user, message))
-								send(client_fd, "ERROR :Nickname is invalid or already in use\r\n", 46, MSG_NOSIGNAL);
+								send(client_fd, "ERROR: Nickname is invalid or already in use\r\n", 46, MSG_NOSIGNAL);
 							else if(user.user_registered && user.nick_registered)
-								send(client_fd, "SUCCESS :You are fully authenticated!\r\n", 40, MSG_NOSIGNAL);
+								send(client_fd, "SUCCESS: You are fully authenticated!\r\n", 40, MSG_NOSIGNAL);
+							else
+								send(client_fd, "SUCCESS: Nickname set successfully!\r\n", 37, MSG_NOSIGNAL);
 						}
 						else if(message.find("USER") == 0)
 						{
 							if(!handle_user(user, message))
-								send(client_fd, "ERROR :Realname is invalid\r\n", 30, MSG_NOSIGNAL);
+								send(client_fd, "ERROR: Realname is invalid\r\n", 30, MSG_NOSIGNAL);
 							else if(user.user_registered && user.nick_registered)
-								send(client_fd, "SUCCESS :You are fully authenticated!\r\n", 40, MSG_NOSIGNAL);
+								send(client_fd, "SUCCESS: You are fully authenticated!\r\n", 40, MSG_NOSIGNAL);
+							else
+								send(client_fd, "SUCCESS: Realname set successfully!\r\n", 37, MSG_NOSIGNAL);
 						}
 
 
