@@ -18,8 +18,11 @@ struct User
 	std::string realname;
 	bool has_authenticated;
 	bool is_registered;
+	bool user_registered;  // Indicates if USER command has been set successfully
+    bool nick_registered;  // Indicates if NICK command has been set successfully
+	
 
-	User() : has_authenticated(false), is_registered(false) {}
+	User() : user_registered(false), nick_registered(false) {}
 };
 
 bool handle_pass(User& user, const std::string& message, const std::string& server_password);

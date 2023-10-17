@@ -1,6 +1,6 @@
 #include "ft_irc.hpp"
 
-bool handle_nick(User& user, const std::string& message)
+/* bool handle_nick(User& user, const std::string& message)
 {
     // Extract nickname from message
     // Format: NICK <nickname>
@@ -11,7 +11,7 @@ bool handle_nick(User& user, const std::string& message)
         return false;
     }
     std::string nickname = message.substr(space_pos + 1);
-
+    std::cout << "Nickname: " << nickname << std::endl;
 	//check if nickname already in user
     // If it is, return false
 	if(user.nickname == nickname)
@@ -19,7 +19,7 @@ bool handle_nick(User& user, const std::string& message)
 	
     user.nickname = nickname;
     return true;
-}
+} */
 
 bool handle_user(User& user, const std::string& message)
 {
@@ -32,10 +32,11 @@ bool handle_user(User& user, const std::string& message)
     // Extracting and setting realname
     std::string realname = message.substr(colon_pos + 1);
     user.realname = realname;
+    user.user_registered = true;
     return true;
 }
 
-/* bool handle_nick(User& user, const std::string& message)
+bool handle_nick(User& user, const std::string& message)
 {
     // Expecting format: NICK <nickname>
     size_t space_pos = message.find(' ');
@@ -44,8 +45,10 @@ bool handle_user(User& user, const std::string& message)
 
     std::string nickname = message.substr(space_pos + 1);
     user.nickname = nickname;
+    user.nick_registered = true;
     return true;
-} */
+}
+
 
 bool handle_pass(User& user, const std::string& message, const std::string& server_password)
 {
