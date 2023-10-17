@@ -1,5 +1,6 @@
-#include "ft_irc.hpp"
-
+#include "Ft_irc.hpp"
+#include "User.hpp"
+#include "Commands.hpp"
 
 int main(int ac, char **av)
 {

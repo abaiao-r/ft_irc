@@ -2,7 +2,7 @@ NAME	= ircserv
 CC		= c++
 FLAGS	= -Wall -Wextra -Werror -std=c++98
 RM		= rm -rf
-SRC		= main.cpp handle_user.cpp
+SRC		= main.cpp Handle_user.cpp User.cpp Commands.cpp
 OBJS	= $(SRC:.cpp=.o)
 
 # Colors
