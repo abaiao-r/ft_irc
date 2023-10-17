@@ -12,7 +12,7 @@ bool handle_user(User& user, const std::string& message)
 	std::string realname = message.substr(colon_pos + 1);
 	user.realname = realname;
 	user.user_registered = true;
-	std::cout << "Registered successfully! Realname:" << realname << std::endl;
+	std::cout << "Name successfully! Realname:" << realname << std::endl;
 	
 	return true;
 }

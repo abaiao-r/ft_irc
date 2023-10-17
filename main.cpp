@@ -151,7 +151,7 @@ int main(int ac, char **av)
 
 
 						// Check if user is now registered
-						if(!user.nickname.empty() && !user.username.empty())
+						if(!user.nickname.empty() && !user.realname.empty())
 						{
 							user.is_registered = true;
 
@@ -163,6 +163,28 @@ int main(int ac, char **av)
 							std::string created_message = "This server was created abaiao-r and joao-per\r\n";
 							send(client_fd, created_message.c_str(), created_message.length(), MSG_NOSIGNAL);
 						}
+					}
+					// Here, the user is registered, now listen for further commands from the client
+					bool client_connected = true;
+					while(client_connected)
+					{
+						ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+						if(n <= 0)
+						{
+							std::cerr << "Error: Failed to receive message or client disconnected" << std::endl;
+							client_connected = false;
+							break;
+						}
+						buffer[n] = '\0';
+						std::string message(buffer);
+						std::cout << "Received message: " << message << std::endl;
+						if(message.find("JOIN") == 0)
+							handle_join(user);
+						else if(message.find("MSG") == 0)
+							handle_msg(user, message);
+						else if(message.find("PRIVMSG") == 0)
+							handle_privmsg(user, message);
+						// Add more command handlers as needed
 					}
 					close(client_fd);
 				}

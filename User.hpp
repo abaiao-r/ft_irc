@@ -15,7 +15,7 @@ struct User
 	bool has_authenticated;
 	bool is_registered;
 	bool user_registered;
-    bool nick_registered;
+	bool nick_registered;
 	int fd;
 
 	User();
