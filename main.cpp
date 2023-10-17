@@ -131,15 +131,15 @@ int main(int ac, char **av)
 
 						if(message.find("NICK") == 0)
 						{
-							// Send error message to client
+							// Handle nickname registration
 							if(!handle_nick(user, message))
-								send(client_fd, "ERROR :Nickname is already in use or not valid\r\n", 37, MSG_NOSIGNAL);
+								send(client_fd, "ERROR :Nickname is invalid or already in use\r\n", 46, MSG_NOSIGNAL);
 						}
 						else if(message.find("USER") == 0)
 						{
-							// Send error message to client
+							// Handle user registration
 							if(!handle_user(user, message))
-								send(client_fd, "ERROR :Username is invalid\r\n", 29, MSG_NOSIGNAL);
+								send(client_fd, "ERROR :Realname is invalid\r\n", 30, MSG_NOSIGNAL);
 						}
 
 						// Check if user is now registered

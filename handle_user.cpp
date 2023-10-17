@@ -23,26 +23,29 @@ bool handle_nick(User& user, const std::string& message)
 
 bool handle_user(User& user, const std::string& message)
 {
-    // Extract user details from message
-    // Format: USER <username> <hostname> <servername> :<realname>
-    size_t space_pos = message.find(' ');
+    // Expecting format: USER :<realname>
+    size_t colon_pos = message.find(':');
     // Invalid message format
+    if(colon_pos == std::string::npos || colon_pos + 1 == message.size())
+        return false;
+
+    // Extracting and setting realname
+    std::string realname = message.substr(colon_pos + 1);
+    user.realname = realname;
+    return true;
+}
+
+/* bool handle_nick(User& user, const std::string& message)
+{
+    // Expecting format: NICK <nickname>
+    size_t space_pos = message.find(' ');
     if(space_pos == std::string::npos || space_pos + 1 == message.size())
         return false;
-    std::string rest_of_message = message.substr(space_pos + 1);
-    size_t colon_pos = rest_of_message.find(':');
-    // Invalid message format
-    if(colon_pos == std::string::npos)
-        return (false);
 
-    // Extracting and setting username and realname
-    std::string username = rest_of_message.substr(0, rest_of_message.find(' '));
-    std::string realname = rest_of_message.substr(colon_pos + 1);
-
-    user.username = username;
-    user.realname = realname;
-    return (true);
-}
+    std::string nickname = message.substr(space_pos + 1);
+    user.nickname = nickname;
+    return true;
+} */
 
 bool handle_pass(User& user, const std::string& message, const std::string& server_password)
 {
