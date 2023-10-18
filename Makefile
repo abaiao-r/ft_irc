@@ -1,9 +1,37 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2023/10/18 14:23:18 by abaiao-r          #+#    #+#              #
+#    Updated: 2023/10/18 16:04:49 by abaiao-r         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+# Target (Name of the executable)
 NAME	= ircserv
-CC		= c++
-FLAGS	= -Wall -Wextra -Werror -std=c++98
+
+# Compiler settings
+CXX	= c++
+CXXFLAGS = -Wall -Wextra -Werror -Wshadow -std=c++98 -g #-fsanitize=address
+
+# Directories
+SRCDIR = src
+OBJDIR = objs
+
+# Source files
+SRCS		= 	$(SRCDIR)/main.cpp \
+				$(SRCDIR)/Commands.cpp \
+				$(SRCDIR)/Handle_user.cpp \
+				$(SRCDIR)/User.cpp 
+
+# Object files
+OBJS	= $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+
+# Commands
 RM		= rm -rf
-SRC		= main.cpp Handle_user.cpp User.cpp Commands.cpp
-OBJS	= $(SRC:.cpp=.o)
 
 # Colors
 
@@ -21,23 +49,35 @@ CURSIVE	= \e[33;3m
 
 all: $(NAME)
 
-%.o: %.cpp
-	@echo "$(CURSIVE)$(YELLOW)- Compiling $<... $(DEFAULT)"
-	@$(CC) $(FLAGS) -c $< -o $@
-
 $(NAME): $(OBJS)
 	@echo "$(MAGENTA)- Compiling $(NAME)... $(DEFAULT)"
-	@$(CC) $(CFLAGS) $(SRC) -o $(NAME)
+	@$(CXX) $(OBJS) $(CXXFLAGS) -o  $(NAME)
 	@printf "$(GREEN)- ircserv Compiled!$(DEFAULT)"
 
+%.o: %.cpp
+	@echo "$(CURSIVE)$(YELLOW)- Compiling $<... $(DEFAULT)"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 clean:
-	@$(RM) $(OBJS)
+	@$(RM) $(OBJDIR)
 	@echo "$(RED)- OBJS Removed.$(DEFAULT)"
 
 fclean: clean
 	@$(RM) $(NAME)
 	@echo "$(RED)- ircserv Removed.$(DEFAULT)"
 
-re: clean all
+re: fclean all
 
-.PHONY: all clean fclean re
+run: fclean
+		@./$(NAME)
+
+valgrind: fclean all
+		@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME)
+
+.PHONY: all clean fclean re run test valgrind

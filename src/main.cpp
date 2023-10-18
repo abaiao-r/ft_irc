@@ -1,6 +1,18 @@
-#include "Ft_irc.hpp"
-#include "User.hpp"
-#include "Commands.hpp"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/10/18 14:54:25 by abaiao-r          #+#    #+#             */
+/*   Updated: 2023/10/18 14:54:59 by abaiao-r         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../includes/Ft_irc.hpp"
+#include "../includes/User.hpp"
+#include "../includes/Commands.hpp"
 
 int main(int ac, char **av)
 {
