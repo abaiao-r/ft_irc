@@ -6,13 +6,15 @@
 /*   By: andrefrancisco <andrefrancisco@student.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:25 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/21 21:07:10 by andrefranci      ###   ########.fr       */
+/*   Updated: 2023/10/21 23:32:33 by andrefranci      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Ft_irc.hpp"
 #include "../includes/User.hpp"
 #include "../includes/Commands.hpp"
+#include "../includes/utils.hpp"
+#include "../includes/colours.hpp"
 
 int main(int ac, char **av)
 {
@@ -22,7 +24,17 @@ int main(int ac, char **av)
 		return (1);
 	}
 
-	const int port = std::atoi(av[1]);
+	// Port is stored in av[1]
+	int port;
+	try
+	{
+		port = safe_atoi(av[1]);
+	}
+	catch (std::exception &e)
+	{
+		std::cerr << "Error: " << e.what() << std::endl;
+		return (1);
+	}
 	// Password is stored in av[2]
 	// Need to do implementation to check password
 	

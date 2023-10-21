@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+         #
+#    By: andrefrancisco <andrefrancisco@student.    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/18 14:23:18 by abaiao-r          #+#    #+#              #
-#    Updated: 2023/10/18 16:04:49 by abaiao-r         ###   ########.fr        #
+#    Updated: 2023/10/21 23:30:27 by andrefranci      ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,7 +25,8 @@ OBJDIR = objs
 SRCS		= 	$(SRCDIR)/main.cpp \
 				$(SRCDIR)/Commands.cpp \
 				$(SRCDIR)/Handle_user.cpp \
-				$(SRCDIR)/User.cpp 
+				$(SRCDIR)/User.cpp \
+				$(SRCDIR)/utils.cpp
 
 # Object files
 OBJS	= $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
