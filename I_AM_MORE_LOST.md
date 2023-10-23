@@ -270,7 +270,7 @@ off_t lseek(int fd, off_t offset, int whence);
 - **Explanation:**
     This function helps you find out where you are in a file and get information about it. It's like checking how far along you are in a book.
 
-# - **fstat:
+# fstat:
 ```c
 int fstat(int fd, struct stat *buf);
 ```
@@ -281,7 +281,7 @@ int fstat(int fd, struct stat *buf);
 - **Explanation:**
     This helps you gather information about a file, like its size or when it was last modified. It's like looking at the back cover of a book for details.
 
-# - **fcntl:
+# fcntl:
 ```c
 int fcntl(int fd, int cmd, ...);
 ```
@@ -293,7 +293,7 @@ int fcntl(int fd, int cmd, ...);
 - **Explanation:**
     This function lets you change how a file (like a chat log) behaves. It's like customizing your book with different fonts and colors.
 
-# - **poll:
+# poll:
 ```c
 int poll(struct pollfd *fds, nfds_t nfds, int timeout);
 ```
@@ -305,7 +305,7 @@ int poll(struct pollfd *fds, nfds_t nfds, int timeout);
 - **Explanation:**
     This is like having a lookout tower to watch for ships. It helps your server keep an eye on what's happening without getting overwhelmed. It's especially useful when you're keeping track of multiple things at once.
 
-# - **select:
+# select:
 ```c
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
 ```
@@ -317,7 +317,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 - **Explanation:**
     select is like being a lookout for different activities. You have different lists of things to watch for - like who's sending a message, who's ready to receive, and who's having a special condition. It's like keeping an eye on multiple situations at once.
 
-# - **epoll:
+# epoll:
 ```c
 int epoll_create(int size);
 int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
