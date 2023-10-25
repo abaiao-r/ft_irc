@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:25 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/25 18:16:54 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/10/25 18:30:21 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,59 +133,6 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
 	std::cout << user.has_authenticated << std::endl;
     return user.has_authenticated;
 }
-
-/* bool register_user()
-{
-	while(!user.is_registered)
-	{
-		// Receive message from client
-		ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
-		if(n <= 0)
-		{
-			std::cerr << "Error: Failed to receive message or client disconnected" << std::endl;
-			close(client_fd);
-			break ;
-		}
-		buffer[n] = '\0';  // Null terminate the received message
-
-		std::string message(buffer);
-
-		if(message.find("NICK") == 0)
-		{
-			if(!handle_nick(user, message))
-				send(client_fd, "ERROR: Nickname is invalid or already in use\r\n", 46, MSG_NOSIGNAL);
-			else if(user.user_registered && user.nick_registered)
-				send(client_fd, "SUCCESS: You are fully authenticated!\r\n", 40, MSG_NOSIGNAL);
-			else
-				send(client_fd, "SUCCESS: Nickname set successfully!\r\n", 37, MSG_NOSIGNAL);
-		}
-		else if(message.find("USER") == 0)
-		{
-			if(!handle_user(user, message))
-				send(client_fd, "ERROR: Realname is invalid\r\n", 30, MSG_NOSIGNAL);
-			else if(user.user_registered && user.nick_registered)
-				send(client_fd, "SUCCESS: You are fully authenticated!\r\n", 40, MSG_NOSIGNAL);
-			else
-				send(client_fd, "SUCCESS: Realname set successfully!\r\n", 37, MSG_NOSIGNAL);
-		}
-
-
-		// Check if user is now registered
-		if(!user.nickname.empty() && !user.realname.empty())
-		{
-			user.is_registered = true;
-
-			// Send welcome messages...
-			std::string welcome_message = "Welcome to the Internet Relay Network " + user.nickname + "!" + user.username + "@" + user.username + "\r\n";
-			send(client_fd, welcome_message.c_str(), welcome_message.length(), MSG_NOSIGNAL);
-			std::string your_host_message = "Your host is " + std::string(av[0]) + ", running version 1.0\r\n";
-			send(client_fd, your_host_message.c_str(), your_host_message.length(), MSG_NOSIGNAL);
-			std::string created_message = "This server was created abaiao-r and joao-per\r\n";
-			send(client_fd, created_message.c_str(), created_message.length(), MSG_NOSIGNAL);
-		}
-	}
-} */
-
 
 void handle_commands(int client_fd, User &user)
 {
