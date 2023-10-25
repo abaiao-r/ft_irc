@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:25 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/25 16:18:07 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/10/25 16:26:37 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,10 +61,14 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
     // Handle PASS authentication first
     int retry_count = 0;
     const int max_retries = 3;  // Example limit
-
+	std::cout << "Waiting for USER message" << std::endl;
+	//print retrycount maxretries and user.has_authenticated
+	std::cout << "retry_count: " << retry_count << std::endl;
+	std::cout << "max_retries: " << max_retries << std::endl;
+	std::cout << "user.has_authenticated: " << user.has_authenticated << std::endl;
     while (retry_count < max_retries && !user.has_authenticated)
     {
-		
+		std::cout << "Waiting for PASS message" << std::endl;
         ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
         buffer[n] = '\0';  // Null terminate the received message
 
@@ -140,6 +144,7 @@ void handle_client(int server_fd, const std::string &password, char ** /* av */)
                 std::cout << "Client connected" << std::endl;
                 User user;
                 user.is_registered = false;
+				user.has_authenticated = false;
                 
                 authenticate_user(client_fd, password, user);
                 if(user.is_registered)
