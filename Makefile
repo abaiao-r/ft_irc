@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: andrefrancisco <andrefrancisco@student.    +#+  +:+       +#+         #
+#    By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/18 14:23:18 by abaiao-r          #+#    #+#              #
-#    Updated: 2023/10/21 23:30:27 by andrefranci      ###   ########.fr        #
+#    Updated: 2023/10/25 16:14:20 by joao-per         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ NAME	= ircserv
 
 # Compiler settings
 CXX	= c++
-CXXFLAGS = -Wall -Wextra -Werror -Wshadow -std=c++98 -g #-fsanitize=address
+CXXFLAGS = -Wall -Wextra -Werror -Wshadow -std=c++98 -I includes -g #-fsanitize=address
 
 # Directories
 SRCDIR = src

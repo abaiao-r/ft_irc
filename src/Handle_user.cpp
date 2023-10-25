@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Handle_user.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:17 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/18 14:54:20 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/10/25 16:13:12 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/Ft_irc.hpp"
+#include "Ft_irc.hpp"
 
 bool handle_user(User& user, const std::string& message)
 {
