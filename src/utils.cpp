@@ -60,3 +60,13 @@ int	safe_atoi(const char *nptr)
 	}
 	return (result * sign);
 }
+
+bool isAlpha(const std::string& str)
+{
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it)
+	{
+        if (!::isalpha(*it))
+            return (false);
+    }
+    return (true);
+}

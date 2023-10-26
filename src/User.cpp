@@ -41,7 +41,6 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
     const int max_retries = 3;  // Example limit
     while (retry_count < max_retries && !user.has_authenticated)
     {
-		std::cout << "Waiting for PASS message" << std::endl;
         ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
         buffer[n] = '\0';  // Null terminate the received message
 
@@ -50,6 +49,7 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
         if (message.find("PASS") != 0 || !handle_pass(user, message, password))
         {
             send(client_fd, "ERROR: Invalid password. Please try again.\r\n", 46, MSG_NOSIGNAL);
+			std::cout << "ERROR: Invalid password. Correct password is: " << password << std::endl;
             retry_count++;
             if (retry_count >= max_retries)
             {
@@ -58,6 +58,8 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
                 return (false);
             }
         }
+		else
+			send(client_fd, "SUCCESS: Password accepted!\r\n", 29, MSG_NOSIGNAL);
     }
 	while(!user.is_registered)
 	{
@@ -85,11 +87,11 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
 		else if(message.find("USER") == 0)
 		{
 			if(!handle_user(user, message))
-				send(client_fd, "ERROR: Realname is invalid\r\n", 30, MSG_NOSIGNAL);
+				send(client_fd, "ERROR: invalid name. Usage: USER <name> <admin>\r\n", 50, MSG_NOSIGNAL);
 			else if(user.user_registered && user.nick_registered)
 				send(client_fd, "SUCCESS: You are fully authenticated!\r\n", 40, MSG_NOSIGNAL);
 			else
-				send(client_fd, "SUCCESS: Realname set successfully!\r\n", 37, MSG_NOSIGNAL);
+				send(client_fd, "SUCCESS: Name set successfully!\r\n", 37, MSG_NOSIGNAL);
 		}
 
 
@@ -99,7 +101,7 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
 			user.is_registered = true;
 
 			// Send welcome messages...
-			std::string welcome_message = "Welcome to the Internet Relay Network " + user.nickname + "!" + user.username + "@" + user.username + "\r\n";
+			std::string welcome_message = "\nWelcome to the Internet Relay Network " + user.realname + "! \r\n" + "Username: @" + user.nickname + "\r\n" + "Operator: " + (user.is_admin ? "Yes" : "No") + "\r\n";
 			send(client_fd, welcome_message.c_str(), welcome_message.length(), MSG_NOSIGNAL);
 			std::string your_host_message = "Your host is running on version 0.1\r\n";
 			send(client_fd, your_host_message.c_str(), your_host_message.length(), MSG_NOSIGNAL);
@@ -107,7 +109,6 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
 			send(client_fd, created_message.c_str(), created_message.length(), MSG_NOSIGNAL);
 		}
 	}
-	std::cout << "User Registered" << std::endl;
-	std::cout << user.has_authenticated << std::endl;
+	std::cout << "User:" << user.nickname << "Registered" << std::endl;
     return (user.has_authenticated);
 }

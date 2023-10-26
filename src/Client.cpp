@@ -82,9 +82,7 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
                         }
                     }
                     else
-                    {
                         commands.handle_commands(clients[i].fd, *user);
-                    }
                 }
             }
             else if (clients[i].revents & (POLLHUP | POLLERR))

@@ -11,23 +11,41 @@
 /* ************************************************************************** */
 
 #include "Ft_irc.hpp"
+#include <iostream>
+#include "User.hpp" // Include the header file that defines the User class
+#include <sstream>
+#include <algorithm>
+#include <cctype>
+#include <string>
+#include <vector>
+#include "utils.hpp"
 
 bool handle_user(User& user, const std::string& message)
 {
-	// Expecting format: USER :<realname>
-	size_t colon_pos = message.find(':');
-	// Invalid message format
-	if(colon_pos == std::string::npos || colon_pos + 1 == message.size())
+	std::istringstream iss(message);
+	std::string cmd, name, adminStr;
+
+	iss >> cmd >> name >> adminStr;
+
+	if (cmd != "USER")
 		return (false);
 
-	// Extracting and setting realname
-	std::string realname = message.substr(colon_pos + 1);
-	user.realname = realname;
-	user.user_registered = true;
-	std::cout << "Name successfully! Realname:" << realname << std::endl;
-	
-	return (true);
+	// Check if the name is a single word with only letters
+	if (name.empty() || !isAlpha(name))
+		return (false);
+
+    if (adminStr == "1")
+        user.is_admin = true;
+    else if (adminStr == "0")
+        user.is_admin = false;
+    else
+        return (false);
+
+    user.realname = name; 
+
+    return (true);
 }
+
 
 bool handle_nick(User& user, const std::string& message)
 {

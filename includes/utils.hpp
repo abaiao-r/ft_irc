@@ -17,5 +17,6 @@
 # include <iostream>
 
 int    safe_atoi(const char *nptr);
+bool  isAlpha(const std::string& str);
 
 #endif

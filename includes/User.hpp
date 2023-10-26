@@ -24,6 +24,7 @@ struct User
 	std::string nickname;
 	std::string username;
 	std::string realname;
+	bool is_admin;
 	bool has_authenticated;
 	bool is_registered;
 	bool user_registered;
