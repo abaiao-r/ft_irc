@@ -35,5 +35,6 @@ struct User
 
 User* find_user_by_fd(int fd);
 extern std::vector<User> users; // List of connected users
+bool authenticate_user(int client_fd, const std::string& password, User &user);
 
 #endif

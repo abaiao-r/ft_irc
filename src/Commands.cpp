@@ -71,3 +71,29 @@ bool handle_privmsg(User& user, const std::string& message)
     }
     return (false);
 }
+
+void handle_commands(int client_fd, User &user)
+{
+    char buffer[512];
+    bool client_connected = true;
+    while(client_connected)
+    {
+        ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+        if(n <= 0)
+        {
+            std::cerr << "Error: Failed to receive message or client disconnected" << std::endl;
+            client_connected = false;
+            break;
+        }
+        buffer[n] = '\0';
+        std::string message(buffer);
+        std::cout << "Received message: " << message << std::endl;
+        if(message.find("JOIN") == 0)
+            handle_join(user);  // Assuming handle_join is previously defined
+        else if(message.find("MSG") == 0)
+            handle_msg(user, message);  // Assuming handle_msg is previously defined
+        else if(message.find("PRIVMSG") == 0)
+            handle_privmsg(user, message);  // Assuming handle_privmsg is previously defined
+        // Add more command handlers as needed
+    }
+}

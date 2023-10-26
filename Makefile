@@ -26,7 +26,8 @@ SRCS		= 	$(SRCDIR)/main.cpp \
 				$(SRCDIR)/Commands.cpp \
 				$(SRCDIR)/Handle_user.cpp \
 				$(SRCDIR)/User.cpp \
-				$(SRCDIR)/utils.cpp
+				$(SRCDIR)/utils.cpp \
+				$(SRCDIR)/Client.cpp
 
 # Object files
 OBJS	= $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
