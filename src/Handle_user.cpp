@@ -22,6 +22,7 @@
 
 bool handle_user(User& user, const std::string& message)
 {
+	//Usage: USER <realname> <admin/operator>
 	std::istringstream iss(message);
 	std::string cmd, name, adminStr;
 
@@ -47,6 +48,16 @@ bool handle_user(User& user, const std::string& message)
 }
 
 
+bool isNickInUse(const std::string& nickname)
+{
+    for (std::vector<User>::iterator it = users.begin(); it != users.end(); ++it)
+	{
+        if (it->nickname == nickname)
+            return (true);
+    }
+    return (false);
+}
+
 bool handle_nick(User& user, const std::string& message)
 {
 	// Expecting format: NICK <nickname>
@@ -55,11 +66,14 @@ bool handle_nick(User& user, const std::string& message)
 		return (false);
 
 	std::string nickname = message.substr(space_pos + 1);
-	if(user.nickname == nickname)
+	
+	// Check if the nickname is already in use
+	if (isNickInUse(nickname))
 	{
 		std::cout << "ERROR: Nickname already being used!" << std::endl;
 		return (false);
 	}
+
 	user.nickname = nickname;
 	user.nick_registered = true;
 	std::cout << "Registered successfully! Nickname:" << nickname << std::endl;
