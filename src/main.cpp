@@ -15,6 +15,13 @@
 #include "Commands.hpp"
 #include "utils.hpp"
 #include "colours.hpp"
+#include <vector>
+#include <algorithm>
+
+bool operator==(const User& lhs, const User& rhs)
+{
+    return lhs.fd == rhs.fd;
+}
 
 int init_server(int port)
 {
@@ -123,9 +130,9 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
 			// Send welcome messages...
 			std::string welcome_message = "Welcome to the Internet Relay Network " + user.nickname + "!" + user.username + "@" + user.username + "\r\n";
 			send(client_fd, welcome_message.c_str(), welcome_message.length(), MSG_NOSIGNAL);
-			std::string your_host_message = "Your host is running on version 1.0\r\n";
+			std::string your_host_message = "Your host is running on version 0.1\r\n";
 			send(client_fd, your_host_message.c_str(), your_host_message.length(), MSG_NOSIGNAL);
-			std::string created_message = "This server was created abaiao-r and joao-per\r\n";
+			std::string created_message = "This server was created abaiao-r, joao-per and gacorrei \r\n";
 			send(client_fd, created_message.c_str(), created_message.length(), MSG_NOSIGNAL);
 		}
 	}
@@ -160,43 +167,97 @@ void handle_commands(int client_fd, User &user)
     }
 }
 
+std::vector<pollfd> clients;
 void handle_client(int server_fd, const std::string &password, char ** /* av */)
 {
-    pollfd pfd;
-    pfd.fd = server_fd;
-    pfd.events = POLLIN;
+    pollfd server_pfd;
+    server_pfd.fd = server_fd;
+    server_pfd.events = POLLIN;
+    clients.push_back(server_pfd);
     
     while(1)
     {
-        int poll_ret = poll(&pfd, 1, -1);
+        int poll_ret = poll(&clients[0], clients.size(), -1);
+        
         if(poll_ret == -1)
         {
             std::cerr << "Error: poll failed" << std::endl;
             break;
         }
-        else if(poll_ret > 0 && (pfd.revents & POLLIN))
+        
+        for (size_t i = 0; i < clients.size(); ++i)
         {
-            sockaddr_in client_address;
-            socklen_t client_addrlen = sizeof(client_address);
-            int client_fd = accept(server_fd, (struct sockaddr*)&client_address, &client_addrlen);
-            if(client_fd == -1)
+            if (clients[i].revents & POLLIN)
             {
-                std::cerr << "Error: Cannot accept client" << std::endl;
-            }
-            else
-            {
-                std::cout << "Client connected" << std::endl;
-                User user;
-                user.is_registered = false;
-				user.has_authenticated = false;
-                
-                authenticate_user(client_fd, password, user);
-                if(user.is_registered)
+                if (clients[i].fd == server_fd)
                 {
-                    handle_commands(client_fd, user);
+                    sockaddr_in client_address;
+                    socklen_t client_addrlen = sizeof(client_address);
+                    int client_fd = accept(server_fd, (struct sockaddr*)&client_address, &client_addrlen);
+                    
+                    if(client_fd == -1)
+                    {
+                        std::cerr << "Error: Cannot accept client" << std::endl;
+                        continue;
+                    }
+
+                    std::cout << "Client connected" << std::endl;
+                    pollfd client_pfd;
+                    client_pfd.fd = client_fd;
+                    client_pfd.events = POLLIN;
+                    client_pfd.revents = 0;
+                    clients.push_back(client_pfd);
+
+                    User user;
+                    user.fd = client_fd;
+                    user.has_authenticated = false;
+                    user.is_registered = false;
+                    users.push_back(user);
                 }
-                close(client_fd);
+                else
+                {
+                    User* user = find_user_by_fd(clients[i].fd);
+                    if(!user)
+                    {
+                        std::cerr << "Error: User not found for fd " << clients[i].fd << std::endl;
+                        close(clients[i].fd);
+                        clients.erase(clients.begin() + i);
+                        i--;
+                        continue;
+                    }
+
+                    if (!user->has_authenticated)
+                    {
+                        if (!authenticate_user(clients[i].fd, password, *user))
+                        {
+                            std::cerr << "Error: User failed authentication." << std::endl;
+                            close(clients[i].fd);
+                            clients.erase(clients.begin() + i);
+                            i--;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        handle_commands(clients[i].fd, *user);
+                    }
+                }
             }
+            else if (clients[i].revents & (POLLHUP | POLLERR))
+            {
+                User* user = find_user_by_fd(clients[i].fd);
+                if(user)
+                {
+                    std::vector<User>::iterator it = std::find(users.begin(), users.end(), *user);
+                    if (it != users.end()) users.erase(it);
+                }
+
+                close(clients[i].fd);
+                clients.erase(clients.begin() + i);
+                i--;
+            }
+
+            clients[i].revents = 0;
         }
     }
 }
