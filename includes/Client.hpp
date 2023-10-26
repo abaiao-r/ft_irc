@@ -6,7 +6,18 @@
 #include <vector>
 #include <cstddef>
 #include <map>
+#include <sys/socket.h>
+#include <poll.h>
 
-void handle_client(int server_fd, const std::string &password, char ** /* av */);
+class Client
+{
+    public:
+        Client(); // Constructor
+        ~Client(); // Destructor
+
+        void handle_client(int server_fd, const std::string &password, char ** /* av */);
+    private:
+        std::vector<pollfd> clients;
+};
 
 #endif

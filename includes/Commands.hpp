@@ -19,9 +19,19 @@
 #include <vector>
 #include <iostream>
 
-bool handle_join(User& user);
-bool handle_msg(User& user, const std::string& message);
-bool handle_privmsg(User& user, const std::string& message);
-void handle_commands(int client_fd, User &user);
+class Commands
+{
+	public:
+		Commands();  // Constructor
+		~Commands(); // Destructor
+
+		bool handle_join(User& user);
+		bool handle_msg(User& user, const std::string& message);
+		bool handle_privmsg(User& user, const std::string& message);
+		void handle_commands(int client_fd, User &user);
+
+	private:
+		std::map<std::string, std::vector<std::string> > user_messages;  // Messages associated with usernames
+};
 
 #endif

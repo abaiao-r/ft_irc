@@ -25,7 +25,7 @@ int init_server(int port)
     if(server_fd == -1)
     {
         std::cerr << "Error: Cannot create socket" << std::endl;
-        return -1;
+        return (-1);
     }
 
     int opt = 1;
@@ -33,7 +33,7 @@ int init_server(int port)
     {
         std::cerr << "Error: Cannot set socket options" << std::endl;
         close(server_fd);
-        return -1;
+        return (-1);
     }
 
     sockaddr_in address;
@@ -45,14 +45,14 @@ int init_server(int port)
     {
         std::cerr << "Error: Cannot bind socket" << std::endl;
         close(server_fd);
-        return -1;
+        return (-1);
     }
 
     if(listen(server_fd, 5) == -1)
     {
         std::cerr << "Error: Cannot listen on socket" << std::endl;
         close(server_fd);
-        return -1;
+        return (-1);
     }
 
     std::cout << "Server is listening on port " << port << std::endl;
@@ -61,12 +61,12 @@ int init_server(int port)
 
 int main(int ac, char **av)
 {
+    Client clients;
     if(ac != 3)
     {
         std::cerr << "Usage: " << av[0] << " <port> <password>" << std::endl;
         return (1);
     }
-
     // Parse the port
     int port;
     try
@@ -78,17 +78,13 @@ int main(int ac, char **av)
         std::cerr << "Error: " << e.what() << std::endl;
         return (1);
     }
-
     int server_fd = init_server(port);
     if(server_fd == -1)
-    {
-        return 1;
-    }
-    
-    handle_client(server_fd, av[2], av);
+        return (1);
+    clients.handle_client(server_fd, av[2], av);
     
     close(server_fd);
-    return 0;
+    return (0);
 }
 
 

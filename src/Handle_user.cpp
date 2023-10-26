@@ -18,7 +18,7 @@ bool handle_user(User& user, const std::string& message)
 	size_t colon_pos = message.find(':');
 	// Invalid message format
 	if(colon_pos == std::string::npos || colon_pos + 1 == message.size())
-		return false;
+		return (false);
 
 	// Extracting and setting realname
 	std::string realname = message.substr(colon_pos + 1);
@@ -26,7 +26,7 @@ bool handle_user(User& user, const std::string& message)
 	user.user_registered = true;
 	std::cout << "Name successfully! Realname:" << realname << std::endl;
 	
-	return true;
+	return (true);
 }
 
 bool handle_nick(User& user, const std::string& message)

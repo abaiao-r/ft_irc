@@ -7,14 +7,13 @@
 #include <vector>
 #include <algorithm>
 
-bool operator==(const User& lhs, const User& rhs)
-{
-    return lhs.fd == rhs.fd;
-}
+Client::Client() {} // Constructor
 
-std::vector<pollfd> clients;
-void handle_client(int server_fd, const std::string &password, char ** /* av */)
+Client::~Client() {} // Destructor
+
+void Client::handle_client(int server_fd, const std::string &password, char ** /* av */)
 {
+    Commands commands;
     pollfd server_pfd;
     server_pfd.fd = server_fd;
     server_pfd.events = POLLIN;
@@ -45,8 +44,8 @@ void handle_client(int server_fd, const std::string &password, char ** /* av */)
                         std::cerr << "Error: Cannot accept client" << std::endl;
                         continue;
                     }
-
-                    std::cout << "Client connected" << std::endl;
+                    // -3 because the first client always starts on 4th socket
+                    std::cout << "Client number " << client_fd - 3 << " connected" << std::endl;
                     pollfd client_pfd;
                     client_pfd.fd = client_fd;
                     client_pfd.events = POLLIN;
@@ -84,7 +83,7 @@ void handle_client(int server_fd, const std::string &password, char ** /* av */)
                     }
                     else
                     {
-                        handle_commands(clients[i].fd, *user);
+                        commands.handle_commands(clients[i].fd, *user);
                     }
                 }
             }
@@ -94,7 +93,8 @@ void handle_client(int server_fd, const std::string &password, char ** /* av */)
                 if(user)
                 {
                     std::vector<User>::iterator it = std::find(users.begin(), users.end(), *user);
-                    if (it != users.end()) users.erase(it);
+                    if (it != users.end())
+                        users.erase(it);
                 }
 
                 close(clients[i].fd);
@@ -105,4 +105,9 @@ void handle_client(int server_fd, const std::string &password, char ** /* av */)
             clients[i].revents = 0;
         }
     }
+}
+
+bool operator==(const User& lhs, const User& rhs)
+{
+    return lhs.fd == rhs.fd;
 }

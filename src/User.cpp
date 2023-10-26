@@ -30,7 +30,7 @@ User* find_user_by_fd(int fd)
 		if (users[i].fd == fd)
 			return &users[i];
 	}
-	return NULL;
+	return (NULL);
 }
 
 bool authenticate_user(int client_fd, const std::string& password, User &user)
@@ -55,7 +55,7 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
             {
                 send(client_fd, "ERROR: Too many incorrect attempts. Closing connection.\r\n", 60, MSG_NOSIGNAL);
                 close(client_fd);
-                return false;
+                return (false);
             }
         }
     }
@@ -109,5 +109,5 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
 	}
 	std::cout << "User Registered" << std::endl;
 	std::cout << user.has_authenticated << std::endl;
-    return user.has_authenticated;
+    return (user.has_authenticated);
 }
