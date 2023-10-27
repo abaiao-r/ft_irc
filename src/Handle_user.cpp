@@ -32,7 +32,7 @@ bool handle_user(User& user, const std::string& message)
 		return (false);
 
 	// Check if the name is a single word with only letters
-	if (name.empty() || !isAlpha(name))
+	if (name.empty() || !isAlpha(name) || name.size() > 12)
 		return (false);
 
     if (adminStr == "1")
@@ -66,7 +66,8 @@ bool handle_nick(User& user, const std::string& message)
 		return (false);
 
 	std::string nickname = message.substr(space_pos + 1);
-	
+	/* if(nickname.empty() || !isAlpha(nickname) || nickname.size() > 9)
+		return (false); */
 	// Check if the nickname is already in use
 	if (isNickInUse(nickname))
 	{
@@ -76,7 +77,7 @@ bool handle_nick(User& user, const std::string& message)
 
 	user.nickname = nickname;
 	user.nick_registered = true;
-	std::cout << "Registered successfully! Nickname:" << nickname << std::endl;
+	std::cout << "Registered successfully! Nickname:" << nickname << " for fd: " << user.fd << std::endl;
 	return (true);
 }
 

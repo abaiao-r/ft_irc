@@ -63,18 +63,43 @@ bool Commands::handle_privmsg(User& user, const std::string& message)
 
 	std::string recipient_nick = message.substr(8, space_pos - 8);
 	std::string actual_msg = message.substr(space_pos + 1);
-
+	std::cout << "Currently connected users: ";
 	for (size_t i = 0; i < users.size(); i++)
 	{
+		std::cout << users[i].nickname << " ";
+	}
+	std::cout << std::endl;
+	std::cout << "Attempting to send private message to " << recipient_nick << std::endl;
+	bool recipient_found = false;
+	std::cout << "Number of users: " << users.size() << std::endl;
+	for (size_t i = 0; i < users.size(); i++)
+	{
+		// Remove trailing newline from nickname
+		if (!users[i].nickname.empty() && users[i].nickname[users[i].nickname.size() - 1] == '\n')
+			users[i].nickname.resize(users[i].nickname.size() - 1);
+		//std::cout << "Comparing|" << users[i].nickname << "|with|" << recipient_nick << "|" << std::endl;
 		if (users[i].nickname == recipient_nick)
 		{
-			std::string pm_msg = "Private from " + user.nickname + ": " + actual_msg + "\r\n";
+			recipient_found = true;
+			std::string pm_msg = ":" + user.nickname + " PRIVMSG " + recipient_nick + " :" + actual_msg + "\r\n";
 			send(users[i].fd, pm_msg.c_str(), pm_msg.length(), MSG_NOSIGNAL);
-			return (true);
+			break;
 		}
 	}
-	return (false);
+
+	if (!recipient_found)
+	{
+		std::string error_msg = "ERROR: User " + recipient_nick + " not found.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return false;
+	}
+
+	// Optionally: Confirm to the sender that the message was sent successfully.
+	std::string confirmation = "Message sent to " + recipient_nick + ".\r\n";
+	send(user.fd, confirmation.c_str(), confirmation.length(), MSG_NOSIGNAL);
+	return true;
 }
+
 
 void Commands::handle_commands(int client_fd, User &user)
 {
@@ -92,6 +117,7 @@ void Commands::handle_commands(int client_fd, User &user)
 		buffer[n] = '\0';
 		std::string message(buffer);
 		std::cout << "Received message: " << message << std::endl;
+		std::cout << "is privmsg? " << message.find("PRIVMSG") << std::endl;
 		if(message.find("JOIN") == 0)
 			handle_join(user);  // Assuming handle_join is previously defined
 		else if(message.find("MSG") == 0)

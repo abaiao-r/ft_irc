@@ -103,5 +103,3 @@ int main(int ac, char **av)
     close(server_fd);
     return (0);
 }
-
-
