@@ -13,11 +13,13 @@
 #ifndef COMMANDS_HPP
 #define COMMANDS_HPP
 
+#include "Ft_irc.hpp"
 #include "User.hpp"
 #include <string>
 #include <map>
 #include <vector>
 #include <iostream>
+#include <sys/socket.h>
 
 class Commands
 {

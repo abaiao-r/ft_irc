@@ -13,7 +13,7 @@
 #ifndef FT_IRC_HPP
 #define FT_IRC_HPP
 
-#include <iostream>
+#include <iostream> // For std::cout
 #include <cstring>  // For memset
 #include <fcntl.h>  // For fcntl
 #include <netinet/in.h>  // For sockaddr_in, htons
@@ -21,12 +21,10 @@
 #include <unistd.h>  // For close
 #include <poll.h>  // For poll
 #include <cstdlib>  // For atoi
-#include <string>
-#include "User.hpp"
-
-bool handle_pass(User& user, const std::string& message, const std::string& server_password);
-bool handle_nick(User& user, const std::string& message);
-bool handle_user(User& user, const std::string& message);
-
+#include <string> // For std::string
+#include <vector> // For std::vector
+#include <algorithm> // For std::find
+#include <sstream> // For std::stringstream
+#include <climits> // For INT_MAX
 
 #endif

@@ -11,9 +11,6 @@
 /* ************************************************************************** */
 
 #include "Commands.hpp"
-#include <map>
-#include <vector>
-#include <sys/socket.h>
 
 std::map<std::string, std::vector<std::string> > user_messages;  // Messages associated with usernames
 

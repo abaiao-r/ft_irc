@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "utils.hpp"
-#include <climits>
-#include <iostream>
 
 
 /* safe_atoi: Converts a string to an integer.
@@ -63,10 +61,10 @@ int	safe_atoi(const char *nptr)
 
 bool isAlpha(const std::string& str)
 {
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it)
+	for (std::string::const_iterator it = str.begin(); it != str.end(); ++it)
 	{
-        if (!::isalpha(*it))
-            return (false);
-    }
-    return (true);
+		if (!::isalpha(*it))
+			return (false);
+	}
+	return (true);
 }

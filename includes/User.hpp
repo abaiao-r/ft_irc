@@ -13,11 +13,10 @@
 #ifndef USER_HPP
 #define USER_HPP
 
-#include "User.hpp"
+#include "Ft_irc.hpp"
 #include <string>
 #include <vector>
 #include <cstddef>
-
 
 struct User
 {

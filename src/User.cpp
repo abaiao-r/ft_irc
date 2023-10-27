@@ -10,14 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Ft_irc.hpp"
 #include "User.hpp"
-#include "Commands.hpp"
-#include "utils.hpp"
-#include "Client.hpp"
-#include "colours.hpp"
-#include <vector>
-#include <algorithm>
+#include "Handle_user.hpp"
 
 std::vector<User> users;  // List of connected users
 
@@ -25,44 +19,44 @@ User::User() : is_registered(false), fd(-1) {}
 
 User* find_user_by_fd(int fd)
 {
-    for(size_t i = 0; i < users.size(); i++)
+	for(size_t i = 0; i < users.size(); i++)
 	{
-        if(users[i].fd == fd)
-            return (&users[i]);
-    }
-    return (NULL);
+		if(users[i].fd == fd)
+			return (&users[i]);
+	}
+	return (NULL);
 }
 
 
 
 bool authenticate_user(int client_fd, const std::string& password, User &user)
 {
-    char buffer[512];
-    // Handle PASS authentication first
-    int retry_count = 0;
-    const int max_retries = 3;  // Example limit
-    while (retry_count < max_retries && !user.has_authenticated)
-    {
-        ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
-        buffer[n] = '\0';  // Null terminate the received message
+	char buffer[512];
+	// Handle PASS authentication first
+	int retry_count = 0;
+	const int max_retries = 3;  // Example limit
+	while (retry_count < max_retries && !user.has_authenticated)
+	{
+		ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+		buffer[n] = '\0';  // Null terminate the received message
 
-        std::string message(buffer);
-        
-        if (message.find("PASS") != 0 || !handle_pass(user, message, password))
-        {
-            send(client_fd, "ERROR: Invalid password. Please try again.\r\n", 46, MSG_NOSIGNAL);
+		std::string message(buffer);
+		
+		if (message.find("PASS") != 0 || !handle_pass(user, message, password))
+		{
+			send(client_fd, "ERROR: Invalid password. Please try again.\r\n", 46, MSG_NOSIGNAL);
 			std::cout << "ERROR: Invalid password. Correct password is: " << password << std::endl;
-            retry_count++;
-            if (retry_count >= max_retries)
-            {
-                send(client_fd, "ERROR: Too many incorrect attempts. Closing connection.\r\n", 60, MSG_NOSIGNAL);
-                close(client_fd);
-                return (false);
-            }
-        }
+			retry_count++;
+			if (retry_count >= max_retries)
+			{
+				send(client_fd, "ERROR: Too many incorrect attempts. Closing connection.\r\n", 60, MSG_NOSIGNAL);
+				close(client_fd);
+				return (false);
+			}
+		}
 		else
 			send(client_fd, "SUCCESS: Password accepted!\r\n", 29, MSG_NOSIGNAL);
-    }
+	}
 	while(!user.is_registered)
 	{
 		// Receive message from client
@@ -112,5 +106,5 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
 		}
 	}
 	std::cout << "User:" << user.nickname << "Registered" << std::endl;
-    return (user.has_authenticated);
+	return (user.has_authenticated);
 }

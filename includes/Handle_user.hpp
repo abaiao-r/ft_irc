@@ -1,36 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.hpp                                         :+:      :+:    :+:   */
+/*   Handle_user.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/27 10:33:53 by joao-per          #+#    #+#             */
-/*   Updated: 2023/10/27 10:33:54 by joao-per         ###   ########.fr       */
+/*   Created: 2023/10/27 10:34:03 by joao-per          #+#    #+#             */
+/*   Updated: 2023/10/27 10:34:04 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+#ifndef HANDLE_USER_HPP
+#define HANDLE_USER_HPP
 
+#include "User.hpp"
 #include "Ft_irc.hpp"
-#include <string>
-#include <vector>
-#include <cstddef>
-#include <map>
-#include <sys/socket.h>
-#include <poll.h>
-#include <algorithm>
 
-class Client
-{
-	public:
-		Client(); // Constructor
-		~Client(); // Destructor
+bool handle_pass(User& user, const std::string& message, const std::string& server_password);
+bool handle_nick(User& user, const std::string& message);
+bool handle_user(User& user, const std::string& message);
 
-		void handle_client(int server_fd, const std::string &password, char ** /* av */);
-	private:
-		std::vector<pollfd> clients;
-};
 
 #endif

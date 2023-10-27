@@ -10,14 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Ft_irc.hpp"
-#include <iostream>
-#include "User.hpp" // Include the header file that defines the User class
-#include <sstream>
-#include <algorithm>
-#include <cctype>
-#include <string>
-#include <vector>
+#include "User.hpp"
 #include "utils.hpp"
 
 bool handle_user(User& user, const std::string& message)
@@ -35,27 +28,27 @@ bool handle_user(User& user, const std::string& message)
 	if (name.empty() || !isAlpha(name) || name.size() > 12)
 		return (false);
 
-    if (adminStr == "1")
-        user.is_admin = true;
-    else if (adminStr == "0")
-        user.is_admin = false;
-    else
-        return (false);
+	if (adminStr == "1")
+		user.is_admin = true;
+	else if (adminStr == "0")
+		user.is_admin = false;
+	else
+		return (false);
 
-    user.realname = name; 
+	user.realname = name; 
 
-    return (true);
+	return (true);
 }
 
 
 bool isNickInUse(const std::string& nickname)
 {
-    for (std::vector<User>::iterator it = users.begin(); it != users.end(); ++it)
+	for (std::vector<User>::iterator it = users.begin(); it != users.end(); ++it)
 	{
-        if (it->nickname == nickname)
-            return (true);
-    }
-    return (false);
+		if (it->nickname == nickname)
+			return (true);
+	}
+	return (false);
 }
 
 bool handle_nick(User& user, const std::string& message)
