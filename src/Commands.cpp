@@ -83,7 +83,7 @@ bool Commands::handle_privmsg(User& user, const std::string& message)
 			recipient_found = true;
 			std::string pm_msg = ":" + user.nickname + " PRIVMSG " + recipient_nick + " :" + actual_msg + "\r\n";
 			send(users[i].fd, pm_msg.c_str(), pm_msg.length(), MSG_NOSIGNAL);
-			break;
+			break ;
 		}
 	}
 
@@ -91,13 +91,14 @@ bool Commands::handle_privmsg(User& user, const std::string& message)
 	{
 		std::string error_msg = "ERROR: User " + recipient_nick + " not found.\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-		return false;
+		return (false);
 	}
 
 	// Optionally: Confirm to the sender that the message was sent successfully.
 	std::string confirmation = "Message sent to " + recipient_nick + ".\r\n";
 	send(user.fd, confirmation.c_str(), confirmation.length(), MSG_NOSIGNAL);
-	return true;
+	std::cout << user.nickname << " sent a private message to " << recipient_nick << std::endl;
+	return (true);
 }
 
 
@@ -105,19 +106,17 @@ void Commands::handle_commands(int client_fd, User &user)
 {
 	char buffer[512];
 	bool client_connected = true;
-	while(client_connected)
+	if(client_connected)
 	{
 		ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
 		if(n <= 0)
 		{
 			std::cerr << "Error: Failed to receive message or client disconnected" << std::endl;
 			client_connected = false;
-			break;
+			return ;
 		}
 		buffer[n] = '\0';
 		std::string message(buffer);
-		std::cout << "Received message: " << message << std::endl;
-		std::cout << "is privmsg? " << message.find("PRIVMSG") << std::endl;
 		if(message.find("JOIN") == 0)
 			handle_join(user);  // Assuming handle_join is previously defined
 		else if(message.find("MSG") == 0)
