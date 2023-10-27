@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/25 16:13:16 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/10/27 11:23:20 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Commands.hpp"
+#include "Channel.hpp"
 
 std::map<std::string, std::vector<std::string> > user_messages;  // Messages associated with usernames
 
@@ -18,7 +19,7 @@ Commands::Commands() {}  // Constructor
 
 Commands::~Commands() {} // Destructor
 
-bool Commands::handle_join(User& user)
+/* bool Commands::handle_join(User& user)
 {
 	// Expecting format: JOIN #channel
 	// Check if user is already in the chat
@@ -29,7 +30,7 @@ bool Commands::handle_join(User& user)
 	}
 	users.push_back(user);
 	return (true);
-}
+} */
 
 
 bool Commands::handle_msg(User& user, const std::string& message)
@@ -115,9 +116,11 @@ bool Commands::handle_commands(int client_fd, User &user)
 		buffer[n] = '\0';
 		std::string message(buffer);
 		if(message.find("JOIN") == 0)
-			handle_join(user);
+			handle_join(user, message);
 		else if(message.find("MSG") == 0)
 			handle_msg(user, message);
+		else if(message.find("CREATE") == 0)
+			handle_channel(user, message);
 		else if(message.find("PRIVMSG") == 0)
 			handle_privmsg(user, message);
 		else
@@ -127,5 +130,59 @@ bool Commands::handle_commands(int client_fd, User &user)
 		}
 	}
 	return (true);
+}
+std::vector<Channel> channels;
+bool Commands::handle_join(User& user, const std::string& message)
+{
+    std::string channel_name = message.substr(5);
+
+    for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
+        if (ch_it->name == channel_name)
+		{
+            for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
+                if (u_it->nickname == user.nickname)
+                    return (false);
+            }
+            ch_it->users_in_channel.push_back(user);
+			send(user.fd, "SUCCESS: Joined channel successfully!\r\n", 40, MSG_NOSIGNAL);
+			std::cout << "Joined channel successfully!" << std::endl;
+            return (true);
+        }
+    }
+
+    std::string error_msg = "ERROR: Channel does not exist.\r\n";
+    send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+    return false;
+}
+
+
+bool Commands::handle_channel(User& user, const std::string& message)
+{
+    if(!user.is_admin)
+	{
+        std::string error_msg = "ERROR: Only admin can create channels.\r\n";
+        send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+        return (false);
+    }
+
+    std::string channel_name = message.substr(7);
+
+    for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
+        if (it->name == channel_name)
+		{
+            std::string error_msg = "ERROR: Channel already exists.\r\n";
+            send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+            return (false);
+        }
+    }
+
+    Channel new_channel;
+    new_channel.name = channel_name;
+    new_channel.admin = user;
+    new_channel.users_in_channel.push_back(user);
+    channels.push_back(new_channel);
+	send(user.fd, "SUCCESS: Channel created successfully!\r\n", 40, MSG_NOSIGNAL);
+	std::cout << "Channel created successfully!" << std::endl;
+    return (true);
 }
 

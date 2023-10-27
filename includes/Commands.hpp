@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:51:11 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/18 14:51:13 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/10/27 11:05:56 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,11 @@ class Commands
 		Commands();  // Constructor
 		~Commands(); // Destructor
 
-		bool handle_join(User& user);
+		bool handle_join(User& user, const std::string& message);
 		bool handle_msg(User& user, const std::string& message);
 		bool handle_privmsg(User& user, const std::string& message);
 		bool handle_commands(int client_fd, User &user);
+		bool handle_channel(User& user, const std::string& message);
 
 	private:
 		std::map<std::string, std::vector<std::string> > user_messages;  // Messages associated with usernames
