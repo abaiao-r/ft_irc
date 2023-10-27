@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/27 13:05:24 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/10/27 13:47:27 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,24 +14,24 @@
 #include "Channel.hpp"
 
 std::map<std::string, std::vector<std::string> > user_messages;  // Messages associated with usernames
+std::vector<Channel> channels;
 
 Commands::Commands() {}  // Constructor
 
 Commands::~Commands() {} // Destructor
 
-/* bool Commands::handle_join(User& user)
+Channel* find_channel_by_user(const User& user)
 {
-	// Expecting format: JOIN #channel
-	// Check if user is already in the chat
-	for (size_t i = 0; i < users.size(); i++)
+	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
 	{
-		if (users[i].nickname == user.nickname)
-			return (false);
+		for (std::vector<User>::iterator u_it = it->users_in_channel.begin(); u_it != it->users_in_channel.end(); ++u_it)
+		{
+			if (u_it->nickname == user.nickname)
+				return &(*it); // return pointer to the channel
+		}
 	}
-	users.push_back(user);
-	return (true);
-} */
-
+	return (NULL); // user not in any channel
+}
 
 bool Commands::handle_msg(User& user, const std::string& message)
 {
@@ -39,17 +39,27 @@ bool Commands::handle_msg(User& user, const std::string& message)
 	std::string actual_msg = message.substr(4); // Strip off the "MSG " part
 	user_messages[user.nickname].push_back(actual_msg);
 
-	// Broadcast this message to all users
-	for (size_t i = 0; i < users.size(); i++)
+	Channel* user_channel = find_channel_by_user(user);
+	if (!user_channel)
 	{
-		if (users[i].fd != user.fd) // Don't send to the sender
+		std::string error_msg = "ERROR: You are not in any channel. Join a channel to send messages.\r\n";
+		//user tried to send a message without being in a channel
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		std::cout << "User " << user.nickname << " tried to send a message without being in a channel" << std::endl;
+		return (false);
+	}
+
+	// Broadcast this message to all users in the channel
+	for (std::vector<User>::iterator it = user_channel->users_in_channel.begin(); it != user_channel->users_in_channel.end(); ++it) {
+		if (it->fd != user.fd) // Don't send to the sender
 		{
 			std::string broadcast_msg = user.nickname + ": " + actual_msg + "\r\n";
-			send(users[i].fd, broadcast_msg.c_str(), broadcast_msg.length(), MSG_NOSIGNAL);
+			send(it->fd, broadcast_msg.c_str(), broadcast_msg.length(), MSG_NOSIGNAL);
 		}
 	}
-	return true;
+	return (true);
 }
+
 
 
 bool Commands::handle_privmsg(User& user, const std::string& message)
@@ -60,6 +70,7 @@ bool Commands::handle_privmsg(User& user, const std::string& message)
 		return (false);
 
 	std::string recipient_nick = message.substr(8, space_pos - 8);
+
 	std::string actual_msg = message.substr(space_pos + 1);
 	std::cout << "Currently connected users: ";
 	for (size_t i = 0; i < users.size(); i++)
@@ -131,7 +142,6 @@ bool Commands::handle_commands(int client_fd, User &user)
 	}
 	return (true);
 }
-std::vector<Channel> channels;
 bool Commands::handle_join(User& user, const std::string& message)
 {
 	std::string channel_name = message.substr(5);
@@ -155,18 +165,6 @@ bool Commands::handle_join(User& user, const std::string& message)
 	return false;
 }
 
-Channel* find_channel_by_user(const User& user)
-{
-	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
-	{
-		for (std::vector<User>::iterator u_it = it->users_in_channel.begin(); u_it != it->users_in_channel.end(); ++u_it)
-		{
-			if (u_it->nickname == user.nickname)
-				return &(*it); // return pointer to the channel
-		}
-	}
-	return (NULL); // user not in any channel
-}
 
 bool Commands::handle_channel(User& user, const std::string& message)
 {
