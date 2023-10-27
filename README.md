@@ -1,5 +1,3 @@
-# 🌐 FT_IRC
-
 <h1 align="center">
 	🌐 FT_IRC 🌐
 </h1>
