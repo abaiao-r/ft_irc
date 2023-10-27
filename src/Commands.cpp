@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/27 11:23:20 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/10/27 13:05:24 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,55 +134,67 @@ bool Commands::handle_commands(int client_fd, User &user)
 std::vector<Channel> channels;
 bool Commands::handle_join(User& user, const std::string& message)
 {
-    std::string channel_name = message.substr(5);
+	std::string channel_name = message.substr(5);
 
-    for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
-        if (ch_it->name == channel_name)
+	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
+		if (ch_it->name == channel_name)
 		{
-            for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
-                if (u_it->nickname == user.nickname)
-                    return (false);
-            }
-            ch_it->users_in_channel.push_back(user);
+			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
+				if (u_it->nickname == user.nickname)
+					return (false);
+			}
+			ch_it->users_in_channel.push_back(user);
 			send(user.fd, "SUCCESS: Joined channel successfully!\r\n", 40, MSG_NOSIGNAL);
 			std::cout << "Joined channel successfully!" << std::endl;
-            return (true);
-        }
-    }
+			return (true);
+		}
+	}
 
-    std::string error_msg = "ERROR: Channel does not exist.\r\n";
-    send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-    return false;
+	std::string error_msg = "ERROR: Channel does not exist.\r\n";
+	send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+	return false;
 }
 
+Channel* find_channel_by_user(const User& user)
+{
+	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
+	{
+		for (std::vector<User>::iterator u_it = it->users_in_channel.begin(); u_it != it->users_in_channel.end(); ++u_it)
+		{
+			if (u_it->nickname == user.nickname)
+				return &(*it); // return pointer to the channel
+		}
+	}
+	return (NULL); // user not in any channel
+}
 
 bool Commands::handle_channel(User& user, const std::string& message)
 {
-    if(!user.is_admin)
+	if(!user.is_admin)
 	{
-        std::string error_msg = "ERROR: Only admin can create channels.\r\n";
-        send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-        return (false);
-    }
+		std::string error_msg = "ERROR: Only admin can create channels.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
+	}
 
-    std::string channel_name = message.substr(7);
+	std::string channel_name = message.substr(7);
 
-    for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
-        if (it->name == channel_name)
+	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
+		if (it->name == channel_name)
 		{
-            std::string error_msg = "ERROR: Channel already exists.\r\n";
-            send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-            return (false);
-        }
-    }
+			std::string error_msg = "ERROR: Channel already exists.\r\n";
+			send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+			return (false);
+		}
+	}
 
-    Channel new_channel;
-    new_channel.name = channel_name;
-    new_channel.admin = user;
-    new_channel.users_in_channel.push_back(user);
-    channels.push_back(new_channel);
+	Channel new_channel;
+	new_channel.name = channel_name;
+	new_channel.admin = user;
+	new_channel.users_in_channel.push_back(user);
+	channels.push_back(new_channel);
 	send(user.fd, "SUCCESS: Channel created successfully!\r\n", 40, MSG_NOSIGNAL);
 	std::cout << "Channel created successfully!" << std::endl;
-    return (true);
+	return (true);
 }
 
