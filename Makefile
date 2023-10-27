@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+         #
+#    By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/18 14:23:18 by abaiao-r          #+#    #+#              #
-#    Updated: 2023/10/25 16:14:20 by joao-per         ###   ########.fr        #
+#    Updated: 2023/10/27 16:00:04 by abaiao-r         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,6 +27,7 @@ SRCS		= 	$(SRCDIR)/main.cpp \
 				$(SRCDIR)/Handle_user.cpp \
 				$(SRCDIR)/User.cpp \
 				$(SRCDIR)/utils.cpp \
+				$(SRCDIR)/Server.cpp \
 				$(SRCDIR)/Client.cpp
 
 # Object files
