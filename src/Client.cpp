@@ -82,7 +82,16 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
                         }
                     }
                     else
-                        commands.handle_commands(clients[i].fd, *user);
+                    {
+                        bool stillConnected = commands.handle_commands(clients[i].fd, *user);
+                        if(!stillConnected)
+                        {
+                            close(clients[i].fd);
+                            clients.erase(clients.begin() + i);
+                            i--;
+                            continue;
+                        }
+                    }
                 }
             }
             else if (clients[i].revents & (POLLHUP | POLLERR))
