@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: andrefrancisco <andrefrancisco@student.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:25 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/27 19:22:21 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/10/30 22:01:48 by andrefranci      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ int main(int ac, char **av)
 	
 	if (server.init_server() == false)
 		return (1);
-	server.listen_server(); // not sure if needed
+	//server.listen_server(); // not sure if needed
 
 	clients.handle_client(server.get_server_fd(), av[2], av);
 	
