@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:25 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 13:04:20 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/02 13:07:06 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,6 @@ int main(int ac, char **av)
 		return (1);
 	clients.handle_client(server.get_server_fd(), av[2], av);
 	
-	server.close_server();
+	close(server.get_server_fd());
 	return (0);
 }
