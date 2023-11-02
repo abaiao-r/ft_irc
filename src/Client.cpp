@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/10/27 10:34:11 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/02 12:12:47 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,15 +78,48 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 
 					if (!user->has_authenticated)
 					{
-						if (!authenticate_user(clients[i].fd, password, *user))
+						char buffer[1024];
+						int bytesReceived = recv(clients[i].fd, buffer, sizeof(buffer) - 1, 0);
+						if (bytesReceived <= 0) 
 						{
-							std::cerr << "Error: User failed authentication." << std::endl;
+							std::cerr << "Error reading from client." << std::endl;
 							close(clients[i].fd);
 							clients.erase(clients.begin() + i);
 							i--;
 							continue;
 						}
-					}
+						buffer[bytesReceived] = '\0';
+						std::string initialCommand = std::string(buffer);
+						std::cout << "Received: " << initialCommand << std::endl;
+						std::cout << "Size: " << initialCommand.size() << std::endl;
+						std::cout << "Password: " << password << std::endl;
+						std::cout << "Password size: " << password.size() << std::endl;
+
+						if (initialCommand.size() > password.size() + 6)  // "PASS " + password
+						{
+							/* if(!authenticate_hexchat(clients[i].fd, initialCommand, password, *user))
+							{
+								std::cerr << "Error: User failed authentication." << std::endl;
+								close(clients[i].fd);
+								clients.erase(clients.begin() + i);
+								i--;
+								continue;
+							} */
+							std::cout << "Hexchat authentication not implemented yet" << std::endl;
+						}
+						else
+						{
+							std::cout << "User authenticated" << std::endl;
+							if (!authenticate_user(clients[i].fd, initialCommand, password, *user))
+							{
+								std::cerr << "Error: User failed authentication." << std::endl;
+								close(clients[i].fd);
+								clients.erase(clients.begin() + i);
+								i--;
+								continue;
+							}
+						}
+					}	
 					else
 					{
 						bool stillConnected = commands.handle_commands(clients[i].fd, *user);

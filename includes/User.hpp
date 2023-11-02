@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   User.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:51:29 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/18 14:51:31 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/02 12:13:41 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,6 @@ struct User
 
 User* find_user_by_fd(int fd);
 extern std::vector<User> users; // List of connected users
-bool authenticate_user(int client_fd, const std::string& password, User &user);
+bool authenticate_user(int client_fd, const std::string& initialCommand, const std::string& password, User &user);
 
 #endif
