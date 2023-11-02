@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: andrefrancisco <andrefrancisco@student.    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/10/30 22:19:18 by andrefranci      ###   ########.fr       */
+/*   Updated: 2023/11/02 16:11:47 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ Client &Client::operator=(const Client &src)
 }
 
 // Function to handle a new client connection
-void Client::handleNewClient(int server_fd)
+int Client::handleNewClient(int server_fd)
 {
     sockaddr_in client_address;
     socklen_t client_addrlen = sizeof(client_address);
@@ -55,7 +55,7 @@ void Client::handleNewClient(int server_fd)
     if (client_fd == -1)
 	{
         std::cerr << "Error: Cannot accept client" << std::endl;
-        return; // continue;
+        return (-1);
     }
 
 	// -3 because the first client always starts on 4th socket
@@ -72,31 +72,32 @@ void Client::handleNewClient(int server_fd)
     user.has_authenticated = false;
     user.is_registered = false;
     users.push_back(user);
+
+	return (client_fd);
 }
 
 // Function to handle an authenticated client
-void Client::handleAuthenticatedClient(int client_fd, const std::string &password)
+int Client::handleAuthenticatedClient(int client_fd, const std::string &password)
 {
     User* user = find_user_by_fd(client_fd);
 	Commands commands;
     if (!user)
 	{
-        std::cerr << "Error: User not found for fd " << client_fd << std::endl;
-        close(client_fd);
+       	std::cerr << RED << "Error: " << RESET << "User not found for fd " 
+			<< client_fd << std::endl;
+        //close(client_fd);
         // Remove the client from the clients vector
-        removeClient(client_fd);
-        return; // continue;
+        //removeClient(client_fd);
+        return (-1);
     }
 
     if (!user->has_authenticated)
 	{
         if (!authenticate_user(client_fd, password, *user))
 		{
-            std::cerr << "Error: User failed authentication." << std::endl;
-            close(client_fd);
-            // Remove the client from the clients vector
-            removeClient(client_fd);
-            return; // continue;
+			std::cerr << RED << "Error: " << RESET
+				<< user << " failed to authenticate" << std::endl;
+			return (-1);
         }
     }
     else
@@ -104,24 +105,13 @@ void Client::handleAuthenticatedClient(int client_fd, const std::string &passwor
         bool stillConnected = commands.handle_commands(client_fd, *user);
         if (!stillConnected)
 		{
-            close(client_fd);
-            // Remove the client from the clients vector
-            removeClient(client_fd);
+			// number of client is client fd - 3
+			std::cout << "Client " << client_fd - 3 << " disconnected" 
+				<< std::endl;
+			return (-1);
         }
     }
-}
-
-// Function to remove a client from the clients vector
-void Client::removeClient(int client_fd)
-{
-    for (size_t i = 0; i < clients.size(); ++i)
-	{
-        if (clients[i].fd == client_fd)
-		{
-            clients.erase(clients.begin() + i);
-            break;
-        }
-    }
+	return (0);
 }
 
 // Function to handle client connections and authentication
@@ -148,18 +138,27 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 			{
                 if (clients[i].fd == server_fd)
 				{
-                    handleNewClient(server_fd);
+					if (handleNewClient(server_fd) == -1)
+						continue;
                 } 
 				else 
 				{
-                    handleAuthenticatedClient(clients[i].fd, password);
+                    if (handleAuthenticatedClient(clients[i].fd, password) == -1)
+					{
+						std::cerr << RED << "Error: " << RESET
+							<< "handleAuthenticatedClient failed" << std::endl;
+						close(clients[i].fd);
+						clients.erase(clients.begin() + i);
+						i--;
+						continue;
+					}
                 }
             } 
 			else if (clients[i].revents & (POLLHUP | POLLERR)) 
 			{
                 int client_fd = clients[i].fd;
                 // Remove the client from the clients vector
-                removeClient(client_fd);
+                close(clients[i].fd);
                 User* user = find_user_by_fd(client_fd);
                 if (user)
 				{

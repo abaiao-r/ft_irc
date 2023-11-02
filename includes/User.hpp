@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:51:29 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/18 14:51:31 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/02 14:58:51 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <vector>
 #include <cstddef>
 
+// this needs to be a class. no sense in being a struct since it has methods exclusively for it
 struct User
 {
 	std::string nickname;
