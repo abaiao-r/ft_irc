@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/02 12:12:47 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/02 12:31:54 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,14 +97,14 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 
 						if (initialCommand.size() > password.size() + 6)  // "PASS " + password
 						{
-							/* if(!authenticate_hexchat(clients[i].fd, initialCommand, password, *user))
+							if(!authenticate_hexchat(clients[i].fd, initialCommand, password, *user))
 							{
 								std::cerr << "Error: User failed authentication." << std::endl;
 								close(clients[i].fd);
 								clients.erase(clients.begin() + i);
 								i--;
 								continue;
-							} */
+							}
 							std::cout << "Hexchat authentication not implemented yet" << std::endl;
 						}
 						else

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Handle_user.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:17 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/25 16:13:12 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/02 12:52:14 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,8 @@ bool handle_pass(User& user, const std::string& message, const std::string& serv
 	
 	std::string provided_password = message.substr(space_pos + 1);
 	provided_password.resize(provided_password.size() - 1); //Delete new line
+	std::cout << "Provided password:" << provided_password << "|" << std::endl;
+	std::cout << "Server password:" << server_password << "|" << std::endl;
 
 	if(provided_password.compare(server_password) == 0)
 	{
