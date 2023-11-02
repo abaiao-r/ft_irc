@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/27 17:31:03 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/02 13:06:00 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,15 +51,12 @@ class Server
         sockaddr_in get_address(void) const;
 
 
-        bool init_server(void);
-        void listen_server(void);
-        void close_server(void);
-        
+        int init_server(void);
         // auxiliar functions of init_server
-        bool create_socket(void);
-        bool set_socket_options(void);
-        bool bind_socket(void);
-        bool start_listening(void);
+        int create_socket(void);
+        int set_socket_options(void);
+        int bind_socket(void);
+        int start_listening(void);
     
 
 };
