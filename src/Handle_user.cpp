@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:17 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 12:52:14 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/02 13:33:35 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,30 +15,37 @@
 
 bool handle_user(User& user, const std::string& message)
 {
-	//Usage: USER <realname> <admin/operator>
-	std::istringstream iss(message);
-	std::string cmd, name, adminStr;
+    //Usage: USER <username> <mode> <unused> :<realname>
+    std::istringstream iss(message);
+    std::string cmd, username, mode, unused, realname;
 
-	iss >> cmd >> name >> adminStr;
+    iss >> cmd >> username >> mode >> unused;
 
-	if (cmd != "USER")
-		return (false);
+    // Extract the realname (after the colon)
+    if(iss.str().find(':') != std::string::npos)
+        realname = iss.str().substr(iss.str().find(':') + 1);
 
-	// Check if the name is a single word with only letters
-	if (name.empty() || !isAlpha(name) || name.size() > 12)
-		return (false);
+    if (cmd != "USER")
+        return (false);
 
-	if (adminStr == "1")
-		user.is_admin = true;
-	else if (adminStr == "0")
-		user.is_admin = false;
-	else
-		return (false);
+    // Check if the username is a single word with only letters
+    if (username.empty() || !isAlpha(username) || username.size() > 12 || realname.empty())
+        return (false);
 
-	user.realname = name; 
+    // You can adjust this based on your needs. 
+    // Here, I'm using '0' to indicate a normal user and '1' to indicate an admin/operator.
+    if (mode == "1")
+        user.is_admin = true;
+    else if (mode == "0")
+        user.is_admin = false;
+    else
+        return (false);
 
-	return (true);
+    user.realname = realname; 
+
+    return (true);
 }
+
 
 
 bool isNickInUse(const std::string& nickname)

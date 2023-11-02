@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:55:06 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 12:14:49 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/02 13:30:37 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ bool authenticate_user(int client_fd, const std::string& initialCommand, const s
 		else if(message.find("USER") == 0)
 		{
 			if(!handle_user(user, message))
-				send(client_fd, "ERROR: invalid name. Usage: USER <name> <admin>\r\n", 50, MSG_NOSIGNAL);
+				send(client_fd, "ERROR: invalid name. Usage: USER <name> <mode> <servername> <:realname>\r\n", 74, MSG_NOSIGNAL);
 			else
 				send(client_fd, "SUCCESS: Name set successfully!\r\n", 34, MSG_NOSIGNAL);
 		}
