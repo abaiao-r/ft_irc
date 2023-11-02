@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 12:49:06 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/02 13:06:00 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,9 +52,6 @@ class Server
 
 
         int init_server(void);
-        void listen_server(void);
-        void close_server(void);
-        
         // auxiliar functions of init_server
         int create_socket(void);
         int set_socket_options(void);

@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 12:53:01 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/02 13:06:15 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,33 +193,4 @@ int Server::init_server(void) // use int
     if (start_listening() == -1)
         return (-1);
     return (0);
-}
-
-/* listen_server: Accepts incoming connections
-** accept() extracts the first connection request on the queue of pending
-** connections for the listening socket, server_fd, creates a new connected
-** socket, and returns a new file descriptor referring to that socket. The
-** newly created socket is not in the listening state. The original socket
-** server_fd is unaffected by this call.
-*/
-void Server::listen_server(void)
-{
-    socklen_t addrlen = sizeof(_address);
-    int new_socket = accept(_server_fd, (struct sockaddr*)&_address, &addrlen);
-    if (new_socket == -1)
-    {
-        std::cerr << RED <<"Error:" << RESET << " Cannot accept connection" 
-            << std::endl;
-        close_server();
-        return ;
-    }
-    std::cout << GREEN << "New connection accepted" << RESET << std::endl;
-}
-
-/* close_server: Closes the socket */
-void Server::close_server(void) //
-{
-    if (_server_fd != -1)
-        close(_server_fd);
-    _server_fd = -1;
 }
