@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 14:20:12 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/02 19:42:06 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,12 +124,13 @@ int Server::bind_socket(void)
     //pheraps should start the sockaddr struct here. 
     if (bind(_server_fd, (struct sockaddr*)&_address, sizeof(_address)) == -1)
     {
-        std::cerr << RED <<"Error:" << RESET << " Cannot bind socket" 
-            << std::endl;
+        std::cerr << RED <<"Error:" << RESET << " Cannot bind socket: "
+            << strerror(errno) << std::endl;
         close(_server_fd);
         return (-1);
     }
     return (0);
+    
 }
 
 /* set_socket_options: Sets the socket options
@@ -144,16 +145,37 @@ int Server::bind_socket(void)
 int Server::set_socket_options(void) // use int
 {
     int opt = 1;
-    if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, 
+    if (setsockopt(this->_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, 
         sizeof(opt)) == -1) 
     {
         std::cerr << RED <<"Error:" << RESET << " Cannot set socket options" 
             << std::endl;
-        close (_server_fd);
+        close (this->_server_fd);
         //close_server();
         return (-1);
     }
     return (0);
+}
+
+int Server::set_socket_nonblocking(void)
+{
+    int flags;
+
+    flags = fcntl(this->_server_fd, F_GETFL, 0);
+    if (flags == -1)
+    {
+        std::cerr << RED << "ERROR: " << RESET << "Cannot get socket flags" 
+            << std::endl;
+        return(-1);
+    }
+    // set the O_NONBLOCK flag to make the sockect non-blocking
+    if (fcntl(this->_server_fd, F_SETFL, flags | O_NONBLOCK) == -1)
+    {
+        std::cerr << RED << "Error:" << RESET 
+            << " Cannot set socket to non-blocking" << std::endl;
+        return (-1);
+    }
+    return(0);
 }
 
 /* create_socket: Creates the socket
@@ -185,6 +207,8 @@ int Server::create_socket(void) // use int
 int Server::init_server(void) // use int
 {
     if (create_socket() == -1)
+        return (-1);
+    if (set_socket_nonblocking() == -1)
         return (-1);
     if (set_socket_options() == -1)
         return (-1);
