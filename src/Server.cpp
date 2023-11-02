@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 13:06:15 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/02 14:20:12 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ Server::~Server()
 {
     std::cout << RED << "Destructor Server called" << RESET 
         << std::endl;
-    close_server();
+    close(_server_fd);
 }
 
 /* Assignment operator overload (Update) */
