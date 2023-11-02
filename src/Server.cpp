@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/27 19:21:39 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/02 12:53:01 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,18 +96,18 @@ sockaddr_in Server::get_address(void) const
 ** protocol supports retransmission, the request may be ignored so that a
 ** later reattempt at connection succeeds.
 */
-bool Server::start_listening(void)
+int Server::start_listening(void)
 {
     if (listen(_server_fd, 5) == -1)
     {
         std::cerr << RED <<"Error:" << RESET << " Cannot listen socket"
             << std::endl;
-        close_server();
-        return (false);
+        close(_server_fd);
+        return (-1);
     }
     std::cout << GREEN << "Server listening on port " << _port << RESET
         << std::endl;
-    return (true);
+    return (0);
 }
 
 /* bind_socket: Binds the socket to the address and port number
@@ -118,16 +118,18 @@ bool Server::start_listening(void)
 ** local address using bind() before a SOCK_STREAM socket may receive
 ** connections.
 */
-bool Server::bind_socket(void)
+int Server::bind_socket(void)
 {
+
+    //pheraps should start the sockaddr struct here. 
     if (bind(_server_fd, (struct sockaddr*)&_address, sizeof(_address)) == -1)
     {
         std::cerr << RED <<"Error:" << RESET << " Cannot bind socket" 
             << std::endl;
-        close_server();
-        return (false);
+        close(_server_fd);
+        return (-1);
     }
-    return (true);
+    return (0);
 }
 
 /* set_socket_options: Sets the socket options
@@ -139,7 +141,7 @@ bool Server::bind_socket(void)
 ** 5. Option length: sizeof(int)
 ** Returns true if the socket options are set successfully, false otherwise
 */ 
-bool Server::set_socket_options(void)
+int Server::set_socket_options(void) // use int
 {
     int opt = 1;
     if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, 
@@ -147,10 +149,11 @@ bool Server::set_socket_options(void)
     {
         std::cerr << RED <<"Error:" << RESET << " Cannot set socket options" 
             << std::endl;
-        close_server();
-        return (false);
+        close (_server_fd);
+        //close_server();
+        return (-1);
     }
-    return (true);
+    return (0);
 }
 
 /* create_socket: Creates the socket
@@ -160,16 +163,16 @@ bool Server::set_socket_options(void)
 ** 3. Protocol: 0 (IP)
 ** Returns true if the socket is created successfully, false otherwise
 */
-bool Server::create_socket(void)
+int Server::create_socket(void) // use int
 {
     _server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (_server_fd == -1)
     {
         std::cerr << RED <<"Error:" << RESET << " Cannot create socket" 
             << std::endl;
-        return (false);
+        return (-1);
     }
-    return (true);
+    return (0);
 }
 
 /* init_server: Initializes the server
@@ -179,17 +182,17 @@ bool Server::create_socket(void)
 ** 4. Starts listening
 ** Returns true if all steps are successful, false otherwise
 */
-bool Server::init_server(void)
+int Server::init_server(void) // use int
 {
-    if (!create_socket()) 
-        return (false);
-    if (!set_socket_options()) 
-        return (false);
-    if (!bind_socket()) 
-        return (false);
-    if (!start_listening())
-        return (false);
-    return (true);
+    if (create_socket() == -1)
+        return (-1);
+    if (set_socket_options() == -1)
+        return (-1);
+    if (bind_socket() == -1) 
+        return (-1);
+    if (start_listening() == -1)
+        return (-1);
+    return (0);
 }
 
 /* listen_server: Accepts incoming connections
@@ -214,7 +217,7 @@ void Server::listen_server(void)
 }
 
 /* close_server: Closes the socket */
-void Server::close_server(void)
+void Server::close_server(void) //
 {
     if (_server_fd != -1)
         close(_server_fd);

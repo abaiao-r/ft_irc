@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:25 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/27 19:22:21 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/02 13:04:20 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,10 +37,8 @@ int main(int ac, char **av)
 	
 	Server server(port);
 	
-	if (server.init_server() == false)
+	if (server.init_server() == -1) // not false but if equal to -1
 		return (1);
-	server.listen_server(); // not sure if needed
-
 	clients.handle_client(server.get_server_fd(), av[2], av);
 	
 	server.close_server();
