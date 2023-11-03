@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/03 17:14:34 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/03 17:38:32 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ class Server
 		void		create_epoll();
 		void		connection();
 		void		client_connection();
-		void		client_actions(C_IT &client);
+		void		client_actions(Client &client);
 		void		authenticate(Client &client);
 		bool		pass_validation(std::string check) const;
 		bool		name_validation(std::string check);

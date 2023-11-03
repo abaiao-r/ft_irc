@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/03 17:09:58 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/03 17:42:45 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,7 +257,7 @@ void	Server::connection()
 				match = std::find(_clients.begin(), _clients.end(), client_fd);
 				if (match == _clients.end())
 					throw(std::runtime_error("Error. Could not find client"));
-				client_actions(match);
+				client_actions(*match);
 			}
 		}
 	}
@@ -281,10 +281,10 @@ void	Server::client_connection()
 	send(client_fd, "Input password\r\n", 17, MSG_NOSIGNAL);
 }
 
-void	Server::client_actions(C_IT &client)
+void	Server::client_actions(Client &client)
 {
-	if (!client->get_authenticated())
-		authenticate(*client);
+	if (!client.get_authenticated())
+		authenticate(client);
 	// else
 	// 	client_cmds(*client);
 }
