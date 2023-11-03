@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/02 12:31:54 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/03 18:16:35 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,16 @@
 Client::Client() {} // Constructor
 
 Client::~Client() {} // Destructor
+
+std::map<int, std::string> clientBuffers;  // FD -> Accumulated commands
+
+bool hasAllCommands(const std::string& buffer)
+{
+    return (buffer.find("CAPS") != std::string::npos &&
+            buffer.find("NICK") != std::string::npos &&
+            buffer.find("USER") != std::string::npos &&
+            buffer.find("PASS") != std::string::npos);
+}
 
 void Client::handle_client(int server_fd, const std::string &password, char ** /* av */)
 {
@@ -90,22 +100,28 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 						}
 						buffer[bytesReceived] = '\0';
 						std::string initialCommand = std::string(buffer);
-						std::cout << "Received: " << initialCommand << std::endl;
+						/* std::cout << "Received: " << initialCommand << std::endl;
 						std::cout << "Size: " << initialCommand.size() << std::endl;
 						std::cout << "Password: " << password << std::endl;
-						std::cout << "Password size: " << password.size() << std::endl;
+						std::cout << "Password size: " << password.size() << std::endl; */
 
-						if (initialCommand.size() > password.size() + 6)  // "PASS " + password
+						if (initialCommand.substr(0, 4) == "CAPS")
 						{
-							if(!authenticate_hexchat(clients[i].fd, initialCommand, password, *user))
+							// Store the CAPS command and wait for the next message
+							clientBuffers[clients[i].fd] = initialCommand;
+						}
+						else if (clientBuffers.count(clients[i].fd))
+						{
+							// If we have a stored CAPS command for this client, process both messages
+							if (!handle_hexchat(clientBuffers[clients[i].fd], initialCommand, *user, password))
 							{
-								std::cerr << "Error: User failed authentication." << std::endl;
+								std::cerr << "Error: User failed Hexchat authentication." << std::endl;
 								close(clients[i].fd);
 								clients.erase(clients.begin() + i);
 								i--;
 								continue;
 							}
-							std::cout << "Hexchat authentication not implemented yet" << std::endl;
+							clientBuffers.erase(clients[i].fd);  // Clear the buffer after processing
 						}
 						else
 						{

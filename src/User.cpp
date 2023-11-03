@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   User.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:55:06 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 13:30:37 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/02 18:53:10 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,6 @@ bool authenticate_user(int client_fd, const std::string& initialCommand, const s
 			else
 				send(client_fd, "SUCCESS: Name set successfully!\r\n", 34, MSG_NOSIGNAL);
 		}
-
 
 		// Check if user is now registered
 		if(!user.nickname.empty() && !user.realname.empty())
