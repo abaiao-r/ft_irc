@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/27 13:47:27 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/06 14:32:11 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,8 +126,14 @@ bool Commands::handle_commands(int client_fd, User &user)
 		}
 		buffer[n] = '\0';
 		std::string message(buffer);
+		std::cout << "Command received: |" << message << "|" << std::endl;
+		//print size of command
+		std::cout << "Command size: " << message.size() << std::endl;
 		if(message.find("JOIN") == 0)
+		{
+			std::cout << "JOIN command received" << std::endl;
 			handle_join(user, message);
+		}
 		else if(message.find("MSG") == 0)
 			handle_msg(user, message);
 		else if(message.find("CREATE") == 0)
@@ -151,7 +157,10 @@ bool Commands::handle_join(User& user, const std::string& message)
 		{
 			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
 				if (u_it->nickname == user.nickname)
+				{
+					std::cout << "User already in channel" << std::endl;
 					return (false);
+				}
 			}
 			ch_it->users_in_channel.push_back(user);
 			send(user.fd, "SUCCESS: Joined channel successfully!\r\n", 40, MSG_NOSIGNAL);
@@ -159,7 +168,7 @@ bool Commands::handle_join(User& user, const std::string& message)
 			return (true);
 		}
 	}
-
+	std::cout << "Channel does not exist" << std::endl;
 	std::string error_msg = "ERROR: Channel does not exist.\r\n";
 	send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 	return false;

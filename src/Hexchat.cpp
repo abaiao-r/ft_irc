@@ -20,38 +20,54 @@ std::vector<std::string> split(const std::string& s, const std::string& delimite
 	return tokens;
 }
 
-bool handle_hexchat(const std::string& firstMessage, const std::string& secondMessage, User& user, const std::string& password)
+bool handle_hexchat(const std::string& firstMessage, const std::string& secondMessage, User& user, const std::string& password, int client_fd)
 {
-    // Check first message for CAPS
-    if(firstMessage.substr(0, 4) != "CAPS")
-        return false;
+	// Check first message for CAP
+	if(firstMessage.substr(0, 3) != "CAP")
+		return false;
 
-    // Split the second message by "\r\n"
-    std::vector<std::string> commands;
-    std::string::size_type start = 0, end;
-    while ((end = secondMessage.find("\r\n", start)) != std::string::npos)
-    {
-        commands.push_back(secondMessage.substr(start, end - start));
-        start = end + 2; // 2 for length of "\r\n"
-    }
+	// Split the second message by "\r\n"
+	std::vector<std::string> commands;
+	std::string::size_type start = 0, end;
+	while ((end = secondMessage.find("\r\n", start)) != std::string::npos)
+	{
+		commands.push_back(secondMessage.substr(start, end - start));
+		start = end + 2; // 2 for length of "\r\n"
+	}
 
-    // We expect exactly 3 commands
-    if(commands.size() != 3)
-        return false;
+	// print vector commands
+	for (std::vector<std::string>::iterator it = commands.begin(); it != commands.end(); ++it)
+	{
+		std::cout << "Command: " << *it << std::endl;
+	}
 
-    // Handle PASS
-    if(!handle_pass(user, commands[0], password))
-        return false;
 
-    // Handle NICK
-    if(!handle_nick(user, commands[1]))
-        return false;
+	// We expect exactly 3 commands
+ /*    if(commands.size() != 3)
+		return false;
+ */
+	// Handle PASS
+	if(!handle_pass(user, commands[1], password))
+		return false;
 
-    // Handle USER
-    if(!handle_user(user, commands[2]))
-        return false;
+	// Handle NICK
+	if(!handle_nick(user, commands[2]))
+		return false;
 
-    return true;
+	// Handle USER
+	if(!handle_user(user, commands[3]))
+		return false;
+
+	user.is_registered = true;
+	user.has_authenticated = true;
+	std::cout << "Registered successfully! Nickname:" << user.nickname << " for fd: " << user.fd << std::endl;
+	std::string welcome_message = "\nWelcome to the Internet Relay Network " + user.realname + "! \r\n" + "Username: @" + user.nickname + "\r\n" + "Operator: " + (user.is_admin ? "Yes" : "No") + "\r\n";
+	send(client_fd, welcome_message.c_str(), welcome_message.length(), MSG_NOSIGNAL);
+	std::string your_host_message = "Your host is running on version 0.1\r\n";
+	send(client_fd, your_host_message.c_str(), your_host_message.length(), MSG_NOSIGNAL);
+	std::string created_message = "This server was created abaiao-r, joao-per and gacorrei \r\n";
+	send(client_fd, created_message.c_str(), created_message.length(), MSG_NOSIGNAL);
+	return true;
 }
 
 

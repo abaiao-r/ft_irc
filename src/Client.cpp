@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/03 18:16:35 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/06 14:02:48 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,16 +104,17 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 						std::cout << "Size: " << initialCommand.size() << std::endl;
 						std::cout << "Password: " << password << std::endl;
 						std::cout << "Password size: " << password.size() << std::endl; */
-
-						if (initialCommand.substr(0, 4) == "CAPS")
+						std::cout << "Received:" << initialCommand << std::endl;
+						if (initialCommand.substr(0, 3) == "CAP")
 						{
+							std::cout << "CAPS command received" << std::endl;
 							// Store the CAPS command and wait for the next message
 							clientBuffers[clients[i].fd] = initialCommand;
 						}
-						else if (clientBuffers.count(clients[i].fd))
+						if (clientBuffers.count(clients[i].fd))
 						{
 							// If we have a stored CAPS command for this client, process both messages
-							if (!handle_hexchat(clientBuffers[clients[i].fd], initialCommand, *user, password))
+							if (!handle_hexchat(clientBuffers[clients[i].fd], initialCommand, *user, password, clients[i].fd))
 							{
 								std::cerr << "Error: User failed Hexchat authentication." << std::endl;
 								close(clients[i].fd);
@@ -121,7 +122,7 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 								i--;
 								continue;
 							}
-							clientBuffers.erase(clients[i].fd);  // Clear the buffer after processing
+							//clientBuffers.erase(clients[i].fd);
 						}
 						else
 						{

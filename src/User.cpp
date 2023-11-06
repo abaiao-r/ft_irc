@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   User.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:55:06 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 18:53:10 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/06 13:48:46 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,8 @@ bool authenticate_user(int client_fd, const std::string& initialCommand, const s
 		{
 			ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
 			buffer[n] = '\0';
+			if(n > 0 && buffer[n - 1] == '\n')
+				buffer[n - 1] = '\0';
 			message = buffer;
 		}
 

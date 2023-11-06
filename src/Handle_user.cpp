@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Handle_user.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:17 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 18:51:40 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/06 13:52:30 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ bool handle_user(User& user, const std::string& message)
         return (false);
 
     user.realname = realname; 
+	std::cout << "Registered successfully! Username:" << username << " for fd: " << user.fd << std::endl;
 
     return (true);
 }
@@ -92,7 +93,11 @@ bool handle_pass(User& user, const std::string& message, const std::string& serv
 		return (false);
 	
 	std::string provided_password = message.substr(space_pos + 1);
-	provided_password.resize(provided_password.size()); //Delete new line
+	//if last char is \n, delete it
+	if (provided_password[provided_password.size() - 1] == '\n')
+		provided_password.resize(provided_password.size() - 1);
+
+	
 	std::cout << "Provided password:" << provided_password << "|" << std::endl;
 	std::cout << "Server password:" << server_password << "|" << std::endl;
 
