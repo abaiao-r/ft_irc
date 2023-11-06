@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 16:39:28 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/06 21:17:45 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -340,7 +340,7 @@ void	Server::client_cmds(Client &client)
 			cmd_create(client, input.substr(size, input.size() - size));
 			break;
 		case 7:
-			cmd_kick(client, to_kick, input.substr(size, input.size() - size), reason);
+			cmd_kick(client, input.substr(size, input.size() - size));
 			break;
 		case 8:
 			cmd_invite(client, input.substr(size, input.size() - size));
@@ -585,8 +585,21 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 
 
 /* cmd_kick: KICK <#channel> <nickname> <reason> */
-int Server::cmd_kick(Client &client, Channel &channel, std::string nickname, std::string reason)
+/* int Server::cmd_kick(Client &client, std::string input)
 {
+	Channel channel;
+	std::string channel_to_find;
+	std::string nickname;
+	std::string reason;
+
+	channel_to_find = input.substr(0, input.find(" "));
+	input = input.substr(input.find(" ") + 1);
+	nickname = input.substr(0, input.find(" "));
+	input = input.substr(input.find(" ") + 1);
+	// reason needs to be the rest of the string
+	reason = input;
+
+	// Client &client, Channel &channel, std::string nickname, std::string reason
 	const std::string red = "\033[1;31m";
 	const std::string reset = "\033[0m";
 	// check if client is administrator
@@ -604,8 +617,9 @@ int Server::cmd_kick(Client &client, Channel &channel, std::string nickname, std
 
 	for (int i = 0; i < this->_channels.size(); i++)
 	{
-		if (this->_channels[i].get_name() == channel.get_name())
+		if (this->_channels[i].get_name() == channel_to_find)
 		{
+			channel = this->_channels[i];
 			channel_exists = true;
 			break;
 		}
@@ -646,11 +660,225 @@ int Server::cmd_kick(Client &client, Channel &channel, std::string nickname, std
 		return (-1);
 	}
 
-	//kick nickname from channel
-	
-	//send message to channel
-	
-	
-
 	return (0);
+} */
+
+/* int Server::cmd_kick(Client &client, std::string input)
+{
+    const std::string red = "\033[1;31m";
+    const std::string reset = "\033[0m";
+
+    std::istringstream iss(input);
+    std::string channel_to_find;
+	std::string nickname;
+	std::string reason;
+
+    iss >> channel_to_find >> nickname;
+    std::getline(iss, reason);
+
+    // Check if client is administrator
+    if (!client.get_is_admin())
+	{
+        std::cerr << red << "Error: " << reset << "Client " 
+			<< client.get_nickname() << " is not administrator" << std::endl;
+        std::string error = red + "Error: " + reset + client.get_nickname() 
+			+ " is not administrator\r\n";
+        if (send(client.get_client_fd(), error.c_str(), error.size(), MSG_NOSIGNAL) == -1)
+			std::cerr << red << "Error: " << reset << "Send failed" << std::endl;
+        return (-1);
+    }
+
+    // Find if channel exists
+	std::vector<Channel>::iterator it;
+    for (it = _channels.begin(); it != _channels.end(); ++it)
+	{
+        if (it->get_name() == channel_to_find)
+		{
+            break;
+        }
+    }
+
+    if (it == _channels.end())
+	{
+        std::cerr << red << "Error: " << reset << "Channel does not exist" << std::endl;
+        return (-1);
+    }
+
+    Channel &channel = *it;
+    // Find if nickname is in channel
+    std::vector<Client>::iterator it_client;
+    for (it_client = channel.get_clients_in_channel().begin(); it_client != channel.get_clients_in_channel().end(); ++it_client)
+	{
+        if (it_client->get_nickname() == nickname)
+		{
+            break;
+        }
+    }
+    if (it_client == channel.get_clients_in_channel().end())
+	{
+        std::cerr << RED << "Error: " << RESET << nickname << " does not exist" 
+			<< std::endl;
+
+		std::string error = red + "Error: " + reset + nickname 
+			+ " does not exist\r\n";
+		if (send(client.get_client_fd(), error.c_str(), error.size(), MSG_NOSIGNAL) == -1)
+			std::cerr << RED << "Error: " << RESET << "send() failed" << std::endl;
+        return (-1);
+    }
+
+    // Kick user
+    Client &client_to_kick = *it_client;
+    int client_to_kick_fd = client_to_kick.get_client_fd();
+    channel.get_clients_in_channel().erase(it_client);
+
+    if (reason.empty())
+	{
+        reason = "This is Sparta!";
+    }
+
+    // Send message to channel
+    std::string message = nickname + " has been kicked from the channel. Reason: " + reason;
+    if (send(client_to_kick_fd, message.c_str(), message.size(), MSG_NOSIGNAL) == -1)
+	{
+		std::cerr << RED << "Error: " << RESET << "send() failed" << std::endl;
+		return (-1);
+	}
+
+    return (0);
+} */
+
+/* cmd_kick: kick a user from a channel
+ * 1. Parse input into channel name and nickname and reason
+ * 2. Check if client is administrator
+ * 3. Find the channel
+ * 4. Find the nickname in the channel
+ * 5. Kick the user
+ */
+int Server::cmd_kick(Client &client, std::string input)
+{
+    std::istringstream iss(input);
+    std::string channel_to_find;
+    std::string nickname;
+    std::string reason;
+	
+	// Parse input
+    iss >> channel_to_find >> nickname;
+    std::getline(iss, reason);
+    // Check if client is administrator
+	if (is_client_admin(client) == 0)
+		return (-1);
+    // Find the channel
+    Channel *channel = findChannel(client, channel_to_find);
+    if (!channel)
+        return (-1);
+    // Find the nickname in the channel
+    Client *client_to_kick = findClientInChannel(client, channel, nickname);
+    if (!client_to_kick)
+		return (-1);
+    // Kick the user
+    int client_to_kick_fd = client_to_kick->get_client_fd();
+    if (kickClientFromChannel(channel, client_to_kick, reason) == -1)
+        return (-1);
+    return (0);
+}
+
+/* is_client_admin: check if client is administrator
+ * 1. Check if client is administrator
+ * 2. Send error message if client is not administrator
+ */
+int Server::is_client_admin(Client &client)
+{
+	if (!client.get_is_admin())
+	{
+		std::string error = "Error: " + client.get_nickname() 
+			+ " is not administrator\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (-1);
+	}
+}
+
+/* sendErrorMessage: send error message to client
+ * 1. Send error message to client
+ */
+int Server::sendErrorMessage(int client_fd, const std::string	&errorMessage)
+{
+    if (send(client_fd, errorMessage.c_str(), errorMessage.size(), MSG_NOSIGNAL) == -1)
+    {
+        std::cerr << RED << "Error: " << RESET << "send() failed" << std::endl;
+        return (-1);
+    }
+    return (0);
+}
+
+/* findChannel: find channel
+ * 1. Find channel by interating through _channels
+ * 2. If channel does not exist, send error message to client and return NULL
+ * else return channel
+ */
+Channel	*Server::findChannel(Client &client, const std::string	&channelName)
+{
+	std::vector<Channel>::iterator it;
+    for (it = _channels.begin(); it != _channels.end(); ++it)
+	{
+		if (it->get_name() == channelName)
+		{
+			return &(*it);
+		}
+	}
+	if (it == _channels.end())
+	{
+		sendErrorMessage(client.get_client_fd(), "Error: " + channelName 
+			+ " does not exist\r\n");
+	}
+    return (NULL);
+}
+
+/* findClientInChannel: find client in channel
+ * 1. Find client by interating through channel->get_clients_in_channel()
+ * 2. If client does not exist, send error message to client and return NULL
+ * else return client
+ */
+Client	*Server::findClientInChannel(Client &client, Channel	*channel, const std::string	&nickname)
+{
+	std::vector<Client>::iterator it;
+    for (it = channel->get_clients_in_channel().begin(); it != channel->get_clients_in_channel().end(); ++it)
+	{
+		if (it->get_nickname() == nickname)
+		{
+			return &(*it);
+		}
+	}
+	if (it == channel->get_clients_in_channel().end())
+	{
+		sendErrorMessage(client.get_client_fd(), "Error: " + nickname 
+			+ " does not exist\r\n");
+	}
+    return (NULL);
+}
+
+/* kickClientFromChannel: kick client from channel
+ * 1. Remove client from channel->get_clients_in_channel()
+ * 2. Send message to client
+ */
+int Server::kickClientFromChannel(Channel	*channel, Client	*client, const std::string	&reason)
+{
+	std::string message;
+	
+    channel->get_clients_in_channel().erase(std::remove(channel->get_clients_in_channel().begin(), channel->get_clients_in_channel().end(), *client), channel->get_clients_in_channel().end());
+    if (reason.empty())
+    {
+        message = client->get_nickname() 
+			+ " has been kicked from the channel. Reason: This is Sparta!";
+    }
+	else
+	{
+		message = client->get_nickname() 
+			+ " has been kicked from the channel. Reason: " + reason;
+	}
+    if (send(client->get_client_fd(), message.c_str(), message.size(), MSG_NOSIGNAL) == -1)
+    {
+        std::cerr << "Error: send() failed" << std::endl;
+        return (-1);
+    }
+    return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 16:44:12 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/06 21:16:02 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,8 +98,15 @@ class Server
 		void		cmd_privmsg(Client &client, std::string input);
 		void		cmd_create(Client &client, std::string input);
 		
-		// cmd_kick ( user, reason)
-		int 		cmd_kick(Client &client, Channel &channel, std::string nickname, std::string reason);
+		// KICK COMMAND FUNCTIONS
+		int			is_client_admin(Client &client);
+		int			sendErrorMessage(int client_fd, const std::string& errorMessage);
+		Channel		*findChannel(Client &client, const std::string& channelName);
+		Client		*findClientInChannel(Client &client, Channel* channel, const std::string& nickname);
+		int 		kickClientFromChannel(Channel* channel, Client* client, const std::string& reason);
+		int 		cmd_kick(Client &client, std::string input);
+		// END KICK COMMAND FUNCTIONS
+
 		void		cmd_invite(Client &client, std::string input);
 		void		cmd_topic(Client &client, std::string input);
 		void		cmd_mode(Client &client, std::string input);
