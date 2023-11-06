@@ -54,7 +54,7 @@ class Client
 		
 		//operators
 		bool	operator==(const Client &comp);
-		bool	operator==(const std::string &comp);
+		bool	operator==(const std::string &nick);
 		bool	operator==(const int &comp);
 	
 		//other methods

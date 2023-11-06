@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/06 11:19:35 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 15:22:14 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ Channel::Channel(Client &user1, Client &user2)
 	:_name("DM" + user1.get_nickname() + ":" + user2.get_nickname()), _password(""),
 	_topic(_name), _mode(10), _dm(true), _max_users(2)
 {
-	_users.push_back(user1);
-	_users.push_back(user2);
+	_clients_in_channel.push_back(user1);
+	_clients_in_channel.push_back(user2);
 }
 
 Channel::Channel(Channel &copy)
@@ -42,7 +42,7 @@ Channel	&Channel::operator=(Channel &copy)
 	_mode = copy._mode;
 	_dm = copy._dm;
 	_max_users = copy._max_users;
-	_users = copy._users;
+	_clients_in_channel = copy._clients_in_channel;
 	return *this;
 }
 
@@ -90,4 +90,12 @@ void	Channel::set_mode(const Client &user, int mode)
 	// if (!user.is_operator())
 	// 	return;
 	_mode = mode;
+}
+
+/* get_clients_in_channel() returns a const reference to the vector of clients
+ * in the channel. This is to avoid copying the vector when it is not necessary.
+ * The vector is const, so it cannot be modified. */
+std::vector<Client> &Channel::get_clients_in_channel(void)
+{
+	return (_clients_in_channel);
 }

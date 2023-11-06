@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 13:14:45 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 16:14:28 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,9 @@ class Server
 		void		cmd_msg(Client &client, std::string input);
 		void		cmd_privmsg(Client &client, std::string input);
 		void		cmd_create(Client &client, std::string input);
-		void		cmd_kick(Client &client, std::string input);
+		
+		// cmd_kick ( user, reason)
+		int 		cmd_kick(Client &client, Channel &channel, std::string nickname, std::string reason);
 		void		cmd_invite(Client &client, std::string input);
 		void		cmd_topic(Client &client, std::string input);
 		void		cmd_mode(Client &client, std::string input);

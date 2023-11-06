@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/06 09:30:17 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 14:01:11 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,9 +130,9 @@ bool Client::operator==(const Client &comp)
 	return (_client_fd == comp._client_fd);
 }
 
-bool Client::operator==(const std::string &comp)
+bool Client::operator==(const std::string &nick)
 {
-	return (_nickname == comp);
+	return (_nickname == nick);
 }
 
 bool Client::operator==(const int &comp)

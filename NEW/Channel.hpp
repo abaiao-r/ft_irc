@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/06 12:32:02 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 15:20:01 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,8 @@ class Channel
 		int					_mode;
 		bool				_dm;
 		unsigned int		_max_users;
-		std::vector<Client>	_users;
+		std::vector<Client>	_clients_in_channel;
+		
 	public:
 		Channel();
 		Channel(std::string name, std::string password, std::string topic);
@@ -34,6 +35,8 @@ class Channel
 		Channel		&operator=(Channel &copy);
 		bool		operator==(Channel &copy);
 		std::string	get_name() const;
+		//get users
+		std::vector<Client> &get_clients_in_channel();
 		std::string	get_topic() const;
 		int			get_mode() const;
 		bool		is_dm() const;

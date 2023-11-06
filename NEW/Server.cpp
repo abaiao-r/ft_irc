@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 13:14:32 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 16:35:49 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -472,4 +472,75 @@ void	Server::signal_reset()
 {
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
+}
+
+
+/* cmd_kick: KICK <#channel> <nickname> <reason> */
+int Server::cmd_kick(Client &client, Channel &channel, std::string nickname, std::string reason)
+{
+	const std::string red = "\033[1;31m";
+	const std::string reset = "\033[0m";
+	// check if client is administrator
+	if (!client.get_is_admin())
+	{
+		std::cerr << RED << "Error: " << RESET << "Client is not administrator" 
+			<< std::endl;
+		// use RED for error messages
+		std::string error = red + "Error: " + reset + client.get_nickname() + " is not administrator\r\n";
+		send(client.get_client_fd(), error.c_str(), error.size(), MSG_NOSIGNAL);
+		return (-1);
+	}
+	//find if channel exists
+	bool channel_exists = false;
+
+	for (int i = 0; i < this->_channels.size(); i++)
+	{
+		if (this->_channels[i].get_name() == channel.get_name())
+		{
+			channel_exists = true;
+			break;
+		}
+	}
+
+	if (!channel_exists)
+	{
+		std::cerr << RED << "Error: " << RESET << "Channel does not exist" 
+			<< std::endl;
+		return (-1);
+	}
+
+	//find if nickname is in channel
+	bool nickname_exists = false;
+
+	for (int i = 0; i < channel.get_clients_in_channel().size(); i++)
+	{
+		if (channel.get_clients_in_channel()[i].get_nickname() == nickname)
+		{
+			// get client fd to send message
+			int client_to_kick_fd = channel.get_clients_in_channel()[i].get_client_fd();
+			// erase nickname from channel
+			channel.get_clients_in_channel().erase(channel.get_clients_in_channel().begin() + i);
+			if (reason.empty())
+				reason = "This is Sparta!";
+			// send message to channel
+			std::string message = nickname + " has been kicked from the channel. Reason: " + reason;
+			send(client_to_kick_fd, message.c_str(), message.size(), MSG_NOSIGNAL);
+			nickname_exists = true;
+			break;
+		}
+	}
+
+	if (!nickname_exists)
+	{
+		std::cerr << RED << "Error: " << RESET << "Nickname does not exist" 
+			<< std::endl;
+		return (-1);
+	}
+
+	//kick nickname from channel
+	
+	//send message to channel
+	
+	
+	return (0);
 }
