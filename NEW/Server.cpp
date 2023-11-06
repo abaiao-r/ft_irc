@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 10:37:19 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 13:14:32 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -289,8 +289,73 @@ void	Server::client_actions(Client &client)
 {
 	if (!client.get_authenticated())
 		authenticate(client);
-	// else
-	// 	client_cmds(*client);
+	else
+		client_cmds(client);
+}
+
+void	Server::client_cmds(Client &client)
+{
+	char		buffer[BUFFER_READ_SIZE];
+	std::string	input("");
+	int			fd = client.get_client_fd();
+	ssize_t		n;
+
+	while (1) //THIS MIGHT BLOCK!! TEST!!
+	{
+		n = recv(fd, buffer, sizeof(buffer) - 1, 0);
+		if (n == -1)
+			throw(std::runtime_error("Error. Failed in rcv."));
+		if (n == 0)
+			break;
+		buffer[n] = 0;
+		if (n > 0 && buffer[n - 1] == '\n')
+			buffer[n - 1] = 0;
+		input += static_cast<std::string>(buffer);
+	}
+
+	std::stringstream	s(input);
+	std::string			s_buffer;
+	int					test;
+
+	s >> s_buffer;
+	test = get_cmd(s_buffer);
+	switch (test)
+	{
+		case 0:
+			cmd_join(client, input);
+			break;
+		case 1:
+			cmd_msg(client, input);
+			break;
+		case 2:
+			cmd_privmsg(client, input);
+			break;
+		case 3:
+			cmd_create(client, input);
+			break;
+		case 4:
+			cmd_kick(client, input);
+			break;
+		case 5:
+			cmd_invite(client, input);
+			break;
+		case 6:
+			cmd_topic(client, input);
+			break;
+		case 7:
+			cmd_mode(client, input);
+			break;
+		default:
+			send(fd, "Error. Unknown command\r\n", 25, MSG_NOSIGNAL);
+	}
+}
+
+int	Server::get_cmd(std::string cmd)
+{
+	for (int i = 0; i < CMDS; i++)
+		if (cmd == _cmds[i])
+			return i;
+	return -1;
 }
 
 void	Server::authenticate(Client &client)

@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 10:28:47 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 13:14:45 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <csignal>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 #include <sys/epoll.h>
@@ -25,6 +26,7 @@
 #include <fcntl.h>
 #include "colours.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
 // #include "Channel.hpp"
 
 class Client;
@@ -38,20 +40,24 @@ class Channel;
 #define BUFFER_READ_SIZE 1024
 #define MAX_LEN 10
 #define MIN_LEN 3
+#define CMDS 8
 
 
 class Server
 {
 	private:
-		int					_port;
-		const std::string	_password;
-		int					_server_fd;
-		sockaddr_in			_address;
-		int					_epoll_fd;
-		epoll_event			_main_event;
-		epoll_event			_events[MAX_EVENTS];
-		std::vector<Client>	_clients;
-		static int			_loop_state;
+		int						_port;
+		const std::string		_password;
+		int						_server_fd;
+		sockaddr_in				_address;
+		int						_epoll_fd;
+		epoll_event				_main_event;
+		epoll_event				_events[MAX_EVENTS];
+		std::vector<Client>		_clients;
+		std::vector<Channel>	_channels;
+		static int				_loop_state;
+		const std::string		_cmds[CMDS] =
+		{"JOIN", "MSG", "PRIVMSG", "CREATE", "KICK", "INVITE", "TOPIC", "MODE"};
 
 		// private because we don't want to allow copies of this class
 		Server(void);
@@ -81,6 +87,16 @@ class Server
 		void		connection();
 		void		client_connection();
 		void		client_actions(Client &client);
+		void		client_cmds(Client &client);
+		void		cmd_join(Client &client, std::string input);
+		void		cmd_msg(Client &client, std::string input);
+		void		cmd_privmsg(Client &client, std::string input);
+		void		cmd_create(Client &client, std::string input);
+		void		cmd_kick(Client &client, std::string input);
+		void		cmd_invite(Client &client, std::string input);
+		void		cmd_topic(Client &client, std::string input);
+		void		cmd_mode(Client &client, std::string input);
+		int			get_cmd(std::string cmd);
 		void		authenticate(Client &client);
 		bool		pass_validation(std::string check) const;
 		bool		name_validation(std::string check);
