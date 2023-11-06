@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 13:14:45 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 15:54:19 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class Client;
 class Channel;
 
 #define C_IT std::vector<Client>::iterator
+#define CH_IT std::vector<Channel>::iterator
 #define SOCKLEN sizeof(struct sockaddr_in)
 #define MAX_REQUESTS 5
 #define MAX_EVENTS 1024
@@ -40,7 +41,7 @@ class Channel;
 #define BUFFER_READ_SIZE 1024
 #define MAX_LEN 10
 #define MIN_LEN 3
-#define CMDS 8
+#define CMDS 11
 
 
 class Server
@@ -57,7 +58,8 @@ class Server
 		std::vector<Channel>	_channels;
 		static int				_loop_state;
 		const std::string		_cmds[CMDS] =
-		{"JOIN", "MSG", "PRIVMSG", "CREATE", "KICK", "INVITE", "TOPIC", "MODE"};
+		{"PASS", "USER", "NICK", "JOIN", "MSG", "PRIVMSG",
+		"CREATE", "KICK", "INVITE", "TOPIC", "MODE"};
 
 		// private because we don't want to allow copies of this class
 		Server(void);
@@ -88,11 +90,14 @@ class Server
 		void		client_connection();
 		void		client_actions(Client &client);
 		void		client_cmds(Client &client);
+		void		cmd_pass(Client &client, std::string input);
+		void		cmd_user(Client &client, std::string input);
+		void		cmd_nick(Client &client, std::string input);
 		void		cmd_join(Client &client, std::string input);
 		void		cmd_msg(Client &client, std::string input);
 		void		cmd_privmsg(Client &client, std::string input);
 		void		cmd_create(Client &client, std::string input);
-		void		cmd_kick(Client &client, std::string input);
+		void		cmd_kick(Client &client, std::string to_kick, std::string input, std::string reason);
 		void		cmd_invite(Client &client, std::string input);
 		void		cmd_topic(Client &client, std::string input);
 		void		cmd_mode(Client &client, std::string input);

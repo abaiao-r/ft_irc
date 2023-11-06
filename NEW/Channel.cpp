@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/06 11:19:35 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 16:13:48 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ Channel::Channel(Client &user1, Client &user2)
 	:_name("DM" + user1.get_nickname() + ":" + user2.get_nickname()), _password(""),
 	_topic(_name), _mode(10), _dm(true), _max_users(2)
 {
-	_users.push_back(user1);
-	_users.push_back(user2);
+	_clients_in_channel.push_back(user1);
+	_clients_in_channel.push_back(user2);
 }
 
 Channel::Channel(Channel &copy)
@@ -42,13 +42,13 @@ Channel	&Channel::operator=(Channel &copy)
 	_mode = copy._mode;
 	_dm = copy._dm;
 	_max_users = copy._max_users;
-	_users = copy._users;
+	_clients_in_channel = copy._clients_in_channel;
 	return *this;
 }
 
-bool	Channel::operator==(Channel &copy)
+bool	Channel::operator==(std::string copy)
 {
-	return (_name == copy._name);
+	return (_name == copy);
 }
 
 std::string	Channel::get_name() const
@@ -64,6 +64,11 @@ std::string	Channel::get_topic() const
 int	Channel::get_mode() const
 {
 	return _mode;
+}
+
+std::vector<Client>	&Channel::get_clients_in_channel()
+{
+	return (_clients_in_channel);
 }
 
 bool	Channel::is_dm() const
