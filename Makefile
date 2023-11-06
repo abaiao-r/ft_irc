@@ -3,12 +3,14 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+         #
+#    By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/18 14:23:18 by abaiao-r          #+#    #+#              #
-#    Updated: 2023/10/27 16:00:04 by abaiao-r         ###   ########.fr        #
+#    Updated: 2023/11/06 17:13:27 by joao-per         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
+
 
 # Target (Name of the executable)
 NAME	= ircserv
@@ -28,7 +30,8 @@ SRCS		= 	$(SRCDIR)/main.cpp \
 				$(SRCDIR)/User.cpp \
 				$(SRCDIR)/utils.cpp \
 				$(SRCDIR)/Server.cpp \
-				$(SRCDIR)/Client.cpp
+				$(SRCDIR)/Client.cpp \
+				$(SRCDIR)/Hexchat.cpp
 
 # Object files
 OBJS	= $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
