@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/06 14:01:11 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/06 21:29:51 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ Client::Client(void)
 		<< std::endl;
 }
 
-/* copy constructor: is private  so we can't copy */
+/* copy constructor */
 Client::Client(const Client &copy)
 	: _client_fd(copy._client_fd), _authenticated(copy._authenticated),
 	_tries(copy._tries), _client_addr(copy._client_addr)
@@ -38,19 +38,22 @@ Client::~Client(void)
 		<< std::endl;
 }
 
-/* assignment operator: is private so we can't copy */
+/* assignment operator */
 Client &Client::operator=(const Client &copy)
 {
 	std::cout << CYAN << "Client: Assignment operator called" << RESET
 		<< std::endl;
-	_client_fd = copy._client_fd;
-	_client_addr = copy._client_addr;
-	_authenticated = copy._authenticated;
-	_tries = copy._tries;
-	_nickname = copy._nickname;
-	_username = copy._username;
-	_is_admin = copy._is_admin;
-	return *this;
+	if (this != &copy) // this prevents self-assignment. Ex: Client c1; c1 = c1;
+	{
+		_client_fd = copy._client_fd;
+		_client_addr = copy._client_addr;
+		_authenticated = copy._authenticated;
+		_tries = copy._tries;
+		_nickname = copy._nickname;
+		_username = copy._username;
+		_is_admin = copy._is_admin;
+	}
+	return (*this);
 }
 
 /* get client_fd: return the client_fd */

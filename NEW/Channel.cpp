@@ -6,18 +6,26 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/06 16:41:08 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/06 21:37:00 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
 
 Channel::Channel()
-	:_name(""), _password(), _topic(""), _mode(-1), _dm(false), _max_users(0) {}
+	:_name(""), _password(), _topic(""), _mode(-1), _dm(false), _max_users(0)
+{
+	std::cout << CYAN << "Channel: Default constructor called" << RESET
+		<< std::endl;
+}
 
 Channel::Channel(std::string name, std::string password, std::string topic)
 	:_name(name), _password(password), _topic(topic), _mode(-1), _dm(false),
-	_max_users(0) {}
+	_max_users(0)
+{
+	std::cout << CYAN << "Channel: Parameter constructor called" << RESET
+		<< std::endl;
+}
 
 Channel::Channel(Client &user1, Client &user2)
 	:_name("DM" + user1.get_nickname() + ":" + user2.get_nickname()), _password(""),
@@ -36,14 +44,17 @@ Channel::~Channel() {}
 
 Channel	&Channel::operator=(Channel &copy)
 {
-	_name = copy._name;
-	_password = copy._password;
-	_topic = copy._topic;
-	_mode = copy._mode;
-	_dm = copy._dm;
-	_max_users = copy._max_users;
-	_clients_in_channel = copy._clients_in_channel;
-	return *this;
+	if (this != &copy) // this prevents self-assignment. Ex: Channel c1; c1 = c1;
+	{
+		_name = copy._name;
+		_password = copy._password;
+		_topic = copy._topic;
+		_mode = copy._mode;
+		_dm = copy._dm;
+		_max_users = copy._max_users;
+		_clients_in_channel = copy._clients_in_channel;
+	}
+	return (*this);
 }
 
 bool	Channel::operator==(std::string copy)
