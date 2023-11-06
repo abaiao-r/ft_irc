@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/03 17:14:28 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 09:30:17 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 
 /* Default constructor */
 Client::Client(void)
-	: _client_fd(-1), _authenticated(false), _tries(0)
+	: _client_fd(-1), _authenticated(false), _tries(0), _nickname(""),
+	_username(""), _is_admin(false)
 {
 	std::cout << CYAN << "Client: Default constructor called" << RESET 
 		<< std::endl;
@@ -46,6 +47,9 @@ Client &Client::operator=(const Client &copy)
 	_client_addr = copy._client_addr;
 	_authenticated = copy._authenticated;
 	_tries = copy._tries;
+	_nickname = copy._nickname;
+	_username = copy._username;
+	_is_admin = copy._is_admin;
 	return *this;
 }
 
