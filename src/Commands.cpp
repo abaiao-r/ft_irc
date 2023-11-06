@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 14:32:11 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/06 15:08:34 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,6 +125,10 @@ bool Commands::handle_commands(int client_fd, User &user)
 			return false;
 		}
 		buffer[n] = '\0';
+		if(n > 0 && buffer[n - 1] == '\n')
+			buffer[n - 1] = '\0';
+		if(n > 0 && buffer[n - 2] == '\r')
+				buffer[n - 2] = '\0';
 		std::string message(buffer);
 		std::cout << "Command received: |" << message << "|" << std::endl;
 		//print size of command
@@ -163,7 +167,8 @@ bool Commands::handle_join(User& user, const std::string& message)
 				}
 			}
 			ch_it->users_in_channel.push_back(user);
-			send(user.fd, "SUCCESS: Joined channel successfully!\r\n", 40, MSG_NOSIGNAL);
+			std::string join_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " JOIN :" + channel_name + "\r\n";
+            send(user.fd, join_msg.c_str(), join_msg.length(), MSG_NOSIGNAL);
 			std::cout << "Joined channel successfully!" << std::endl;
 			return (true);
 		}

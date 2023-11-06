@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:17 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 13:52:30 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/06 15:04:48 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,9 @@ bool handle_user(User& user, const std::string& message)
         user.is_admin = false;
     else
         return (false);
-
+    user.hostname = "localhost";
     user.realname = realname; 
-	std::cout << "Registered successfully! Username:" << username << " for fd: " << user.fd << std::endl;
+    std::cout << "Registered successfully! Username:" << username << " for fd: " << user.fd << std::endl;
 
     return (true);
 }
@@ -51,61 +51,61 @@ bool handle_user(User& user, const std::string& message)
 
 bool isNickInUse(const std::string& nickname)
 {
-	for (std::vector<User>::iterator it = users.begin(); it != users.end(); ++it)
-	{
-		if (it->nickname == nickname)
-			return (true);
-	}
-	return (false);
+    for (std::vector<User>::iterator it = users.begin(); it != users.end(); ++it)
+    {
+        if (it->nickname == nickname)
+            return (true);
+    }
+    return (false);
 }
 
 bool handle_nick(User& user, const std::string& message)
 {
-	// Expecting format: NICK <nickname>
-	size_t space_pos = message.find(' ');
-	if(space_pos == std::string::npos || space_pos + 1 == message.size())
-		return (false);
+    // Expecting format: NICK <nickname>
+    size_t space_pos = message.find(' ');
+    if(space_pos == std::string::npos || space_pos + 1 == message.size())
+        return (false);
 
-	std::string nickname = message.substr(space_pos + 1);
-	/* if(nickname.empty() || !isAlpha(nickname) || nickname.size() > 9)
-		return (false); */
-	// Check if the nickname is already in use
-	if (isNickInUse(nickname))
-	{
-		std::cout << "ERROR: Nickname already being used!" << std::endl;
-		return (false);
-	}
+    std::string nickname = message.substr(space_pos + 1);
+    /* if(nickname.empty() || !isAlpha(nickname) || nickname.size() > 9)
+        return (false); */
+    // Check if the nickname is already in use
+    if (isNickInUse(nickname))
+    {
+        std::cout << "ERROR: Nickname already being used!" << std::endl;
+        return (false);
+    }
 
-	user.nickname = nickname;
-	user.nick_registered = true;
-	std::cout << "Registered successfully! Nickname:" << nickname << " for fd: " << user.fd << std::endl;
-	return (true);
+    user.nickname = nickname;
+    user.nick_registered = true;
+    std::cout << "Registered successfully! Nickname:" << nickname << " for fd: " << user.fd << std::endl;
+    return (true);
 }
 
 
 bool handle_pass(User& user, const std::string& message, const std::string& server_password)
 {
-	// Extract password from message
-	// Format: PASS <password>
-	size_t space_pos = message.find(' ');
-	// Invalid message format
-	if(space_pos == std::string::npos || space_pos + 1 == message.size())
-		return (false);
-	
-	std::string provided_password = message.substr(space_pos + 1);
-	//if last char is \n, delete it
-	if (provided_password[provided_password.size() - 1] == '\n')
-		provided_password.resize(provided_password.size() - 1);
+    // Extract password from message
+    // Format: PASS <password>
+    size_t space_pos = message.find(' ');
+    // Invalid message format
+    if(space_pos == std::string::npos || space_pos + 1 == message.size())
+        return (false);
+    
+    std::string provided_password = message.substr(space_pos + 1);
+    //if last char is \n, delete it
+    /* if (provided_password[provided_password.size() - 1] == '\n')
+        provided_password.resize(provided_password.size() - 1); */
 
-	
-	std::cout << "Provided password:" << provided_password << "|" << std::endl;
-	std::cout << "Server password:" << server_password << "|" << std::endl;
+    
+    std::cout << "Provided password:" << provided_password << "|" << std::endl;
+    std::cout << "Server password:" << server_password << "|" << std::endl;
 
-	if(provided_password.compare(server_password) == 0)
-	{
-		std::cout << "Passwords match!" << std::endl;
-		user.has_authenticated = true;
-		return (true);
-	}
-	return (false);
+    if(provided_password.compare(server_password) == 0)
+    {
+        std::cout << "Passwords match!" << std::endl;
+        user.has_authenticated = true;
+        return (true);
+    }
+    return (false);
 }
