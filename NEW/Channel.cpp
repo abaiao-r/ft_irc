@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/06 15:22:14 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/06 16:41:08 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,9 +46,9 @@ Channel	&Channel::operator=(Channel &copy)
 	return *this;
 }
 
-bool	Channel::operator==(Channel &copy)
+bool	Channel::operator==(std::string copy)
 {
-	return (_name == copy._name);
+	return (_name == copy);
 }
 
 std::string	Channel::get_name() const
@@ -64,6 +64,11 @@ std::string	Channel::get_topic() const
 int	Channel::get_mode() const
 {
 	return _mode;
+}
+
+std::vector<Client>	&Channel::get_clients_in_channel()
+{
+	return (_clients_in_channel);
 }
 
 bool	Channel::is_dm() const

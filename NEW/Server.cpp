@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 16:35:49 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/06 16:39:28 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -296,54 +296,60 @@ void	Server::client_actions(Client &client)
 void	Server::client_cmds(Client &client)
 {
 	char		buffer[BUFFER_READ_SIZE];
-	std::string	input("");
+	std::string	input;
 	int			fd = client.get_client_fd();
-	ssize_t		n;
+	ssize_t		n = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
-	while (1) //THIS MIGHT BLOCK!! TEST!!
-	{
-		n = recv(fd, buffer, sizeof(buffer) - 1, 0);
-		if (n == -1)
-			throw(std::runtime_error("Error. Failed in rcv."));
-		if (n == 0)
-			break;
-		buffer[n] = 0;
-		if (n > 0 && buffer[n - 1] == '\n')
-			buffer[n - 1] = 0;
-		input += static_cast<std::string>(buffer);
-	}
+	if (n == -1)
+		throw(std::runtime_error("Error. Failed in rcv."));
+	buffer[n] = 0;
+	if (n > 0 && buffer[n - 1] == '\n')
+		buffer[n - 1] = 0;
+	if (n > 0 && buffer[n - 2] == '\r')
+		buffer[n - 2] = 0;
 
 	std::stringstream	s(input);
 	std::string			s_buffer;
 	int					test;
+	int					size;
 
 	s >> s_buffer;
+	size = s_buffer.size();
 	test = get_cmd(s_buffer);
 	switch (test)
 	{
 		case 0:
-			cmd_join(client, input);
+			cmd_pass(client, input.substr(size, input.size() - size));
 			break;
 		case 1:
-			cmd_msg(client, input);
+			cmd_user(client, input.substr(size, input.size() - size));
 			break;
 		case 2:
-			cmd_privmsg(client, input);
+			cmd_nick(client, input.substr(size, input.size() - size));
 			break;
 		case 3:
-			cmd_create(client, input);
+			cmd_join(client, input.substr(size, input.size() - size));
 			break;
 		case 4:
-			cmd_kick(client, input);
+			cmd_msg(client, input.substr(size, input.size() - size));
 			break;
 		case 5:
-			cmd_invite(client, input);
+			cmd_privmsg(client, input.substr(size, input.size() - size));
 			break;
 		case 6:
-			cmd_topic(client, input);
+			cmd_create(client, input.substr(size, input.size() - size));
 			break;
 		case 7:
-			cmd_mode(client, input);
+			cmd_kick(client, to_kick, input.substr(size, input.size() - size), reason);
+			break;
+		case 8:
+			cmd_invite(client, input.substr(size, input.size() - size));
+			break;
+		case 9:
+			cmd_topic(client, input.substr(size, input.size() - size));
+			break;
+		case 10:
+			cmd_mode(client, input.substr(size, input.size() - size));
 			break;
 		default:
 			send(fd, "Error. Unknown command\r\n", 25, MSG_NOSIGNAL);
@@ -427,7 +433,8 @@ bool	Server::name_validation(std::string check)
 	if (len > MAX_LEN || len < MIN_LEN)
 		return false;
 	for (int i = 0; i < len; i++)
-		if (std::isspace(check[i]))
+		if (std::isspace(check[i]) || (!std::isalnum(check[i])
+			&& (check[i] != '_') && (check[i] != '-')))
 			return false;
 	return true;
 }
@@ -472,6 +479,108 @@ void	Server::signal_reset()
 {
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
+}
+
+void	Server::cmd_pass(Client &client, std::string input)
+{
+	int	fd = client.get_client_fd();
+
+	if (client.get_authenticated())
+	{
+		send(fd, "You are already authenticated\r\n", 32, MSG_NOSIGNAL);
+		return;
+	}
+	if (pass_validation(input))
+	{
+		send(fd, "Success!\r\n", 11, MSG_NOSIGNAL);
+		return;
+	}
+	if (client.pass_counter(0, 0) == 2)
+	{
+		send(fd, "Too many wrong attempts, disconnecting\r\n", 41, MSG_NOSIGNAL);
+		disconnect_client(fd);
+	}
+	send(fd, "Wrong password\r\n", 17, MSG_NOSIGNAL);
+	client.pass_counter(1, 0);
+}
+
+void	Server::cmd_user(Client &client, std::string input)
+{
+	int	fd = client.get_client_fd();
+
+	if (client.get_authenticated())
+	{
+		send(fd, "You are already authenticated\r\n", 32, MSG_NOSIGNAL);
+		return;
+	}
+	if (name_validation(input))
+	{
+		client.set_username(input);
+		return;
+	}
+	else
+		send(fd, "Name can't have spaces or symbols (except '_' and '-') \
+		and must be between 3 and 10 characters long\r\n", 104, MSG_NOSIGNAL);
+}
+
+void	Server::cmd_nick(Client &client, std::string input)
+{
+	int	fd = client.get_client_fd();
+	int	test;
+
+	if (client.get_authenticated())
+	{
+		send(fd, "You are already authenticated\r\n", 32, MSG_NOSIGNAL);
+		return;
+	}
+	test = nick_validation(input);
+	if (!test)
+	{
+		client.set_nickname(input);
+		send(fd, "Choose Username\r\n", 18, MSG_NOSIGNAL);
+		return;
+	}
+	else if (test == 1)
+		send(fd, "Name can't have spaces or symbols (except '_' and '-') \
+		and must be between 3 and 10 characters long\r\n", 104, MSG_NOSIGNAL);
+	else
+		send(fd, "Nickname already in use, choose another\r\n", 42, MSG_NOSIGNAL);
+}
+
+void	Server::cmd_join(Client &client, std::string input)
+{
+	CH_IT	it = find(_channels.begin(), _channels.end(), input);
+	int		fd = client.get_client_fd();
+
+	if (it == _channels.end())
+	{
+		send(fd, "Error. Channel not found\r\n", 27, MSG_NOSIGNAL);
+		return;
+	}
+
+	std::vector<Client>	in_channel = it->get_clients_in_channel();
+
+	if (find(in_channel.begin(), in_channel.end(), client.get_client_fd()) != in_channel.end())
+	{
+		send(fd, "Error. You are already in this channel\r\n", 27, MSG_NOSIGNAL);
+		return;
+	}
+	//CHECK FOR MEMORY DUPLICATION HERE!!!
+	in_channel.push_back(client);
+
+	std::string join_msg = ":" + client.get_nickname() + "!" + client.get_username() + "@" + client.get_username() + " JOIN :" + it->get_name() + "\r\n";
+	send(fd, join_msg.c_str(), join_msg.length(), MSG_NOSIGNAL);
+	send(fd, "Successfully joined channel\r\n", 30, MSG_NOSIGNAL);
+}
+
+void	Server::cmd_msg(Client &client, std::string input)
+{
+	
+}
+
+void	Server::cmd_privmsg(Client &client, std::string input)
+{
+	
 }
 
 
@@ -542,5 +651,6 @@ int Server::cmd_kick(Client &client, Channel &channel, std::string nickname, std
 	//send message to channel
 	
 	
+
 	return (0);
 }
