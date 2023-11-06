@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/03 17:38:32 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 10:28:47 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ class Server
 		bool		name_validation(std::string check);
 		int			nick_validation(std::string check);
 		Client		*find_client(int fd);
-		void		disconnect_client(Client &client);
+		void		disconnect_client(int fd);
 		static void	signal_handler(int sig);
 		static void	signal_reset();
 		static void	signal_global();

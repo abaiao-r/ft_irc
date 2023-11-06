@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/03 17:42:45 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/06 10:37:19 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -221,10 +221,6 @@ void	Server::create_epoll()
 	_main_event.data.fd = _server_fd;
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _server_fd, &_main_event) == -1)
 		throw(std::runtime_error("Error in epoll_ctl"));
-	_main_event.events = EPOLLIN;
-	_main_event.data.fd = STDIN_FILENO;
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, STDIN_FILENO, &_main_event) == -1)
-		throw(std::runtime_error("Error in epoll_ctl"));
 }
 
 void	Server::connection()
@@ -236,12 +232,16 @@ void	Server::connection()
 	std::cout << "WAITING FOR CONNECTIONS ON PORT: " << _port << std::endl;
 	while (_loop_state)
 	{
+		//ONLY FOR TESTING!!! DELETE AFTER
+		std::cout << "There are " << _clients.size() << " clients connected\n";
+		for (C_IT it = _clients.begin(); it != _clients.end(); it++)
+			std::cout << "Client fd = " << it->get_client_fd() << "\n";
+		//
 		count = epoll_wait(_epoll_fd, _events, MAX_EVENTS, -1);
 		if (count == -1)
 			throw(std::runtime_error("Error in epoll_wait"));
 		for (int i = 0; i < count; i++)
 		{
-			// if (_events[i].data.fd == STDIN_FILENO)
 			if (_events[i].data.fd == _server_fd)
 			{
 				client_connection();
@@ -251,6 +251,10 @@ void	Server::connection()
 				if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &_main_event) == -1)
 					throw(std::runtime_error("Error in epoll_ctl"));
 			}
+			else if ((_events[i].events & EPOLLERR)
+				|| (_events[i].events & EPOLLHUP)
+				|| (!(_events[i].events & EPOLLIN)))
+				disconnect_client(_events[i].data.fd);
 			else
 			{
 				client_fd = _events[i].data.fd;
@@ -299,7 +303,7 @@ void	Server::authenticate(Client &client)
 	if (n == -1)
 		throw(std::runtime_error("Error. Failed in rcv."));
 	buffer[n] = 0;
-	if (buffer[n - 1] == '\n')
+	if (n > 0 && buffer[n - 1] == '\n')
 		buffer[n - 1] = 0;
 	switch (client.pass_counter(1, 0))
 	{
@@ -317,7 +321,7 @@ void	Server::authenticate(Client &client)
 			if (client.pass_counter(0, 0) == 3)
 			{
 				send(fd, "Too many wrong attempts, disconnecting\r\n", 41, MSG_NOSIGNAL);
-				disconnect_client(client);
+				disconnect_client(fd);
 			}
 			break;
 		case 3:
@@ -376,15 +380,14 @@ int	Server::nick_validation(std::string check)
 	return 0;
 }
 
-void	Server::disconnect_client(Client &client)
+void	Server::disconnect_client(int fd)
 {
-	int		fd = client.get_client_fd();
 	C_IT	end = _clients.end();
 	C_IT	match = std::find(_clients.begin(), end, fd);
 
 	if (match == end)
 		throw(std::runtime_error("Error. Could not find client"));
-	close(client.get_client_fd());
+	close(fd);
 	_clients.erase(match);
 }
 
