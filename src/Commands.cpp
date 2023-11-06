@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 15:08:34 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/06 16:04:16 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,83 +33,73 @@ Channel* find_channel_by_user(const User& user)
 	return (NULL); // user not in any channel
 }
 
-bool Commands::handle_msg(User& user, const std::string& message)
+bool Commands::msg_channel(User& user, const std::string& channel_name, const std::string& message)
 {
-	// Expecting format: MSG <message>
-	std::string actual_msg = message.substr(4); // Strip off the "MSG " part
-	user_messages[user.nickname].push_back(actual_msg);
-
-	Channel* user_channel = find_channel_by_user(user);
-	if (!user_channel)
+	// Find the channel
+	std::vector<Channel>::iterator it;
+	for (it = channels.begin(); it != channels.end(); ++it)
 	{
-		std::string error_msg = "ERROR: You are not in any channel. Join a channel to send messages.\r\n";
-		//user tried to send a message without being in a channel
-		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-		std::cout << "User " << user.nickname << " tried to send a message without being in a channel" << std::endl;
-		return (false);
+		if (it->name == channel_name)
+			break;
 	}
 
-	// Broadcast this message to all users in the channel
-	for (std::vector<User>::iterator it = user_channel->users_in_channel.begin(); it != user_channel->users_in_channel.end(); ++it) {
-		if (it->fd != user.fd) // Don't send to the sender
+	// If the channel is not found, return false
+	if (it == channels.end())
+	{
+		std::string error_msg = "ERROR: Channel " + channel_name + " not found.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.size(), MSG_NOSIGNAL);
+		return false;
+	}
+
+	// Broadcast the message to all users in the channel
+	std::vector<User>::iterator usr_it;
+	for (usr_it = it->users_in_channel.begin(); usr_it != it->users_in_channel.end(); ++usr_it)
+	{
+		if (usr_it->fd != user.fd) // Don't send to the sender
 		{
-			std::string broadcast_msg = user.nickname + ": " + actual_msg + "\r\n";
-			send(it->fd, broadcast_msg.c_str(), broadcast_msg.length(), MSG_NOSIGNAL);
+			std::string channel_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " PRIVMSG " + channel_name + " :" + message + "\r\n";
+			send(usr_it->fd, channel_msg.c_str(), channel_msg.size(), MSG_NOSIGNAL);
 		}
 	}
-	return (true);
+	return true;
 }
-
-
 
 bool Commands::handle_privmsg(User& user, const std::string& message)
 {
 	// Expecting format: PRIVMSG <recipient> <message>
-	size_t space_pos = message.find(' ', 8);  // Find space after "PRIVMSG "
+	std::string::size_type space_pos = message.find(' ', 8);  // Find space after "PRIVMSG "
 	if (space_pos == std::string::npos)
 		return (false);
 
-	std::string recipient_nick = message.substr(8, space_pos - 8);
-
+	std::string recipient = message.substr(8, space_pos - 8);
 	std::string actual_msg = message.substr(space_pos + 1);
-	std::cout << "Currently connected users: ";
-	for (size_t i = 0; i < users.size(); i++)
+
+	if (recipient[0] == '#')
+		return msg_channel(user, recipient, actual_msg);
+	else
 	{
-		std::cout << users[i].nickname << " ";
-	}
-	std::cout << std::endl;
-	std::cout << "Attempting to send private message to " << recipient_nick << std::endl;
-	bool recipient_found = false;
-	std::cout << "Number of users: " << users.size() << std::endl;
-	for (size_t i = 0; i < users.size(); i++)
-	{
-		// Remove trailing newline from nickname
-		if (!users[i].nickname.empty() && users[i].nickname[users[i].nickname.size() - 1] == '\n')
-			users[i].nickname.resize(users[i].nickname.size() - 1);
-		//std::cout << "Comparing|" << users[i].nickname << "|with|" << recipient_nick << "|" << std::endl;
-		if (users[i].nickname == recipient_nick)
+		// Find the user
+		std::vector<User>::iterator it;
+		for (it = users.begin(); it != users.end(); ++it)
 		{
-			recipient_found = true;
-			std::string pm_msg = ":" + user.nickname + " PRIVMSG " + recipient_nick + " :" + actual_msg + "\r\n";
-			send(users[i].fd, pm_msg.c_str(), pm_msg.length(), MSG_NOSIGNAL);
-			break ;
+			if (it->nickname == recipient)
+				break ;
 		}
+
+		if (it == users.end())
+		{
+			std::string error_msg = "ERROR: User " + recipient + " not found.\r\n";
+			send(user.fd, error_msg.c_str(), error_msg.size(), MSG_NOSIGNAL);
+			return (false);
+		}
+
+		// Send the private message
+		std::string pm_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " PRIVMSG " + recipient + " :" + actual_msg + "\r\n";
+		send(it->fd, pm_msg.c_str(), pm_msg.size(), MSG_NOSIGNAL);
 	}
 
-	if (!recipient_found)
-	{
-		std::string error_msg = "ERROR: User " + recipient_nick + " not found.\r\n";
-		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-		return (false);
-	}
-
-	// Optionally: Confirm to the sender that the message was sent successfully.
-	std::string confirmation = "Message sent to " + recipient_nick + ".\r\n";
-	send(user.fd, confirmation.c_str(), confirmation.length(), MSG_NOSIGNAL);
-	std::cout << user.nickname << " sent a private message to " << recipient_nick << std::endl;
 	return (true);
 }
-
 
 bool Commands::handle_commands(int client_fd, User &user)
 {
@@ -138,8 +128,6 @@ bool Commands::handle_commands(int client_fd, User &user)
 			std::cout << "JOIN command received" << std::endl;
 			handle_join(user, message);
 		}
-		else if(message.find("MSG") == 0)
-			handle_msg(user, message);
 		else if(message.find("CREATE") == 0)
 			handle_channel(user, message);
 		else if(message.find("PRIVMSG") == 0)
@@ -152,6 +140,7 @@ bool Commands::handle_commands(int client_fd, User &user)
 	}
 	return (true);
 }
+
 bool Commands::handle_join(User& user, const std::string& message)
 {
 	std::string channel_name = message.substr(5);
@@ -168,7 +157,7 @@ bool Commands::handle_join(User& user, const std::string& message)
 			}
 			ch_it->users_in_channel.push_back(user);
 			std::string join_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " JOIN :" + channel_name + "\r\n";
-            send(user.fd, join_msg.c_str(), join_msg.length(), MSG_NOSIGNAL);
+			send(user.fd, join_msg.c_str(), join_msg.length(), MSG_NOSIGNAL);
 			std::cout << "Joined channel successfully!" << std::endl;
 			return (true);
 		}
@@ -201,7 +190,7 @@ bool Commands::handle_channel(User& user, const std::string& message)
 	}
 
 	Channel new_channel;
-	new_channel.name = channel_name;
+	new_channel.name = "#" + channel_name;
 	new_channel.admin = user;
 	new_channel.users_in_channel.push_back(user);
 	channels.push_back(new_channel);

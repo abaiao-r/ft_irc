@@ -1,8 +1,6 @@
 #include "User.hpp"
 #include "Handle_user.hpp"
 
-
-
 std::vector<std::string> split(const std::string& s, const std::string& delimiter)
 {
 	std::vector<std::string> tokens;
@@ -37,15 +35,8 @@ bool handle_hexchat(const std::string& firstMessage, const std::string& secondMe
 
 	// print vector commands
 	for (std::vector<std::string>::iterator it = commands.begin(); it != commands.end(); ++it)
-	{
 		std::cout << "Command: " << *it << std::endl;
-	}
 
-
-	// We expect exactly 3 commands
- /*    if(commands.size() != 3)
-		return false;
- */
 	// Handle PASS
 	if(!handle_pass(user, commands[1], password))
 		return false;
@@ -60,90 +51,8 @@ bool handle_hexchat(const std::string& firstMessage, const std::string& secondMe
 
 	user.is_registered = true;
 	user.has_authenticated = true;
-	std::cout << "Registered successfully! Nickname:" << user.nickname << " for fd: " << user.fd << std::endl;
-	std::string welcome_message = "\nWelcome to the Internet Relay Network " + user.realname + "! \r\n" + "Username: @" + user.nickname + "\r\n" + "Operator: " + (user.is_admin ? "Yes" : "No") + "\r\n";
-	send(client_fd, welcome_message.c_str(), welcome_message.length(), MSG_NOSIGNAL);
-	std::string your_host_message = "Your host is running on version 0.1\r\n";
-	send(client_fd, your_host_message.c_str(), your_host_message.length(), MSG_NOSIGNAL);
-	std::string created_message = "This server was created abaiao-r, joao-per and gacorrei \r\n";
-	send(client_fd, created_message.c_str(), created_message.length(), MSG_NOSIGNAL);
+	std::cout << "Registered successfully! Nickname:" << user.nickname << " for fd: " << client_fd << std::endl;
+	std::string welcome_msg = ":FT_IRC 001 " + user.nickname + " :Welcome to the IRC network, " + user.nickname + "!\n" + user.username + "@" + user.hostname + "\r\n";
+	send(client_fd, welcome_msg.c_str(), welcome_msg.size(), MSG_NOSIGNAL);
 	return true;
 }
-
-
-
-
-bool authenticate_hexchat(int client_fd, const std::string& message, const std::string& password, User &user)
-{
-	std::vector<std::string> commands = split(message, "\r\n");
-
-	bool found_pass = false, found_nick = false, found_user = false;
-
-	//print all commands
-	while (!commands.empty())
-	{
-		std::cout << "Command: " << commands.back() << std::endl;
-		commands.pop_back();
-	}
-
-	for(size_t i = 0; i < commands.size(); ++i)
-	{
-		std::cout << "size:" << commands.size() << std::endl;
-		if(commands[i].find("PASS") == 0)
-		{
-			found_pass = true;
-			std::cout << "Command was|" << commands[i] << "|" << std::endl;
-			if (!handle_pass(user, commands[i], password))
-			{
-				send(client_fd, "ERROR: Invalid password. Disconnecting.\r\n", 40, MSG_NOSIGNAL);
-				close(client_fd);
-				return (false);
-			}
-			std::cout << "SUCCESS: Password accepted!" << std::endl;
-		}
-		else if(commands[i].find("NICK") == 0)
-		{
-			found_nick = true;
-			std::cout << "Command was: " << commands[i] << std::endl;
-			if (!handle_nick(user, commands[i]))
-			{
-				send(client_fd, "ERROR: Nickname is invalid or already in use. Disconnecting.\r\n", 63, MSG_NOSIGNAL);
-				close(client_fd);
-				return (false);
-			}
-			std::cout << "SUCCESS: Nickname accepted!" << std::endl;
-		}
-		else if(commands[i].find("USER") == 0)
-		{
-			found_user = true;
-			std::cout << "Command was: " << commands[i] << std::endl;
-			if (!handle_user(user, commands[i]))
-			{
-				send(client_fd, "ERROR: invalid name. Usage: USER <username> <mode> <unused> :<realname>. Disconnecting.\r\n", 89, MSG_NOSIGNAL);
-				close(client_fd);
-				return (false);
-			}
-			std::cout << "SUCCESS: User accepted!" << std::endl;
-		}
-		std::cout << "Command was: " << commands[i] << std::endl;
-	}
-
-	// Check if all necessary commands are present
-	if(!found_pass || !found_nick || !found_user)
-	{
-		send(client_fd, "ERROR: Missing PASS, NICK or USER command. Disconnecting.\r\n", 59, MSG_NOSIGNAL);
-		close(client_fd);
-		return (false);
-	}
-
-	// If all commands are processed successfully
-	if(user.has_authenticated && user.is_registered)
-	{
-		send(client_fd, "SUCCESS: You are fully authenticated!\r\n", 40, MSG_NOSIGNAL);
-		return (true);
-	}
-
-	return (false);
-}
-
-
