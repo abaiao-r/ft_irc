@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 15:04:10 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/07 15:08:38 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1017,7 +1017,7 @@ int Server::cmd_invite(Client &client, std::string input)
 	if (!channel)
 		return (-1);
 	// Find the nickname in the channel
-	Client *client_to_invite = findClient // to implement
+	Client *client_to_invite = find_client(client, nickname);
 	if (!client_to_invite)
 		return (-1);
 	// Invite the user

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/21 23:24:43 by andrefranci       #+#    #+#             */
-/*   Updated: 2023/11/07 12:38:25 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/07 15:11:23 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ int	safe_atoi(const char *nptr)
 		if (result > INT_MAX / 10 || (result == INT_MAX / 10 && (nptr[i]
 					- '0') > (sign == 1 ? INT_MAX % 10 : -(INT_MIN % 10))))
 		{
-			throw std::out_of_range("Integer overfloww or underflow "
+			throw std::out_of_range("Integer overflow or underflow "
 					+ std::string(nptr));
 		}
 		result = result * 10 + (nptr[i] - '0');

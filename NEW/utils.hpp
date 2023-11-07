@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 12:38:53 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 12:40:46 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/07 15:11:01 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include <iostream>
 # include <string>
+# include <climits>
 
 int	safe_atoi(const char *nptr);
 bool isAlpha(const std::string& str);
