@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/07 13:16:13 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/07 14:38:58 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,4 +110,30 @@ void	Channel::set_mode(const Client &user, int mode)
 std::vector<Client> &Channel::get_clients_in_channel(void)
 {
 	return (_clients_in_channel);
+}
+
+Client	*Channel::find_client(Client &client, const std::string &nickname)
+{
+	std::vector<Client>::iterator it = find(_clients_in_channel.begin(), _clients_in_channel.end(), nickname);
+
+	if (it == _clients_in_channel.end())
+		return NULL;
+	return &(*it);
+}
+
+void	Channel::message(Client &client, std::string msg)
+{
+	C_IT		it = _clients_in_channel.begin();
+	int			fd;
+	std::string	final_msg = ":" + client.get_nickname() + "!"
+	+ client.get_username() + "@" + "localhost" + " PRIVMSG "
+	+ _name + " :" + msg + "\r\n";
+
+	for (; it < _clients_in_channel.end(); it++)
+	{
+		if (*it == client)
+			continue;
+		fd = it->get_client_fd();
+		send(fd, final_msg.c_str(), final_msg.length(), MSG_NOSIGNAL);
+	}
 }

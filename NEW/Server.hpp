@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 13:19:58 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/07 14:42:26 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ class Channel;
 #define BUFFER_READ_SIZE 1024
 #define MAX_LEN 10
 #define MIN_LEN 3
-#define CMDS 11
+#define CMDS 10
 
 
 class Server
@@ -58,9 +58,7 @@ class Server
 		std::vector<Client>		_clients;
 		std::vector<Channel>	_channels;
 		static int				_loop_state;
-		const std::string		_cmds[CMDS] =
-		{"PASS", "USER", "NICK", "JOIN", "MSG", "PRIVMSG",
-		"CREATE", "KICK", "INVITE", "TOPIC", "MODE"};
+		std::string				_cmds[CMDS];
 
 		// private because we don't want to allow copies of this class
 		Server(void);
@@ -95,15 +93,15 @@ class Server
 		void		cmd_user(Client &client, std::string input);
 		void		cmd_nick(Client &client, std::string input);
 		void		cmd_join(Client &client, std::string input);
-		void		cmd_msg(Client &client, std::string input);
 		void		cmd_privmsg(Client &client, std::string input);
-		void		cmd_create(Client &client, std::string input);
+		// void		cmd_create(Client &client, std::string input);
 		
 		// KICK COMMAND FUNCTIONS
 		int			is_client_admin(Client &client);
 		int			sendErrorMessage(int client_fd, const std::string& errorMessage);
 		Channel		*findChannel(Client &client, const std::string& channelName);
 		Client		*findClientInChannel(Client &client, Channel* channel, const std::string& nickname);
+		Client		*find_client(Client &client, const std::string& nickname);
 		int 		kickClientFromChannel(Channel* channel, Client* client, const std::string& reason);
 		int 		cmd_kick(Client &client, std::string input);
 		// END KICK COMMAND FUNCTIONS
@@ -116,7 +114,7 @@ class Server
 		bool		pass_validation(std::string check) const;
 		bool		name_validation(std::string check);
 		int			nick_validation(std::string check);
-		Client		*find_client(int fd);
+		// Client		*find_client(int fd);
 		void		disconnect_client(int fd);
 		static void	signal_handler(int sig);
 		static void	signal_reset();

@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/07 12:29:17 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/07 14:39:12 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ class Channel
 {
 	private:
 		std::string			_name;
-		//IS THIS NECESSARY?
 		std::string			_password;
 		std::string			_topic;
 		int					_mode;
@@ -42,4 +41,6 @@ class Channel
 		void				set_name(const Client &user, std::string name);
 		void				set_topic(std::string topic);
 		void				set_mode(const Client &user, int mode);
+		Client				*find_client(Client &client, const std::string &nickname);
+		void				message(Client &client, std::string msg);
 };
