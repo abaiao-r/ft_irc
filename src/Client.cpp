@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/07 20:09:57 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/07 21:53:39 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,20 +100,12 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 						}
 						buffer[bytesReceived] = '\0';
 						std::string initialCommand = std::string(buffer);
-						/* std::cout << "Received: " << initialCommand << std::endl;
-						std::cout << "Size: " << initialCommand.size() << std::endl;
-						std::cout << "Password: " << password << std::endl;
-						std::cout << "Password size: " << password.size() << std::endl; */
 						std::cout << "Received:" << initialCommand << std::endl;
 						if (initialCommand.substr(0, 3) == "CAP")
-						{
-							std::cout << "CAPS command received" << std::endl;
-							// Store the CAPS command and wait for the next message
-							clientBuffers[clients[i].fd] = initialCommand;
-						}
+							clientBuffers[clients[i].fd] = initialCommand; // Store CAP command
 						if (clientBuffers.count(clients[i].fd))
 						{
-							// If we have a stored CAPS command for this client, process both messages
+							// If we have a stored CAP command for this client, process both messages
 							if (!handle_hexchat(clientBuffers[clients[i].fd], initialCommand, *user, password, clients[i].fd))
 							{
 								std::cerr << "Error: User failed Hexchat authentication." << std::endl;
@@ -126,12 +118,9 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 						}
 						else
 						{
-							std::cout << "User authenticated" << std::endl;
-
 							//if initialCommand has a \n or \r\n, remove it
 							if(initialCommand.find("\n") != std::string::npos)
 								initialCommand.erase(initialCommand.find("\n"));
-							
 							if (!authenticate_user(clients[i].fd, initialCommand, password, *user))
 							{
 								std::cerr << "Error: User failed authentication." << std::endl;

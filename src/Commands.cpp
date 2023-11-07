@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 21:48:51 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/07 22:42:23 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,23 +116,27 @@ bool Commands::handle_commands(int client_fd, User &user)
 			return false;
 		}
 		buffer[n] = '\0';
-		if(n > 0 && buffer[n - 1] == '\n')
-			buffer[n - 1] = '\0';
-		if(n > 0 && buffer[n - 2] == '\r')
-				buffer[n - 2] = '\0';
 		std::string message(buffer);
+		//delete /r and /n from message if they exist
+		if(message.find("\r\n") != std::string::npos)
+			message.erase(message.find("\r\n"), 2);
+		else if(message.find("\n") != std::string::npos)
+			message.erase(message.find("\n"), 1);
 		std::cout << "Command received: |" << message << "|" << std::endl;
 		//print size of command
 		std::cout << "Command size: " << message.size() << std::endl;
 		if(message.find("JOIN") == 0)
-		{
-			std::cout << "JOIN command received" << std::endl;
 			handle_join(user, message);
-		}
 		else if(message.find("CREATE") == 0)
 			handle_channel(user, message);
 		else if(message.find("PRIVMSG") == 0)
 			handle_privmsg(user, message);
+		else if(message.find("INVITE") == 0)
+			handle_invite(user, message);
+		else if(message.find("TOPIC") == 0)
+			handle_topic(user, message);
+		else if(message.find("KICK") == 0)
+			handle_kick(user, message);
 		else
 		{
 			std::string error_msg = "ERROR: No command found\r\n";
@@ -209,14 +213,32 @@ bool Commands::handle_kick(User& user, const std::string& message)
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
-
-	std::string channel_name = message.substr(6);
-	std::string nickname = message.substr(6 + channel_name.size() + 1);
-
-	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
+	//add a protection to avoid std::out_of_range
+	if(message.size() < 6)
+	{
+		std::string error_msg = "ERROR: Invalid command.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
+	}
+	std::istringstream iss(message);
+	std::string command;
+	std::string channel_name;
+    std::string nickname;
+	iss >> command >> channel_name >> nickname;
+	
+	std::vector<Channel>::iterator ch_it = channels.begin();
+	std::cout << "Channel name:" << channel_name << "|" << std::endl;
+	std::cout << "real|" << ch_it->name << "|" << std::endl;
+	std::cout << "nickname:" << nickname << "|" << std::endl;
+	std::cout << "is ch_it != channels.end() ? " << (ch_it != channels.end()) << std::endl;
+	for (; ch_it != channels.end(); ++ch_it)
+	{
+		
 		if (ch_it->name == channel_name)
 		{
 			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
+				std::cout << "u_it->nickname:" << u_it->nickname << "|" << std::endl;
+				std::cout << "nickname:" << nickname << "|" << std::endl;
 				if (u_it->nickname == nickname)
 				{
 					ch_it->users_in_channel.erase(u_it);
@@ -248,10 +270,12 @@ bool Commands::handle_invite(User& user, const std::string& message)
 	std::string channel_name = message.substr(7);
 	std::string nickname = message.substr(7 + channel_name.size() + 1);
 
-	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
+	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it)
+	{
 		if (ch_it->name == channel_name)
 		{
-			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
+			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it)
+			{
 				if (u_it->nickname == nickname)
 				{
 					std::string error_msg = "ERROR: User already in channel.\r\n";
@@ -259,7 +283,8 @@ bool Commands::handle_invite(User& user, const std::string& message)
 					return (false);
 				}
 			}
-			for (std::vector<User>::iterator u_it = users.begin(); u_it != users.end(); ++u_it) {
+			for (std::vector<User>::iterator u_it = users.begin(); u_it != users.end(); ++u_it)
+			{
 				if (u_it->nickname == nickname)
 				{
 					ch_it->users_in_channel.push_back(*u_it);

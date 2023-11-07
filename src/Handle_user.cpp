@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:17 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 20:41:12 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/07 22:43:39 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ bool handle_nick(User& user, const std::string& message)
         std::cout << "ERROR: Nickname already being used!" << std::endl;
         return (false);
     }
-
+    nickname = nickname.substr(0, nickname.size() - 1);
     user.nickname = nickname;
     user.nick_registered = true;
     std::cout << "Registered successfully! Nickname:" << nickname << " for fd: " << user.fd << std::endl;
