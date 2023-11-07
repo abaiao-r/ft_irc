@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 14:33:21 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/07 15:01:26 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,21 @@ Server::Server(): _port(0), _server_fd(-1)
 	_address.sin_family = AF_INET; // IPv4
 	_address.sin_addr.s_addr = INADDR_ANY; // Any available network interface
 	_address.sin_port = htons(_port); // Port
-	_cmds[CMDS] = {"PASS", "USER", "NICK", "JOIN", "PRIVMSG", "KICK", "INVITE", "TOPIC", "MODE", ""};
 }
 /* Parameter constructor */
-Server::Server(int port, std::string password): _port(port), _password(password),
-	_cmds({"PASS", "USER", "NICK", "JOIN", "PRIVMSG", "KICK", "INVITE", "TOPIC", "MODE"})
+Server::Server(int port, std::string password): _port(port), _password(password)
 {
 	std::cout << CYAN << "Default constructor Server called" << RESET 
 		<< std::endl;
+	_cmds.push_back("PASS");
+	_cmds.push_back("USER");
+	_cmds.push_back("NICK");
+	_cmds.push_back("JOIN");
+	_cmds.push_back("PRIVMSG");
+	_cmds.push_back("KICK");
+	_cmds.push_back("INVITE");
+	_cmds.push_back("TOPIC");
+	_cmds.push_back("MODE");
 	memset(&_address, 0, SOCKLEN);
 	//sets the address family of the socket to IPv4.
 	_address.sin_family = AF_INET;
@@ -357,7 +364,7 @@ void	Server::client_cmds(Client &client)
 
 int	Server::get_cmd(std::string cmd)
 {
-	for (int i = 0; i < CMDS; i++)
+	for (unsigned int i = 0; i < _cmds.size(); i++)
 		if (cmd == _cmds[i])
 			return i;
 	return -1;
@@ -880,7 +887,7 @@ Channel	*Server::findChannel(Client &client, const std::string	&channelName)
  */
 Client	*Server::findClientInChannel(Client &client, Channel *channel, const std::string	&nickname)
 {
-	Client	*match = channel->find_client(client, nickname);
+	Client	*match = channel->find_client(nickname);
 
 	if (!match)
 	{

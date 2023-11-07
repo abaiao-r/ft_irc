@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 14:30:38 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/07 14:55:36 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,23 +41,23 @@ class Channel;
 #define BUFFER_READ_SIZE 1024
 #define MAX_LEN 10
 #define MIN_LEN 3
-#define CMDS 10
+#define CMDS 9
 
 
 class Server
 {
 	private:
-		int						_port;
-		const std::string		_password;
-		int						_server_fd;
-		sockaddr_in				_address;
-		int						_epoll_fd;
-		epoll_event				_main_event;
-		epoll_event				_events[MAX_EVENTS];
-		std::vector<Client>		_clients;
-		std::vector<Channel>	_channels;
-		static int				_loop_state;
-		std::string				_cmds[CMDS];
+		int							_port;
+		const std::string			_password;
+		int							_server_fd;
+		sockaddr_in					_address;
+		int							_epoll_fd;
+		epoll_event					_main_event;
+		epoll_event					_events[MAX_EVENTS];
+		std::vector<Client>			_clients;
+		std::vector<Channel>		_channels;
+		static int					_loop_state;
+		std::vector<std::string>	_cmds;
 
 		// private because we don't want to allow copies of this class
 		Server(void);

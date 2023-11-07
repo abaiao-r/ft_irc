@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/07 14:13:01 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/07 15:01:01 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,34 +77,23 @@ int	Channel::get_mode() const
 	return _mode;
 }
 
-std::vector<Client>	&Channel::get_clients_in_channel()
-{
-	return (_clients_in_channel);
-}
-
 bool	Channel::is_dm() const
 {
 	return _dm;
 }
 
-void	Channel::set_name(const Client &user, std::string name)
+void	Channel::set_name(std::string name)
 {
-	// if (!user.is_operator())
-	// 	return;
 	_name = name;
 }
 
-void	Channel::set_topic(const Client &user, std::string topic)
+void	Channel::set_topic(std::string topic)
 {
-	// if (!user.is_operator())
-	// 	return;
 	_topic = topic;
 }
 
-void	Channel::set_mode(const Client &user, int mode)
+void	Channel::set_mode(int mode)
 {
-	// if (!user.is_operator())
-	// 	return;
 	_mode = mode;
 }
 
@@ -116,7 +105,7 @@ std::vector<Client> &Channel::get_clients_in_channel(void)
 	return (_clients_in_channel);
 }
 
-Client	*Channel::find_client(Client &client, const std::string &nickname)
+Client	*Channel::find_client(const std::string &nickname)
 {
 	std::vector<Client>::iterator it = find(_clients_in_channel.begin(), _clients_in_channel.end(), nickname);
 

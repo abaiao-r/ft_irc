@@ -6,12 +6,12 @@
 #    By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/01 11:14:25 by gacorrei          #+#    #+#              #
-#    Updated: 2023/11/03 17:57:25 by gacorrei         ###   ########.fr        #
+#    Updated: 2023/11/07 14:57:35 by gacorrei         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	= ircserv
-SRC		= main.cpp Server.cpp Client.cpp
+SRC		= main.cpp Server.cpp Client.cpp Channel.cpp
 CC		= @c++
 # CFLAGS	= -Wall -Wextra -Werror -pedantic -Wshadow -g -std=c++98
 CFLAGS	= -Wall -Wextra -Werror -pedantic -Wshadow -g -std=c++98 -fsanitize=address,undefined
