@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 21:48:36 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/07 21:48:51 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,3 +279,36 @@ bool Commands::handle_invite(User& user, const std::string& message)
 	return (false);
 }
 
+bool Commands::handle_topic(User& user, const std::string& message)
+{
+	std::string channel_name = message.substr(7);
+	std::string topic = message.substr(7 + channel_name.size() + 1);
+
+	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
+		if (ch_it->name == channel_name)
+		{
+			if (ch_it->users_in_channel.size() == 0)
+			{
+				std::string error_msg = "ERROR: No users in channel.\r\n";
+				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+				return (false);
+			}
+			if (ch_it->users_in_channel[0].nickname != user.nickname)
+			{
+				std::string error_msg = "ERROR: Only admin can change topic.\r\n";
+				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+				return (false);
+			}
+			ch_it->topic = topic;
+			std::string topic_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " TOPIC " + channel_name + " :" + topic + "\r\n";
+			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
+				send(u_it->fd, topic_msg.c_str(), topic_msg.length(), MSG_NOSIGNAL);
+			}
+			std::cout << "Changed topic successfully!" << std::endl;
+			return (true);
+		}
+	}
+	std::string error_msg = "ERROR: Channel does not exist.\r\n";
+	send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+	return (false);
+}
