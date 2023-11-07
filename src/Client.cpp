@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/06 14:02:48 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/07 20:09:57 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,10 @@ std::map<int, std::string> clientBuffers;  // FD -> Accumulated commands
 
 bool hasAllCommands(const std::string& buffer)
 {
-    return (buffer.find("CAPS") != std::string::npos &&
-            buffer.find("NICK") != std::string::npos &&
-            buffer.find("USER") != std::string::npos &&
-            buffer.find("PASS") != std::string::npos);
+	return (buffer.find("CAPS") != std::string::npos &&
+			buffer.find("NICK") != std::string::npos &&
+			buffer.find("USER") != std::string::npos &&
+			buffer.find("PASS") != std::string::npos);
 }
 
 void Client::handle_client(int server_fd, const std::string &password, char ** /* av */)
@@ -127,6 +127,11 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 						else
 						{
 							std::cout << "User authenticated" << std::endl;
+
+							//if initialCommand has a \n or \r\n, remove it
+							if(initialCommand.find("\n") != std::string::npos)
+								initialCommand.erase(initialCommand.find("\n"));
+							
 							if (!authenticate_user(clients[i].fd, initialCommand, password, *user))
 							{
 								std::cerr << "Error: User failed authentication." << std::endl;
