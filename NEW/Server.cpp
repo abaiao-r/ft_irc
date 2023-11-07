@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 21:17:45 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/07 14:33:21 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,11 @@ Server::Server(): _port(0), _server_fd(-1)
 	_address.sin_family = AF_INET; // IPv4
 	_address.sin_addr.s_addr = INADDR_ANY; // Any available network interface
 	_address.sin_port = htons(_port); // Port
+	_cmds[CMDS] = {"PASS", "USER", "NICK", "JOIN", "PRIVMSG", "KICK", "INVITE", "TOPIC", "MODE", ""};
 }
 /* Parameter constructor */
-Server::Server(int port, std::string password): _port(port), _password(password)
+Server::Server(int port, std::string password): _port(port), _password(password),
+	_cmds({"PASS", "USER", "NICK", "JOIN", "PRIVMSG", "KICK", "INVITE", "TOPIC", "MODE"})
 {
 	std::cout << CYAN << "Default constructor Server called" << RESET 
 		<< std::endl;
@@ -331,26 +333,23 @@ void	Server::client_cmds(Client &client)
 			cmd_join(client, input.substr(size, input.size() - size));
 			break;
 		case 4:
-			cmd_msg(client, input.substr(size, input.size() - size));
-			break;
-		case 5:
 			cmd_privmsg(client, input.substr(size, input.size() - size));
 			break;
-		case 6:
+		/* case 5:
 			cmd_create(client, input.substr(size, input.size() - size));
-			break;
-		case 7:
+			break; */
+		case 6:
 			cmd_kick(client, input.substr(size, input.size() - size));
 			break;
-		case 8:
+		/* case 7:
 			cmd_invite(client, input.substr(size, input.size() - size));
 			break;
-		case 9:
+		case 8:
 			cmd_topic(client, input.substr(size, input.size() - size));
 			break;
-		case 10:
+		case 9:
 			cmd_mode(client, input.substr(size, input.size() - size));
-			break;
+			break; */
 		default:
 			send(fd, "Error. Unknown command\r\n", 25, MSG_NOSIGNAL);
 	}
@@ -573,16 +572,43 @@ void	Server::cmd_join(Client &client, std::string input)
 	send(fd, "Successfully joined channel\r\n", 30, MSG_NOSIGNAL);
 }
 
-void	Server::cmd_msg(Client &client, std::string input)
-{
-	
-}
-
 void	Server::cmd_privmsg(Client &client, std::string input)
 {
-	
-}
+	int					fd = client.get_client_fd();
+	std::stringstream	s(input);
+	std::string			dest, msg;
+	Channel				*ch_test = NULL;
+	Client				*c_test = NULL;
 
+	s >> dest;
+	getline(s, msg);
+	if (msg[0] != ':')
+	{
+		send(fd, "Error. Wrong message format (must start with ':')\r\n", 52, MSG_NOSIGNAL);
+		return;
+	}
+	if (dest[0] == '#')
+	{
+		ch_test = findChannel(client, dest);
+		if (!ch_test)
+		{
+			send(fd, "Error. Could not find destination\r\n", 36, MSG_NOSIGNAL);
+			return;
+		}
+		ch_test->message(client, msg.substr(1, msg.length() - 1));
+	}
+	c_test = find_client(client, dest);
+	if (!c_test)
+	{
+		send(fd, "Error. Could not find destination\r\n", 36, MSG_NOSIGNAL);
+		return;
+	}
+	fd = c_test->get_client_fd();
+	std::string	final_msg = ":" + client.get_nickname() + "!"
+	+ client.get_username() + "@" + "localhost" + " PRIVMSG "
+	+ c_test->get_nickname() + " :" + msg + "\r\n";
+	send(fd, final_msg.c_str(), final_msg.length(), MSG_NOSIGNAL);
+}
 
 /* cmd_kick: KICK <#channel> <nickname> <reason> */
 /* int Server::cmd_kick(Client &client, std::string input)
@@ -776,7 +802,7 @@ int Server::cmd_kick(Client &client, std::string input)
     if (!client_to_kick)
 		return (-1);
     // Kick the user
-    int client_to_kick_fd = client_to_kick->get_client_fd();
+    // int client_to_kick_fd = client_to_kick->get_client_fd();
     if (kickClientFromChannel(channel, client_to_kick, reason) == -1)
         return (-1);
     return (0);
@@ -795,6 +821,7 @@ int Server::is_client_admin(Client &client)
 		sendErrorMessage(client.get_client_fd(), error);
 		return (-1);
 	}
+	return 0;
 }
 
 /* sendErrorMessage: send error message to client
@@ -811,11 +838,23 @@ int Server::sendErrorMessage(int client_fd, const std::string	&errorMessage)
 }
 
 /* findChannel: find channel
- * 1. Find channel by interating through _channels
+ * 1. Find channel by iterating through _channels
  * 2. If channel does not exist, send error message to client and return NULL
  * else return channel
  */
 Channel	*Server::findChannel(Client &client, const std::string	&channelName)
+{
+	std::vector<Channel>::iterator it = find(_channels.begin(), _channels.end(), channelName);
+
+	if (it == _channels.end())
+	{
+		sendErrorMessage(client.get_client_fd(), "Error: " + channelName
+			+ " does not exist\r\n");
+		return NULL;
+	}
+	return &(*it);
+}
+/* Channel	*Server::findChannel(Client &client, const std::string	&channelName)
 {
 	std::vector<Channel>::iterator it;
     for (it = _channels.begin(); it != _channels.end(); ++it)
@@ -831,14 +870,27 @@ Channel	*Server::findChannel(Client &client, const std::string	&channelName)
 			+ " does not exist\r\n");
 	}
     return (NULL);
-}
+} */
+
 
 /* findClientInChannel: find client in channel
- * 1. Find client by interating through channel->get_clients_in_channel()
+ * 1. Find client by iterating through channel->get_clients_in_channel()
  * 2. If client does not exist, send error message to client and return NULL
  * else return client
  */
-Client	*Server::findClientInChannel(Client &client, Channel	*channel, const std::string	&nickname)
+Client	*Server::findClientInChannel(Client &client, Channel *channel, const std::string	&nickname)
+{
+	Client	*match = channel->find_client(client, nickname);
+
+	if (!match)
+	{
+		sendErrorMessage(client.get_client_fd(), "Error: " + nickname 
+			+ " does not exist\r\n");
+    	return (NULL);
+	}
+	return match;
+}
+/* Client	*Server::findClientInChannel(Client &client, Channel *channel, const std::string	&nickname)
 {
 	std::vector<Client>::iterator it;
     for (it = channel->get_clients_in_channel().begin(); it != channel->get_clients_in_channel().end(); ++it)
@@ -854,13 +906,26 @@ Client	*Server::findClientInChannel(Client &client, Channel	*channel, const std:
 			+ " does not exist\r\n");
 	}
     return (NULL);
+} */
+
+Client	*Server::find_client(Client &client, const std::string& nickname)
+{
+	C_IT	match = find(_clients.begin(), _clients.end(), nickname);
+
+	if (match != _clients.end())
+	{
+		sendErrorMessage(client.get_client_fd(), "Error: " + nickname 
+			+ " does not exist\r\n");
+    	return (NULL);
+	}
+	return match.base();
 }
 
 /* kickClientFromChannel: kick client from channel
  * 1. Remove client from channel->get_clients_in_channel()
  * 2. Send message to client
  */
-int Server::kickClientFromChannel(Channel	*channel, Client	*client, const std::string	&reason)
+int Server::kickClientFromChannel(Channel *channel, Client *client, const std::string &reason)
 {
 	std::string message;
 	
