@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/06 21:37:00 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/07 13:16:13 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,17 +64,17 @@ bool	Channel::operator==(std::string copy)
 
 std::string	Channel::get_name() const
 {
-	return _name;
+	return (_name);
 }
 
 std::string	Channel::get_topic() const
 {
-	return _topic;
+	return (_topic);
 }
 
 int	Channel::get_mode() const
 {
-	return _mode;
+	return (_mode);
 }
 
 std::vector<Client>	&Channel::get_clients_in_channel()
@@ -94,17 +94,13 @@ void	Channel::set_name(const Client &user, std::string name)
 	_name = name;
 }
 
-void	Channel::set_topic(const Client &user, std::string topic)
+void	Channel::set_topic(std::string topic)
 {
-	// if (!user.is_operator())
-	// 	return;
 	_topic = topic;
 }
 
 void	Channel::set_mode(const Client &user, int mode)
 {
-	// if (!user.is_operator())
-	// 	return;
 	_mode = mode;
 }
 

@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/06 16:42:40 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/07 12:29:17 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ class Channel
 		Channel(Client &user1, Client &user2);
 		Channel(Channel &copy);
 		~Channel();
+		
 		Channel				&operator=(Channel &copy);
 		bool				operator==(std::string copy);
 		std::string			get_name() const;
@@ -39,6 +40,6 @@ class Channel
 		std::vector<Client>	&get_clients_in_channel();
 		bool				is_dm() const;
 		void				set_name(const Client &user, std::string name);
-		void				set_topic(const Client &user, std::string topic);
+		void				set_topic(std::string topic);
 		void				set_mode(const Client &user, int mode);
 };
