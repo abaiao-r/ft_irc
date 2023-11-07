@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 21:46:54 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/07 21:48:36 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,6 +227,49 @@ bool Commands::handle_kick(User& user, const std::string& message)
 				}
 			}
 			std::string error_msg = "ERROR: User not found in channel.\r\n";
+			send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+			return (false);
+		}
+	}
+	std::string error_msg = "ERROR: Channel does not exist.\r\n";
+	send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+	return (false);
+}
+
+bool Commands::handle_invite(User& user, const std::string& message)
+{
+	if(!user.is_admin)
+	{
+		std::string error_msg = "ERROR: Only admin can invite users.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
+	}
+
+	std::string channel_name = message.substr(7);
+	std::string nickname = message.substr(7 + channel_name.size() + 1);
+
+	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
+		if (ch_it->name == channel_name)
+		{
+			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
+				if (u_it->nickname == nickname)
+				{
+					std::string error_msg = "ERROR: User already in channel.\r\n";
+					send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+					return (false);
+				}
+			}
+			for (std::vector<User>::iterator u_it = users.begin(); u_it != users.end(); ++u_it) {
+				if (u_it->nickname == nickname)
+				{
+					ch_it->users_in_channel.push_back(*u_it);
+					std::string invite_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " INVITE " + nickname + " " + channel_name + "\r\n";
+					send(u_it->fd, invite_msg.c_str(), invite_msg.length(), MSG_NOSIGNAL);
+					std::cout << "Invited user successfully!" << std::endl;
+					return (true);
+				}
+			}
+			std::string error_msg = "ERROR: User not found.\r\n";
 			send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 			return (false);
 		}
