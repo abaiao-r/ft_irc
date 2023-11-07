@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 16:04:16 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/07 21:46:54 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ bool Commands::handle_privmsg(User& user, const std::string& message)
 		// Send the private message
 		std::string pm_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " PRIVMSG " + recipient + " :" + actual_msg + "\r\n";
 		send(it->fd, pm_msg.c_str(), pm_msg.size(), MSG_NOSIGNAL);
+		std::cout << "DEBUG: " << pm_msg << std::endl;
 	}
 
 	return (true);
@@ -144,8 +145,9 @@ bool Commands::handle_commands(int client_fd, User &user)
 bool Commands::handle_join(User& user, const std::string& message)
 {
 	std::string channel_name = message.substr(5);
-
 	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
+		std::cout << "Channel name:" << channel_name << "|" << std::endl;
+		std::cout << "real|" << ch_it->name << "|" << std::endl;
 		if (ch_it->name == channel_name)
 		{
 			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
@@ -197,5 +199,40 @@ bool Commands::handle_channel(User& user, const std::string& message)
 	send(user.fd, "SUCCESS: Channel created successfully!\r\n", 40, MSG_NOSIGNAL);
 	std::cout << "Channel created successfully!" << std::endl;
 	return (true);
+}
+
+bool Commands::handle_kick(User& user, const std::string& message)
+{
+	if(!user.is_admin)
+	{
+		std::string error_msg = "ERROR: Only admin can kick users.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
+	}
+
+	std::string channel_name = message.substr(6);
+	std::string nickname = message.substr(6 + channel_name.size() + 1);
+
+	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
+		if (ch_it->name == channel_name)
+		{
+			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
+				if (u_it->nickname == nickname)
+				{
+					ch_it->users_in_channel.erase(u_it);
+					std::string kick_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " KICK " + channel_name + " " + nickname + "\r\n";
+					send(user.fd, kick_msg.c_str(), kick_msg.length(), MSG_NOSIGNAL);
+					std::cout << "Kicked user successfully!" << std::endl;
+					return (true);
+				}
+			}
+			std::string error_msg = "ERROR: User not found in channel.\r\n";
+			send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+			return (false);
+		}
+	}
+	std::string error_msg = "ERROR: Channel does not exist.\r\n";
+	send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+	return (false);
 }
 

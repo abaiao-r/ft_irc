@@ -10,6 +10,8 @@ class Channel
         std::string name;
         User admin; 
         std::vector<User> users_in_channel;
+        std::string topic;
+
 };
 
 #endif

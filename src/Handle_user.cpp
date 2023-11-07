@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:17 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 15:04:48 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/07 20:41:12 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ bool handle_user(User& user, const std::string& message)
         user.is_admin = false;
     else
         return (false);
+    user.username = username;
     user.hostname = "localhost";
     user.realname = realname; 
     std::cout << "Registered successfully! Username:" << username << " for fd: " << user.fd << std::endl;
