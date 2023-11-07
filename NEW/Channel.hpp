@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/07 15:01:13 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/07 15:03:53 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ class Channel
 		Channel(Client &user1, Client &user2);
 		Channel(Channel &copy);
 		~Channel();
+		
 		Channel				&operator=(Channel &copy);
 		bool				operator==(std::string copy);
 		std::string			get_name() const;

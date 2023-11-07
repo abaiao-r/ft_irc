@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 15:01:26 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/07 15:04:10 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -953,4 +953,80 @@ int Server::kickClientFromChannel(Channel *channel, Client *client, const std::s
         return (-1);
     }
     return (0);
+}
+
+/* cmd_topic: set topic of channel
+ * 1. Parse input into channel name and topic
+ * 2. Check if client is administrator
+ * 3. Find the channel
+ * 4. Set topic of channel
+ */
+int Server::cmd_topic(Client &client, std::string input)
+{
+	std::istringstream iss(input);
+	std::string channel_to_find;
+	std::string topic;
+	
+	// Parse input
+	iss >> channel_to_find;
+	std::getline(iss, topic);
+	// Check if client is administrator
+	if (is_client_admin(client) == 0)
+		return (-1);
+	// Find the channel
+	Channel *channel = findChannel(client, channel_to_find);
+	if (!channel)
+		return (-1);
+	// Set topic of channel
+	if (topic.empty() || strIsWhitespace(topic))
+	{
+		// send the topic to client
+		std::string message = "Topic: " + channel->get_topic() + "\r\n";
+		if (send(client.get_client_fd(), message.c_str(), message.size(), MSG_NOSIGNAL) == -1)
+		{
+			std::cerr << "Error: send() failed" << std::endl;
+			return (-1);
+		}
+		return (0);
+	}
+	channel->set_topic(topic);
+	return (0);
+}
+
+/* cmd_invite: invite client to channel
+ * 1. Parse input into channel name and nickname
+ * 2. Check if client is administrator
+ * 3. Find the channel
+ * 4. Find the nickname in the channel
+ * 5. Invite the user
+ */
+int Server::cmd_invite(Client &client, std::string input)
+{
+	std::istringstream iss(input);
+	std::string channel_to_find;
+	std::string nickname;
+	
+	// Parse input
+	iss >> nickname;
+	iss >> channel_to_find;
+	// Check if client is administrator
+	if (is_client_admin(client) == 0)
+		return (-1);
+	// Find the channel
+	Channel *channel = findChannel(client, channel_to_find);
+	if (!channel)
+		return (-1);
+	// Find the nickname in the channel
+	Client *client_to_invite = findClient // to implement
+	if (!client_to_invite)
+		return (-1);
+	// Invite the user
+	int client_to_invite_fd = client_to_invite->get_client_fd();
+	std::string message = client.get_nickname() + " has invited you to join " + channel->get_name() + "\r\n";
+	if (send(client_to_invite_fd, message.c_str(), message.size(), MSG_NOSIGNAL) == -1)
+	{
+		std::cerr << "Error: send() failed" << std::endl;
+		return (-1);
+	}
+	return (0);
 }

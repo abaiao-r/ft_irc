@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 14:55:36 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/07 15:04:26 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 #include "colours.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "utils.hpp"
 // #include "Channel.hpp"
 
 class Client;
@@ -105,9 +106,9 @@ class Server
 		int 		cmd_kick(Client &client, std::string input);
 		// END KICK COMMAND FUNCTIONS
 
-		// void		cmd_invite(Client &client, std::string input);
-		// void		cmd_topic(Client &client, std::string input);
-		// void		cmd_mode(Client &client, std::string input);
+		int 		cmd_invite(Client &client, std::string input);
+		int			cmd_topic(Client &client, std::string input);
+		void		cmd_mode(Client &client, std::string input);
 		int			get_cmd(std::string cmd);
 		void		authenticate(Client &client);
 		bool		pass_validation(std::string check) const;

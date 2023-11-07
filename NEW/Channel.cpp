@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/07 15:01:01 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/07 15:03:13 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,12 +64,12 @@ bool	Channel::operator==(std::string copy)
 
 std::string	Channel::get_name() const
 {
-	return _name;
+	return (_name);
 }
 
 std::string	Channel::get_topic() const
 {
-	return _topic;
+	return (_topic);
 }
 
 int	Channel::get_mode() const
