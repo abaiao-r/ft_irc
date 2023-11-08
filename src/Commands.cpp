@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/08 00:00:41 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/08 00:06:09 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,13 +224,7 @@ bool Commands::handle_kick(User& user, const std::string& message)
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
-	//add a protection to avoid std::out_of_range
-	if(message.size() < 6)
-	{
-		std::string error_msg = "ERROR: Invalid command.\r\n";
-		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-		return (false);
-	}
+	
 	std::istringstream iss(message);
 	std::string command;
 	std::string channel_name;
@@ -238,18 +232,13 @@ bool Commands::handle_kick(User& user, const std::string& message)
 	iss >> command >> channel_name >> nickname;
 	
 	std::vector<Channel>::iterator ch_it = channels.begin();
-	/* std::cout << "Channel name:" << channel_name << "|" << std::endl;
-	std::cout << "real|" << ch_it->name << "|" << std::endl;
-	std::cout << "nickname:" << nickname << "|" << std::endl;
-	std::cout << "is ch_it != channels.end() ? " << (ch_it != channels.end()) << std::endl; */
 	for (; ch_it != channels.end(); ++ch_it)
 	{
 		
 		if (ch_it->name == channel_name)
 		{
-			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
-				std::cout << "u_it->nickname:" << u_it->nickname << "|" << std::endl;
-				std::cout << "nickname:" << nickname << "|" << std::endl;
+			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it)
+			{
 				if (u_it->nickname == nickname)
 				{
 					ch_it->users_in_channel.erase(u_it);
