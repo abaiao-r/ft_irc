@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 22:42:23 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/08 00:00:41 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,6 +164,8 @@ bool Commands::handle_join(User& user, const std::string& message)
 			ch_it->users_in_channel.push_back(user);
 			std::string join_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " JOIN :" + channel_name + "\r\n";
 			send(user.fd, join_msg.c_str(), join_msg.length(), MSG_NOSIGNAL);
+			std::string topic_message = ":" + user.hostname + " 332 " + user.nickname + " " + channel_name + " :" + ch_it->topic + "\r\n";
+    		send(user.fd, topic_message.c_str(), topic_message.size(), 0);
 			std::cout << "Joined channel successfully!" << std::endl;
 			return (true);
 		}
@@ -184,7 +186,12 @@ bool Commands::handle_channel(User& user, const std::string& message)
 		return (false);
 	}
 
-	std::string channel_name = message.substr(7);
+	std::istringstream iss(message);
+	std::string command;
+	std::string channel_name;
+	std::string topic;
+	//if there is topic:
+	iss >> command >> channel_name >> topic;
 
 	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
 		if (it->name == channel_name)
@@ -199,6 +206,10 @@ bool Commands::handle_channel(User& user, const std::string& message)
 	new_channel.name = "#" + channel_name;
 	new_channel.admin = user;
 	new_channel.users_in_channel.push_back(user);
+	if (topic != "")
+		new_channel.topic = topic;
+	else
+		new_channel.topic = "No topic";
 	channels.push_back(new_channel);
 	send(user.fd, "SUCCESS: Channel created successfully!\r\n", 40, MSG_NOSIGNAL);
 	std::cout << "Channel created successfully!" << std::endl;
@@ -227,10 +238,10 @@ bool Commands::handle_kick(User& user, const std::string& message)
 	iss >> command >> channel_name >> nickname;
 	
 	std::vector<Channel>::iterator ch_it = channels.begin();
-	std::cout << "Channel name:" << channel_name << "|" << std::endl;
+	/* std::cout << "Channel name:" << channel_name << "|" << std::endl;
 	std::cout << "real|" << ch_it->name << "|" << std::endl;
 	std::cout << "nickname:" << nickname << "|" << std::endl;
-	std::cout << "is ch_it != channels.end() ? " << (ch_it != channels.end()) << std::endl;
+	std::cout << "is ch_it != channels.end() ? " << (ch_it != channels.end()) << std::endl; */
 	for (; ch_it != channels.end(); ++ch_it)
 	{
 		
@@ -266,9 +277,11 @@ bool Commands::handle_invite(User& user, const std::string& message)
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
-
-	std::string channel_name = message.substr(7);
-	std::string nickname = message.substr(7 + channel_name.size() + 1);
+	std::istringstream iss(message);
+	std::string command;
+	std::string channel_name;
+    std::string nickname;
+	iss >> command >> channel_name >> nickname;
 
 	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it)
 	{
@@ -306,8 +319,11 @@ bool Commands::handle_invite(User& user, const std::string& message)
 
 bool Commands::handle_topic(User& user, const std::string& message)
 {
-	std::string channel_name = message.substr(7);
-	std::string topic = message.substr(7 + channel_name.size() + 1);
+	std::istringstream iss(message);
+	std::string command;
+	std::string channel_name;
+    std::string topic;
+	iss >> command >> channel_name >> topic;
 
 	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
 		if (ch_it->name == channel_name)
