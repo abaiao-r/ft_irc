@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/08 00:06:09 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/08 13:17:33 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,7 +270,16 @@ bool Commands::handle_invite(User& user, const std::string& message)
 	std::string command;
 	std::string channel_name;
     std::string nickname;
-	iss >> command >> channel_name >> nickname;
+	std::string resto;
+	iss >> command >> channel_name >> nickname >> resto;
+
+	//if variable resto is not empty, return false with error message
+	if(resto != "")
+	{
+		std::string error_msg = "ERROR: Usage: INVITE <channel> <user>\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
+	}
 
 	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it)
 	{
@@ -342,3 +351,112 @@ bool Commands::handle_topic(User& user, const std::string& message)
 	send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 	return (false);
 }
+
+/* bool Commands::handle_mode(User& user, const std::string& message)
+{
+	// Expecting format: MODE <channel> <mode>
+	size_t space_pos = message.find(' ', 5);  // Find space after "MODE "
+	if (space_pos == std::string::npos)
+		return (false);
+
+	std::string channel_name = message.substr(5, space_pos - 5);
+	std::string mode = message.substr(space_pos + 1);
+
+	Channel* channel = NULL;
+	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
+		if (it->name == channel_name)
+		{
+			channel = &(*it);
+			break ;
+		}
+	}
+
+	if (!channel)
+	{
+		std::string error_msg = "ERROR: Channel " + channel_name + " not found.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
+	}
+	if (mode == "+o")
+	{
+		// Expecting format: MODE <channel> +o <nickname>
+		size_t space_pos = message.find(' ', 5);  // Find space after "MODE "
+		if (space_pos == std::string::npos)
+			return (false);
+
+		std::string nickname = message.substr(space_pos + 1);
+
+		bool user_found = false;
+		for (std::vector<User>::iterator it = channel->users_in_channel.begin(); it != channel->users_in_channel.end(); ++it)
+		{
+			if (it->nickname == nickname)
+			{
+				user_found = true;
+				it->is_admin = true;
+				break ;
+			}
+		}
+	}
+	else if (mode == "-o")
+	{
+		// Expecting format: MODE <channel> -o <nickname>
+		size_t space_pos = message.find(' ', 5);  // Find space after "MODE "
+		if (space_pos == std::string::npos)
+			return (false);
+
+		std::string nickname = message.substr(space_pos + 1);
+
+		bool user_found = false;
+		for (std::vector<User>::iterator it = channel->users_in_channel.begin(); it != channel->users_in_channel.end(); ++it)
+		{
+			if (it->nickname == nickname)
+			{
+				user_found = true;
+				it->is_admin = false;
+				break ;
+			}
+		}
+	}
+	else if (mode == "+k")
+	{
+		// Expecting format: MODE <channel> +k <password>
+		size_t space_pos = message.find(' ', 5);  // Find space after "MODE "
+		if (space_pos == std::string::npos)
+			return (false);
+
+		std::string password = message.substr(space_pos + 1);
+		channel->password = password;
+	}
+	else if (mode == "-k")
+	{
+		// Expecting format: MODE <channel> -k
+		channel->password = "";
+	}
+	else if (mode == "+i")
+	{
+		// Expecting format: MODE <channel> +i
+		channel->is_invite_only = true;
+	}
+	else if (mode == "-i")
+	{
+		// Expecting format: MODE <channel> -i
+		channel->is_invite_only = false;
+	}
+	else if (mode == "+t")
+	{
+		// Expecting format: MODE <channel> +t
+		channel->is_topic_settable = true;
+	}
+	else if (mode == "-t")
+	{
+		// Expecting format: MODE <channel> -t
+		channel->is_topic_settable = false;
+	}
+	else
+	{
+		std::string error_msg = "ERROR: Invalid mode.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
+	}
+}
+ */
