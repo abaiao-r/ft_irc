@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/07 15:03:13 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/08 12:03:37 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,14 @@ Channel::Channel()
 		<< std::endl;
 }
 
-Channel::Channel(std::string name, std::string password, std::string topic)
+Channel::Channel(Client admin, std::string name, std::string password, std::string topic)
 	:_name(name), _password(password), _topic(topic), _mode(-1), _dm(false),
 	_max_users(0)
 {
 	std::cout << CYAN << "Channel: Parameter constructor called" << RESET
 		<< std::endl;
+	_clients_in_channel.push_back(admin);
+	_admins.push_back(admin);
 }
 
 Channel::Channel(Client &user1, Client &user2)
@@ -33,16 +35,18 @@ Channel::Channel(Client &user1, Client &user2)
 {
 	_clients_in_channel.push_back(user1);
 	_clients_in_channel.push_back(user2);
+	_admins.push_back(user1);
+	_admins.push_back(user2);
 }
 
-Channel::Channel(Channel &copy)
+Channel::Channel(const Channel &copy)
 {
 	*this = copy;
 }
 
 Channel::~Channel() {}
 
-Channel	&Channel::operator=(Channel &copy)
+Channel	&Channel::operator=(const Channel &copy)
 {
 	if (this != &copy) // this prevents self-assignment. Ex: Channel c1; c1 = c1;
 	{

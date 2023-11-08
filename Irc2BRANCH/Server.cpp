@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 15:08:38 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/08 16:28:39 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,15 +29,6 @@ Server::Server(int port, std::string password): _port(port), _password(password)
 {
 	std::cout << CYAN << "Default constructor Server called" << RESET 
 		<< std::endl;
-	_cmds.push_back("PASS");
-	_cmds.push_back("USER");
-	_cmds.push_back("NICK");
-	_cmds.push_back("JOIN");
-	_cmds.push_back("PRIVMSG");
-	_cmds.push_back("KICK");
-	_cmds.push_back("INVITE");
-	_cmds.push_back("TOPIC");
-	_cmds.push_back("MODE");
 	memset(&_address, 0, SOCKLEN);
 	//sets the address family of the socket to IPv4.
 	_address.sin_family = AF_INET;
@@ -270,7 +261,7 @@ void	Server::connection()
 				match = std::find(_clients.begin(), _clients.end(), client_fd);
 				if (match == _clients.end())
 					throw(std::runtime_error("Error. Could not find client"));
-				client_actions(*match);
+				client_cmds(*match);
 			}
 		}
 	}
@@ -291,21 +282,11 @@ void	Server::client_connection()
 	}
 	client.set_client_fd(client_fd);
 	_clients.push_back(client);
-	send(client_fd, "Input password\r\n", 17, MSG_NOSIGNAL);
-}
-
-void	Server::client_actions(Client &client)
-{
-	if (!client.get_authenticated())
-		authenticate(client);
-	else
-		client_cmds(client);
 }
 
 void	Server::client_cmds(Client &client)
 {
 	char		buffer[BUFFER_READ_SIZE];
-	std::string	input;
 	int			fd = client.get_client_fd();
 	ssize_t		n = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
@@ -317,114 +298,35 @@ void	Server::client_cmds(Client &client)
 	if (n > 0 && buffer[n - 2] == '\r')
 		buffer[n - 2] = 0;
 
-	std::stringstream	s(input);
-	std::string			s_buffer;
-	int					test;
-	int					size;
+	std::stringstream	s(buffer);
+	std::string			cmd;
+	std::string			input;
 
-	s >> s_buffer;
-	size = s_buffer.size();
-	test = get_cmd(s_buffer);
-	switch (test)
-	{
-		case 0:
-			cmd_pass(client, input.substr(size, input.size() - size));
-			break;
-		case 1:
-			cmd_user(client, input.substr(size, input.size() - size));
-			break;
-		case 2:
-			cmd_nick(client, input.substr(size, input.size() - size));
-			break;
-		case 3:
-			cmd_join(client, input.substr(size, input.size() - size));
-			break;
-		case 4:
-			cmd_privmsg(client, input.substr(size, input.size() - size));
-			break;
-		/* case 5:
-			cmd_create(client, input.substr(size, input.size() - size));
-			break; */
-		case 6:
-			cmd_kick(client, input.substr(size, input.size() - size));
-			break;
-		/* case 7:
-			cmd_invite(client, input.substr(size, input.size() - size));
-			break;
-		case 8:
-			cmd_topic(client, input.substr(size, input.size() - size));
-			break;
-		case 9:
-			cmd_mode(client, input.substr(size, input.size() - size));
-			break; */
-		default:
-			send(fd, "Error. Unknown command\r\n", 25, MSG_NOSIGNAL);
-	}
-}
-
-int	Server::get_cmd(std::string cmd)
-{
-	for (unsigned int i = 0; i < _cmds.size(); i++)
-		if (cmd == _cmds[i])
-			return i;
-	return -1;
-}
-
-void	Server::authenticate(Client &client)
-{
-	char		buffer[BUFFER_READ_SIZE];
-	int			fd = client.get_client_fd();
-	int			test;
-	ssize_t		n = recv(fd, buffer, sizeof(buffer) - 1, 0);
-
-	if (n == -1)
-		throw(std::runtime_error("Error. Failed in rcv."));
-	buffer[n] = 0;
-	if (n > 0 && buffer[n - 1] == '\n')
-		buffer[n - 1] = 0;
-	switch (client.pass_counter(1, 0))
-	{
-		case 0:
-		case 1:
-		case 2:
-			if (pass_validation(static_cast<std::string>(buffer)))
-			{
-				send(fd, "Choose Nickname\r\n", 18, MSG_NOSIGNAL);
-				while (client.pass_counter(0, 0) != 3)
-					client.pass_counter(1, 0);
-				return;
-			}
-			send(fd, "Wrong password\r\n", 17, MSG_NOSIGNAL);
-			if (client.pass_counter(0, 0) == 3)
-			{
-				send(fd, "Too many wrong attempts, disconnecting\r\n", 41, MSG_NOSIGNAL);
-				disconnect_client(fd);
-			}
-			break;
-		case 3:
-			test = nick_validation(static_cast<std::string>(buffer));
-			if (!test)
-			{
-				client.set_nickname(static_cast<std::string>(buffer));
-				send(fd, "Choose Username\r\n", 18, MSG_NOSIGNAL);
-				return;
-			}
-			else if (test == 1)
-				send(fd, "Name can't have spaces and must be between 3 and 10 characters long\r\n", 70, MSG_NOSIGNAL);
-			else
-				send(fd, "Nickname already in use, choose another\r\n", 42, MSG_NOSIGNAL);
-			client.pass_counter(2, 3);
-			break;
-		case 4:
-			if (name_validation(static_cast<std::string>(buffer)))
-			{
-				client.set_username(static_cast<std::string>(buffer));
-				client.set_authenticated(true);
-				return;
-			}
-			send(fd, "Name can't have spaces and must be between 3 and 10 characters long\r\n", 70, MSG_NOSIGNAL);
-			client.pass_counter(2, 4);
-	}
+	s >> cmd;
+	s >> input;
+	if (cmd == "PASS")
+		cmd_pass(client, input);
+	else if (cmd == "USER")
+		cmd_user(client, input);
+	else if (cmd == "NICK")
+		cmd_nick(client, input);
+	else if (cmd == "JOIN")
+		cmd_join(client, input);
+	else if (cmd == "PRIVMSG")
+		cmd_privmsg(client, input);
+	else if (cmd == "KICK")
+		cmd_kick(client, input);
+	else if (cmd == "INVITE")
+		cmd_invite(client, input);
+	else if (cmd == "TOPIC")
+		cmd_topic(client, input);
+	// else if (cmd == "MODE")
+	// 	cmd_mode(client, input);
+	//USE ITERATORS FOR THIS INSTEAD OF REFERENCES TO MAKE ACCESS EASIER??
+	else if (cmd == "EXIT")
+		disconnect_client(client.get_client_fd());
+	else
+		send(fd, "Error. Unknown command\r\n", 25, MSG_NOSIGNAL);
 }
 
 bool	Server::pass_validation(std::string check) const
@@ -499,6 +401,7 @@ void	Server::cmd_pass(Client &client, std::string input)
 	if (pass_validation(input))
 	{
 		send(fd, "Success!\r\n", 11, MSG_NOSIGNAL);
+		client.set_authenticated(true);
 		return;
 	}
 	if (client.pass_counter(0, 0) == 2)
@@ -514,14 +417,25 @@ void	Server::cmd_user(Client &client, std::string input)
 {
 	int	fd = client.get_client_fd();
 
-	if (client.get_authenticated())
+	if (client.get_registered())
 	{
-		send(fd, "You are already authenticated\r\n", 32, MSG_NOSIGNAL);
+		send(fd, "You are already registered\r\n", 29, MSG_NOSIGNAL);
+		return;
+	}
+	if (!client.get_username().empty())
+	{
+		send(fd, "Username already set\r\n", 23, MSG_NOSIGNAL);
 		return;
 	}
 	if (name_validation(input))
 	{
 		client.set_username(input);
+		send(fd, "Username set\r\n", 15, MSG_NOSIGNAL);
+		if (!client.get_nickname().empty())
+		{
+			send(fd, "Successfully registered\r\n", 26, MSG_NOSIGNAL);
+			client.set_registered(true);
+		}
 		return;
 	}
 	else
@@ -534,16 +448,26 @@ void	Server::cmd_nick(Client &client, std::string input)
 	int	fd = client.get_client_fd();
 	int	test;
 
-	if (client.get_authenticated())
+	if (client.get_registered())
 	{
-		send(fd, "You are already authenticated\r\n", 32, MSG_NOSIGNAL);
+		send(fd, "You are already registered\r\n", 29, MSG_NOSIGNAL);
+		return;
+	}
+	if (!client.get_nickname().empty())
+	{
+		send(fd, "Nickname already set\r\n", 23, MSG_NOSIGNAL);
 		return;
 	}
 	test = nick_validation(input);
 	if (!test)
 	{
 		client.set_nickname(input);
-		send(fd, "Choose Username\r\n", 18, MSG_NOSIGNAL);
+		send(fd, "Nickname set\r\n", 15, MSG_NOSIGNAL);
+		if (!client.get_username().empty())
+		{
+			send(fd, "Successfully registered\r\n", 26, MSG_NOSIGNAL);
+			client.set_registered(true);
+		}
 		return;
 	}
 	else if (test == 1)
@@ -560,7 +484,7 @@ void	Server::cmd_join(Client &client, std::string input)
 
 	if (it == _channels.end())
 	{
-		send(fd, "Error. Channel not found\r\n", 27, MSG_NOSIGNAL);
+		_channels.push_back(Channel(client, input, "", ""));
 		return;
 	}
 

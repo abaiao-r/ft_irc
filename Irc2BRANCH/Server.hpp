@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 15:10:53 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/08 16:01:36 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,6 @@ class Server
 		std::vector<Client>			_clients;
 		std::vector<Channel>		_channels;
 		static int					_loop_state;
-		std::vector<std::string>	_cmds;
 
 		// private because we don't want to allow copies of this class
 		Server(void);
@@ -107,9 +106,7 @@ class Server
 
 		int 		cmd_invite(Client &client, std::string input);
 		int			cmd_topic(Client &client, std::string input);
-		void		cmd_mode(Client &client, std::string input);
-		int			get_cmd(std::string cmd);
-		void		authenticate(Client &client);
+		// void		cmd_mode(Client &client, std::string input);
 		bool		pass_validation(std::string check) const;
 		bool		name_validation(std::string check);
 		int			nick_validation(std::string check);
