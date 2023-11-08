@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+         #
+#    By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/10/18 14:23:18 by abaiao-r          #+#    #+#              #
-#    Updated: 2023/10/27 16:00:04 by abaiao-r         ###   ########.fr        #
+#    Created: 2023/11/08 00:28:21 by joao-per          #+#    #+#              #
+#    Updated: 2023/11/08 00:28:22 by joao-per         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,7 +28,8 @@ SRCS		= 	$(SRCDIR)/main.cpp \
 				$(SRCDIR)/User.cpp \
 				$(SRCDIR)/utils.cpp \
 				$(SRCDIR)/Server.cpp \
-				$(SRCDIR)/Client.cpp
+				$(SRCDIR)/Client.cpp \
+				$(SRCDIR)/Hexchat.cpp
 
 # Object files
 OBJS	= $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Handle_user.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:17 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/25 16:13:12 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/08 00:22:22 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,30 +15,39 @@
 
 bool handle_user(User& user, const std::string& message)
 {
-	//Usage: USER <realname> <admin/operator>
+	//Usage: USER <username> <mode> <unused> :<realname>
 	std::istringstream iss(message);
-	std::string cmd, name, adminStr;
+	std::string cmd, username, mode, unused, realname;
 
-	iss >> cmd >> name >> adminStr;
+	iss >> cmd >> username >> mode >> unused;
+
+	// Extract the realname (after the colon)
+	if(iss.str().find(':') != std::string::npos)
+		realname = iss.str().substr(iss.str().find(':') + 1);
 
 	if (cmd != "USER")
 		return (false);
 
-	// Check if the name is a single word with only letters
-	if (name.empty() || !isAlpha(name) || name.size() > 12)
+	// Check if the username is a single word with only letters
+	if (username.empty() || !isAlpha(username) || username.size() > 12 || realname.empty())
 		return (false);
 
-	if (adminStr == "1")
+	// You can adjust this based on your needs. 
+	// Here, I'm using '0' to indicate a normal user and '1' to indicate an admin/operator.
+	if (mode == "1")
 		user.is_admin = true;
-	else if (adminStr == "0")
+	else if (mode == "0")
 		user.is_admin = false;
 	else
 		return (false);
-
-	user.realname = name; 
+	user.username = username;
+	user.hostname = "localhost";
+	user.realname = realname; 
+	std::cout << "Registered successfully! Username:" << username << " for fd: " << user.fd << std::endl;
 
 	return (true);
 }
+
 
 
 bool isNickInUse(const std::string& nickname)
@@ -67,7 +76,9 @@ bool handle_nick(User& user, const std::string& message)
 		std::cout << "ERROR: Nickname already being used!" << std::endl;
 		return (false);
 	}
-
+	//if last char is \n, delete it
+	if (nickname[nickname.size() - 1] == '\n')
+		nickname.resize(nickname.size() - 1);
 	user.nickname = nickname;
 	user.nick_registered = true;
 	std::cout << "Registered successfully! Nickname:" << nickname << " for fd: " << user.fd << std::endl;
@@ -85,7 +96,13 @@ bool handle_pass(User& user, const std::string& message, const std::string& serv
 		return (false);
 	
 	std::string provided_password = message.substr(space_pos + 1);
-	provided_password.resize(provided_password.size() - 1); //Delete new line
+	//if last char is \n, delete it
+	/* if (provided_password[provided_password.size() - 1] == '\n')
+		provided_password.resize(provided_password.size() - 1); */
+
+	
+	std::cout << "Provided password:" << provided_password << "|" << std::endl;
+	std::cout << "Server password:" << server_password << "|" << std::endl;
 
 	if(provided_password.compare(server_password) == 0)
 	{

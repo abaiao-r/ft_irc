@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   User.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:51:29 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 14:58:51 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/06 15:04:28 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,12 +18,12 @@
 #include <vector>
 #include <cstddef>
 
-// this needs to be a class. no sense in being a struct since it has methods exclusively for it
 struct User
 {
 	std::string nickname;
 	std::string username;
 	std::string realname;
+	std::string hostname;
 	bool is_admin;
 	bool has_authenticated;
 	bool is_registered;
@@ -36,6 +36,8 @@ struct User
 
 User* find_user_by_fd(int fd);
 extern std::vector<User> users; // List of connected users
-bool authenticate_user(int client_fd, const std::string& password, User &user);
+bool authenticate_user(int client_fd, const std::string& initialCommand, const std::string& password, User &user);
+bool authenticate_hexchat(int client_fd, const std::string& message, const std::string& password, User &user);
+bool handle_hexchat(const std::string& firstMessage, const std::string& secondMessage, User& user, const std::string& password, int client_fd);
 
 #endif

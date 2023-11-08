@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:55:06 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/10/27 14:09:20 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/07 20:12:06 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,26 +27,31 @@ User* find_user_by_fd(int fd)
 	return (NULL);
 }
 
-
-
-bool authenticate_user(int client_fd, const std::string& password, User &user)
+bool authenticate_user(int client_fd, const std::string& initialCommand, const std::string& password, User &user)
 {
 	char buffer[512];
-	// Handle PASS authentication first
 	int retry_count = 0;
 	const int max_retries = 3;  // Example limit
+	std::string message;
+
 	while (retry_count < max_retries && !user.has_authenticated)
 	{
-		ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
-		buffer[n] = '\0';  // Null terminate the received message
-
-		std::string message(buffer);
 		
+		if (retry_count == 0)
+		{
+			message = initialCommand;
+		}
+		else
+		{
+			ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+			buffer[n] = '\0';
+			message = buffer;
+		}
+
 		if (message.find("PASS") != 0 || !handle_pass(user, message, password))
 		{
 			send(client_fd, "ERROR: Invalid password. Please try again.\r\n", 46, MSG_NOSIGNAL);
 			std::cout << "ERROR: Invalid password. Correct password is: " << password << std::endl;
-			retry_count++;
 			if (retry_count >= max_retries)
 			{
 				send(client_fd, "ERROR: Too many incorrect attempts. Closing connection.\r\n", 60, MSG_NOSIGNAL);
@@ -56,10 +61,10 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
 		}
 		else
 			send(client_fd, "SUCCESS: Password accepted!\r\n", 29, MSG_NOSIGNAL);
+		retry_count++;
 	}
 	while(!user.is_registered)
 	{
-		// Receive message from client
 		ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
 		if(n <= 0)
 		{
@@ -68,28 +73,22 @@ bool authenticate_user(int client_fd, const std::string& password, User &user)
 			break ;
 		}
 		buffer[n] = '\0';  // Null terminate the received message
-
-		std::string message(buffer);
+		message.assign(buffer);
 
 		if(message.find("NICK") == 0)
 		{
 			if(!handle_nick(user, message))
 				send(client_fd, "ERROR: Nickname is invalid or already in use\r\n", 46, MSG_NOSIGNAL);
-			else if(user.user_registered && user.nick_registered)
-				send(client_fd, "SUCCESS: You are fully authenticated!\r\n", 40, MSG_NOSIGNAL);
 			else
 				send(client_fd, "SUCCESS: Nickname set successfully!\r\n", 37, MSG_NOSIGNAL);
 		}
 		else if(message.find("USER") == 0)
 		{
 			if(!handle_user(user, message))
-				send(client_fd, "ERROR: invalid name. Usage: USER <name> <admin>\r\n", 50, MSG_NOSIGNAL);
-			else if(user.user_registered && user.nick_registered)
-				send(client_fd, "SUCCESS: You are fully authenticated!\r\n", 40, MSG_NOSIGNAL);
+				send(client_fd, "ERROR: invalid name. Usage: USER <name> <mode> <servername> <:realname>\r\n", 74, MSG_NOSIGNAL);
 			else
 				send(client_fd, "SUCCESS: Name set successfully!\r\n", 34, MSG_NOSIGNAL);
 		}
-
 
 		// Check if user is now registered
 		if(!user.nickname.empty() && !user.realname.empty())

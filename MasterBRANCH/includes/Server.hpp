@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 19:20:33 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/02 13:06:00 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,6 @@
 #include <netinet/in.h>
 #include <stdexcept>
 #include <unistd.h>
-#include <errno.h>
-#include <string.h>
 
 #include "Ft_irc.hpp"
 #include "User.hpp"
@@ -46,7 +44,7 @@ class Server
 
     public:
         Server(int port);
-        ~Server(void);
+        ~Server();
 
         int get_port(void) const;
         int get_server_fd(void) const;
@@ -56,10 +54,11 @@ class Server
         int init_server(void);
         // auxiliar functions of init_server
         int create_socket(void);
-        int set_socket_nonblocking(void);
         int set_socket_options(void);
         int bind_socket(void);
         int start_listening(void);
+    
+
 };
 
 #endif
