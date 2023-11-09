@@ -17,8 +17,8 @@ class Client
 {
 	private:
 		int			_client_fd;
-		bool		_registered;
 		bool		_authenticated;
+		bool		_registered;
 		int			_tries;
 		std::string _nickname; // can not be repeated
 		std::string _username; // can be repeated

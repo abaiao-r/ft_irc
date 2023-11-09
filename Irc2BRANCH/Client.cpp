@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/08 16:37:19 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/09 10:51:31 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 /* Default constructor */
 Client::Client(void)
-	: _client_fd(-1), _authenticated(false), _tries(0), _nickname(""),
-	_username(""), _is_admin(false)
+	: _client_fd(-1), _authenticated(false), _registered(false), _tries(0)
+	, _nickname(""), _username(""), _is_admin(false)
 {
 	std::cout << CYAN << "Client: Default constructor called" << RESET 
 		<< std::endl;
@@ -24,9 +24,9 @@ Client::Client(void)
 /* copy constructor */
 Client::Client(const Client &copy)
 	: _client_fd(copy._client_fd), _authenticated(copy._authenticated),
-	_tries(copy._tries), _client_addr(copy._client_addr)
+	_registered(false), _tries(copy._tries), _client_addr(copy._client_addr)
 {
-	std::cout << CYAN << "Client:copy constructor called" << RESET
+	std::cout << CYAN << "Client: Copy constructor called" << RESET
 		<< std::endl;
 	*this = copy;
 }
