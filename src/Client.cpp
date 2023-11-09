@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/09 14:43:02 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/09 17:06:32 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,13 +86,13 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 						continue;
 					}
 
-					if (!user->has_authenticated)
+					if (!user->is_registered)
 					{
 						char buffer[1024];
 						int bytesReceived = recv(clients[i].fd, buffer, sizeof(buffer) - 1, 0);
 						if (bytesReceived <= 0) 
 						{
-							std::cerr << "Error reading from client." << std::endl;
+							std::cerr << "Error reading from client or client disconnected." << std::endl;
 							close(clients[i].fd);
 							clients.erase(clients.begin() + i);
 							i--;
