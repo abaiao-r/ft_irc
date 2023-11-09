@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 14:25:51 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/09 14:42:17 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,7 +215,7 @@ bool Commands::handle_join(User& user, const std::string& message)
 			std::string join_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " JOIN :" + channel_name + "\r\n";
 			send(user.fd, join_msg.c_str(), join_msg.length(), MSG_NOSIGNAL);
 			std::string topic_message = ":" + user.hostname + " 332 " + user.nickname + " " + channel_name + " :" + ch_it->topic + "\r\n";
-    		send(user.fd, topic_message.c_str(), topic_message.size(), 0);
+			send(user.fd, topic_message.c_str(), topic_message.size(), 0);
 			std::cout << "Joined channel successfully!" << std::endl;
 			return (true);
 		}
@@ -279,7 +279,7 @@ bool Commands::handle_kick(User& user, const std::string& message)
 	std::istringstream iss(message);
 	std::string command;
 	std::string channel_name;
-    std::string nickname;
+	std::string nickname;
 	iss >> command >> channel_name >> nickname;
 	
 	std::vector<Channel>::iterator ch_it = channels.begin();
@@ -334,7 +334,7 @@ bool Commands::handle_invite(User& user, const std::string& message)
 	std::istringstream iss(message);
 	std::string command;
 	std::string channel_name;
-    std::string nickname;
+	std::string nickname;
 	std::string resto;
 	iss >> command >> channel_name >> nickname >> resto;
 
@@ -397,7 +397,7 @@ bool Commands::handle_topic(User& user, const std::string& message)
 	std::istringstream iss(message);
 	std::string command;
 	std::string channel_name;
-    std::string topic;
+	std::string topic;
 	iss >> command >> channel_name >> topic;
 
 	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {

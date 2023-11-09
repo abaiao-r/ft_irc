@@ -6,17 +6,17 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:51:29 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/06 15:04:28 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/09 14:55:28 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef USER_HPP
-#define USER_HPP
+# define USER_HPP
 
-#include "Ft_irc.hpp"
-#include <string>
-#include <vector>
-#include <cstddef>
+# include "Ft_irc.hpp"
+# include <string>
+# include <vector>
+# include <cstddef>
 
 struct User
 {
@@ -24,12 +24,12 @@ struct User
 	std::string username;
 	std::string realname;
 	std::string hostname;
-	bool is_admin;
-	bool has_authenticated;
-	bool is_registered;
-	bool user_registered;
-	bool nick_registered;
-	int fd;
+	bool		is_admin;
+	bool		has_authenticated;
+	bool		is_registered;
+	bool		user_registered;
+	bool		nick_registered;
+	int			fd;
 
 	User();
 };

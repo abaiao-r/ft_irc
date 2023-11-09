@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:55:06 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 20:12:06 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/09 14:47:42 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,8 @@ bool authenticate_user(int client_fd, const std::string& initialCommand, const s
 
 	while (retry_count < max_retries && !user.has_authenticated)
 	{
-		
 		if (retry_count == 0)
-		{
 			message = initialCommand;
-		}
 		else
 		{
 			ssize_t n = recv(client_fd, buffer, sizeof(buffer) - 1, 0);

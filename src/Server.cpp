@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/02 14:20:12 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/09 14:47:01 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,73 +15,74 @@
 /* Default constructor */
 Server::Server() : _port(0), _server_fd(-1)
 {
-    std::cout << CYAN << "Default constructor Server called" << RESET 
-        << std::endl;
-    std::memset(&_address, 0, sizeof(_address));
-    _address.sin_family = AF_INET; // IPv4
-    _address.sin_addr.s_addr = INADDR_ANY; // Any available network interface
-    _address.sin_port = htons(_port); // Port
+	std::cout << CYAN << "Default constructor Server called" << RESET 
+		<< std::endl;
+	std::memset(&_address, 0, sizeof(_address));
+	_address.sin_family = AF_INET; // IPv4
+	_address.sin_addr.s_addr = INADDR_ANY; // Any available network interface
+	_address.sin_port = htons(_port); // Port
 }
+
 /* Parameter constructor */
 Server::Server(int port) : _port(port), _server_fd(-1)
 {
-    std::cout << CYAN << "Default constructor Server called" << RESET 
-        << std::endl;
-    std::memset(&_address, 0, sizeof(_address));
-    //sets the address family of the socket to IPv4.
-    _address.sin_family = AF_INET;
-    //the socket accepts connections from any available network interface on the machine.
-    _address.sin_addr.s_addr = INADDR_ANY;
-    //htons()converts the port number from host byte order to network byte order, which is the byte order used by the network protocol. This ensures that the port number is stored in the correct byte order for communication over the network.
-    _address.sin_port = htons(_port);
+	std::cout << CYAN << "Default constructor Server called" << RESET 
+		<< std::endl;
+	std::memset(&_address, 0, sizeof(_address));
+	//sets the address family of the socket to IPv4.
+	_address.sin_family = AF_INET;
+	//the socket accepts connections from any available network interface on the machine.
+	_address.sin_addr.s_addr = INADDR_ANY;
+	//htons()converts the port number from host byte order to network byte order, which is the byte order used by the network protocol. This ensures that the port number is stored in the correct byte order for communication over the network.
+	_address.sin_port = htons(_port);
 }
 
 /* Copy constructor */
 Server::Server(const Server &src)
 {
-    std::cout << CYAN << "Copy constructor Server called" << RESET 
-        << std::endl;
-    *this = src;
+	std::cout << CYAN << "Copy constructor Server called" << RESET 
+		<< std::endl;
+	*this = src;
 }
 
 /* Destructor */
 Server::~Server()
 {
-    std::cout << RED << "Destructor Server called" << RESET 
-        << std::endl;
-    close(_server_fd);
+	std::cout << RED << "Destructor Server called" << RESET 
+		<< std::endl;
+	close(_server_fd);
 }
 
 /* Assignment operator overload (Update) */
 Server &Server::operator=(const Server &src)
 {
-    std::cout << YELLOW << "Assignment operator Server called" << RESET 
-        << std::endl;
-    if (this != &src)
-    {
-        _port = src._port;
-        _server_fd = src._server_fd;
-        _address = src._address;
-    }
-    return (*this);
+	std::cout << YELLOW << "Assignment operator Server called" << RESET 
+		<< std::endl;
+	if (this != &src)
+	{
+		_port = src._port;
+		_server_fd = src._server_fd;
+		_address = src._address;
+	}
+	return (*this);
 }
 
 /* get_port: Returns the port number */
 int Server::get_port(void) const
 {
-    return (_port);
+	return (_port);
 }
 
 /* get_server_fd: Returns the server file descriptor */
 int Server::get_server_fd(void) const
 {
-    return (_server_fd);
+	return (_server_fd);
 }
 
 /* get_address: Returns the server address */
 sockaddr_in Server::get_address(void) const
 {
-    return (_address);
+	return (_address);
 }
 
 
@@ -98,16 +99,16 @@ sockaddr_in Server::get_address(void) const
 */
 int Server::start_listening(void)
 {
-    if (listen(_server_fd, 5) == -1)
-    {
-        std::cerr << RED <<"Error:" << RESET << " Cannot listen socket"
-            << std::endl;
-        close(_server_fd);
-        return (-1);
-    }
-    std::cout << GREEN << "Server listening on port " << _port << RESET
-        << std::endl;
-    return (0);
+	if (listen(_server_fd, 5) == -1)
+	{
+		std::cerr << RED <<"Error:" << RESET << " Cannot listen socket"
+			<< std::endl;
+		close(_server_fd);
+		return (-1);
+	}
+	std::cout << GREEN << "Server listening on port " << _port << RESET
+		<< std::endl;
+	return (0);
 }
 
 /* bind_socket: Binds the socket to the address and port number
@@ -121,15 +122,15 @@ int Server::start_listening(void)
 int Server::bind_socket(void)
 {
 
-    //pheraps should start the sockaddr struct here. 
-    if (bind(_server_fd, (struct sockaddr*)&_address, sizeof(_address)) == -1)
-    {
-        std::cerr << RED <<"Error:" << RESET << " Cannot bind socket" 
-            << std::endl;
-        close(_server_fd);
-        return (-1);
-    }
-    return (0);
+	//pheraps should start the sockaddr struct here. 
+	if (bind(_server_fd, (struct sockaddr*)&_address, sizeof(_address)) == -1)
+	{
+		std::cerr << RED <<"Error:" << RESET << " Cannot bind socket" 
+			<< std::endl;
+		close(_server_fd);
+		return (-1);
+	}
+	return (0);
 }
 
 /* set_socket_options: Sets the socket options
@@ -143,17 +144,17 @@ int Server::bind_socket(void)
 */ 
 int Server::set_socket_options(void) // use int
 {
-    int opt = 1;
-    if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, 
-        sizeof(opt)) == -1) 
-    {
-        std::cerr << RED <<"Error:" << RESET << " Cannot set socket options" 
-            << std::endl;
-        close (_server_fd);
-        //close_server();
-        return (-1);
-    }
-    return (0);
+	int opt = 1;
+	if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, 
+		sizeof(opt)) == -1) 
+	{
+		std::cerr << RED <<"Error:" << RESET << " Cannot set socket options" 
+			<< std::endl;
+		close (_server_fd);
+		//close_server();
+		return (-1);
+	}
+	return (0);
 }
 
 /* create_socket: Creates the socket
@@ -165,14 +166,14 @@ int Server::set_socket_options(void) // use int
 */
 int Server::create_socket(void) // use int
 {
-    _server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (_server_fd == -1)
-    {
-        std::cerr << RED <<"Error:" << RESET << " Cannot create socket" 
-            << std::endl;
-        return (-1);
-    }
-    return (0);
+	_server_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (_server_fd == -1)
+	{
+		std::cerr << RED <<"Error:" << RESET << " Cannot create socket" 
+			<< std::endl;
+		return (-1);
+	}
+	return (0);
 }
 
 /* init_server: Initializes the server
@@ -184,13 +185,13 @@ int Server::create_socket(void) // use int
 */
 int Server::init_server(void) // use int
 {
-    if (create_socket() == -1)
-        return (-1);
-    if (set_socket_options() == -1)
-        return (-1);
-    if (bind_socket() == -1) 
-        return (-1);
-    if (start_listening() == -1)
-        return (-1);
-    return (0);
+	if (create_socket() == -1)
+		return (-1);
+	if (set_socket_options() == -1)
+		return (-1);
+	if (bind_socket() == -1) 
+		return (-1);
+	if (start_listening() == -1)
+		return (-1);
+	return (0);
 }

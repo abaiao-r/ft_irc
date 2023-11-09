@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/07 21:53:39 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/09 14:43:02 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 			std::cerr << "Error: poll failed" << std::endl;
 			break;
 		}
-		
+		// Check if the server socket is ready to read
 		for (size_t i = 0; i < clients.size(); ++i)
 		{
 			if (clients[i].revents & POLLIN)
@@ -158,7 +158,6 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 				clients.erase(clients.begin() + i);
 				i--;
 			}
-
 			clients[i].revents = 0;
 		}
 	}
