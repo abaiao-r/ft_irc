@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/21 23:24:43 by andrefranci       #+#    #+#             */
-/*   Updated: 2023/11/07 15:11:23 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/09 13:45:21 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,3 +78,37 @@ bool strIsWhitespace(const std::string& str)
 	}
 	return (true);
 }
+
+
+/* find_and_store_the_rest:
+** 1. Find the word_to_find in str.
+** 2. If found, store the rest of the string in rest.
+** If not found, rest is empty. str == "".
+** 3. Return rest.
+*/
+std::string find_and_store_the_rest(std::string &str, std::string word_to_find)
+{
+	std::string rest;
+	size_t pos = str.find(word_to_find);
+
+	if (pos != std::string::npos)
+	{
+		rest = str.substr(pos + word_to_find.length());
+	}
+	else
+	{
+		throw std::invalid_argument("Word not found in string.");
+	}
+	return (rest);
+}
+
+//test find_and_store_the_rest
+/* int main()
+{
+	std::string str = "GET / HTTP/1.1\r\nHost: www.google.com\r\n\r\n";
+	std::string rest;
+	rest = find_and_store_the_rest(str, "GET");
+	std::cout << rest << std::endl;
+	std::cout << str << std::endl;
+	return (0);
+} */

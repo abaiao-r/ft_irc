@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 11:15:57 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/09 13:07:30 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,6 @@ class Channel;
 #define BUFFER_READ_SIZE 1024
 #define MAX_LEN 10
 #define MIN_LEN 3
-#define CMDS 9
 
 
 class Server
@@ -85,17 +84,20 @@ class Server
 		void		create_epoll();
 		void		connection();
 		void		client_connection();
-		void		client_cmds(Client &client);
+		int 		client_cmds(Client &client);
 		void		cmd_pass(Client &client, std::string input);
 		void		cmd_user(Client &client, std::string input);
 		void		cmd_nick(Client &client, std::string input);
-		void		cmd_join(Client &client, std::string input);
+		/*join*/
+		int 		channel_name_validation(int client_fd, std::string check);
+		int			cmd_join(Client &client, std::string input);
+		/*end join*/
 		void		cmd_privmsg(Client &client, std::string input);
-		// void		cmd_create(Client &client, std::string input);
 		
 		// KICK COMMAND FUNCTIONS
 		int			is_client_admin(Client &client);
 		int			sendErrorMessage(int client_fd, const std::string& errorMessage);
+		int 		sendSuccessMessage(int client_fd, const std::string	&successMessage);
 		Channel		*findChannel(Client &client, const std::string& channelName);
 		Client		*findClientInChannel(Client &client, Channel* channel, const std::string& nickname);
 		Client		*find_client(Client &client, const std::string& nickname);
@@ -105,11 +107,10 @@ class Server
 
 		int 		cmd_invite(Client &client, std::string input);
 		int			cmd_topic(Client &client, std::string input);
-		// void		cmd_mode(Client &client, std::string input);
+		void		cmd_mode(Client &client, std::string input);
 		bool		pass_validation(std::string check) const;
 		bool		name_validation(std::string check);
 		int			nick_validation(std::string check);
-		// Client		*find_client(int fd);
 		void		disconnect_client(int fd);
 		static void	signal_handler(int sig);
 		static void	signal_reset();

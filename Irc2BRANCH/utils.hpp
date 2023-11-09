@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 12:38:53 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/07 15:11:01 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/09 13:42:26 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,5 +20,6 @@
 int	safe_atoi(const char *nptr);
 bool isAlpha(const std::string& str);
 bool strIsWhitespace(const std::string& str);
+std::string find_and_store_the_rest(std::string &str, std::string word_to_find);
 
 #endif
