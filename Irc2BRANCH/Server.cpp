@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/08 16:28:39 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/09 11:19:40 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -511,6 +511,11 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	Channel				*ch_test = NULL;
 	Client				*c_test = NULL;
 
+	if (!client.get_registered())
+	{
+		send(fd, "Error. Can't use commands before registering\r\n", 47, MSG_NOSIGNAL);
+		return;
+	}
 	s >> dest;
 	getline(s, msg);
 	if (msg[0] != ':')

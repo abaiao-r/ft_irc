@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/08 16:01:36 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/09 11:15:57 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,6 @@ class Server
 		void		create_epoll();
 		void		connection();
 		void		client_connection();
-		void		client_actions(Client &client);
 		void		client_cmds(Client &client);
 		void		cmd_pass(Client &client, std::string input);
 		void		cmd_user(Client &client, std::string input);
