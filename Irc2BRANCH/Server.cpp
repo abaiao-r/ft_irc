@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 19:11:47 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/09 19:35:00 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -708,6 +708,13 @@ int Server::cmd_kick(Client &client, std::string input)
 	if (nickname.empty())
 	{
 		std::string error = "ERROR: Usage: KICK <channel> <nickname> [<reason>]\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	// if nickname is equal to client nickname
+	if (nickname == client.get_nickname())
+	{
+		std::string error = "ERROR: You can't kick yourself\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
