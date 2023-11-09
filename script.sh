@@ -8,7 +8,9 @@
   sleep 0.2
   echo "NICK fritick"
   sleep 0.2
-  echo "CREATE test"
+  echo "CREATE test Macacos"
   sleep 0.2
-  echo "KICK #test fritick"
+  echo "MODE #test +k 12345"
+  sleep 0.2
+  echo "INVITE #test coxinha"
 } | nc localhost 6697

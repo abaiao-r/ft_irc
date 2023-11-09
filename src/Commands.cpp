@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Commands.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/08 13:17:33 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/09 14:25:51 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Commands.hpp"
 #include "Channel.hpp"
+#include "colours.hpp"
 
 std::map<std::string, std::vector<std::string> > user_messages;  // Messages associated with usernames
 std::vector<Channel> channels;
@@ -137,6 +138,8 @@ bool Commands::handle_commands(int client_fd, User &user)
 			handle_topic(user, message);
 		else if(message.find("KICK") == 0)
 			handle_kick(user, message);
+		else if(message.find("MODE") == 0)
+			handle_mode(user, message);
 		else
 		{
 			std::string error_msg = "ERROR: No command found\r\n";
@@ -148,16 +151,63 @@ bool Commands::handle_commands(int client_fd, User &user)
 
 bool Commands::handle_join(User& user, const std::string& message)
 {
-	std::string channel_name = message.substr(5);
+	//istream
+	std::istringstream iss(message);
+	std::string command;
+	std::string channel_name;
+	std::string password;
+	iss >> command >> channel_name >> password;
 	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
 		std::cout << "Channel name:" << channel_name << "|" << std::endl;
 		std::cout << "real|" << ch_it->name << "|" << std::endl;
 		if (ch_it->name == channel_name)
 		{
-			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
+			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it)
+			{
 				if (u_it->nickname == user.nickname)
 				{
 					std::cout << "User already in channel" << std::endl;
+					return (false);
+				}
+			}
+			//verification if channel is full
+			if(ch_it->limit > 0)
+			{
+				if(ch_it->users_in_channel.size() >= ch_it->limit)
+				{
+					std::string error_msg = std::string("RED") + "ERROR: Channel is full.\r\n" + std::string(RESET);
+					send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+					return (false);
+				}
+			}
+			//verification if channel is invite only
+			if(ch_it->is_invite_only)
+			{
+				for (std::vector<std::string>::iterator it = ch_it->invite_list.begin(); it != ch_it->invite_list.end(); ++it)
+				{
+					if (*it == user.nickname)
+					{
+						ch_it->users_in_channel.push_back(user);
+						std::string join_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " JOIN :" + channel_name + "\r\n";
+						send(user.fd, join_msg.c_str(), join_msg.length(), MSG_NOSIGNAL);
+						std::string topic_message = ":" + user.hostname + " 332 " + user.nickname + " " + channel_name + " :" + ch_it->topic + "\r\n";
+						send(user.fd, topic_message.c_str(), topic_message.size(), 0);
+						std::cout << "Joined channel successfully!" << std::endl;
+						return (true);
+					}
+				}
+				std::string error_msg = "ERROR: Channel is invite only.\r\n";
+				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+				return (false);
+			}
+			//verification if channel has password
+			if(ch_it->password != "")
+			{
+				//check if password is correct
+				if(ch_it->password != password)
+				{
+					std::string error_msg = std::string(RED) + "ERROR: Wrong password." + std::string(RESET) + "\nUsage: JOIN <channel> <password>\r\n";
+					send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 					return (false);
 				}
 			}
@@ -206,6 +256,7 @@ bool Commands::handle_channel(User& user, const std::string& message)
 	new_channel.name = "#" + channel_name;
 	new_channel.admin = user;
 	new_channel.users_in_channel.push_back(user);
+	new_channel.is_invite_only = false;
 	if (topic != "")
 		new_channel.topic = topic;
 	else
@@ -241,10 +292,24 @@ bool Commands::handle_kick(User& user, const std::string& message)
 			{
 				if (u_it->nickname == nickname)
 				{
+					//Check if user is not already kicked
+					if(ch_it->ban_list.size() > 0)
+					{
+						for (std::vector<std::string>::iterator it = ch_it->ban_list.begin(); it != ch_it->ban_list.end(); ++it)
+						{
+							if (*it == nickname)
+							{
+								std::string error_msg = "ERROR: User already kicked.\r\n";
+								send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+								return (false);
+							}
+						}
+					}
 					ch_it->users_in_channel.erase(u_it);
 					std::string kick_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " KICK " + channel_name + " " + nickname + "\r\n";
 					send(user.fd, kick_msg.c_str(), kick_msg.length(), MSG_NOSIGNAL);
 					std::cout << "Kicked user successfully!" << std::endl;
+					ch_it->ban_list.push_back(nickname);
 					return (true);
 				}
 			}
@@ -294,11 +359,23 @@ bool Commands::handle_invite(User& user, const std::string& message)
 					return (false);
 				}
 			}
+			//verification if channel is not full
+			if(ch_it->limit > 0)
+			{
+				if(ch_it->users_in_channel.size() >= ch_it->limit)
+				{
+					std::string error_msg = std::string(RED) + "ERROR: Channel is full, you can't invite more users." + std::string(RESET) + "\r\n";
+					send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+					return (false);
+				}
+			}
+			
 			for (std::vector<User>::iterator u_it = users.begin(); u_it != users.end(); ++u_it)
 			{
 				if (u_it->nickname == nickname)
 				{
 					ch_it->users_in_channel.push_back(*u_it);
+					ch_it->invite_list.push_back(nickname);
 					std::string invite_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " INVITE " + nickname + " " + channel_name + "\r\n";
 					send(u_it->fd, invite_msg.c_str(), invite_msg.length(), MSG_NOSIGNAL);
 					std::cout << "Invited user successfully!" << std::endl;
@@ -352,21 +429,28 @@ bool Commands::handle_topic(User& user, const std::string& message)
 	return (false);
 }
 
-/* bool Commands::handle_mode(User& user, const std::string& message)
+bool Commands::handle_mode(User& user, const std::string& message)
 {
 	// Expecting format: MODE <channel> <mode>
 	size_t space_pos = message.find(' ', 5);  // Find space after "MODE "
 	if (space_pos == std::string::npos)
 		return (false);
 
-	std::string channel_name = message.substr(5, space_pos - 5);
-	std::string mode = message.substr(space_pos + 1);
+	//do a istream
+	std::istringstream iss(message);
+	std::string command;
+	std::string channel_name;
+	std::string mode;
+	std::string argument;
+	iss >> command >> channel_name >> mode >> argument;
 
 	Channel* channel = NULL;
-	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
-		if (it->name == channel_name)
+	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
+		std::cout << "Channel name:" << channel_name << "|" << std::endl;
+		std::cout << "real|" << ch_it->name << "|" << std::endl;
+		if (ch_it->name == channel_name)
 		{
-			channel = &(*it);
+			channel = &(*ch_it);
 			break ;
 		}
 	}
@@ -379,40 +463,26 @@ bool Commands::handle_topic(User& user, const std::string& message)
 	}
 	if (mode == "+o")
 	{
-		// Expecting format: MODE <channel> +o <nickname>
-		size_t space_pos = message.find(' ', 5);  // Find space after "MODE "
-		if (space_pos == std::string::npos)
-			return (false);
-
-		std::string nickname = message.substr(space_pos + 1);
-
-		bool user_found = false;
-		for (std::vector<User>::iterator it = channel->users_in_channel.begin(); it != channel->users_in_channel.end(); ++it)
+		//bool user_found = false;
+		for (std::vector<User>::iterator ch_it = channel->users_in_channel.begin(); ch_it != channel->users_in_channel.end(); ++ch_it)
 		{
-			if (it->nickname == nickname)
+			if (ch_it->nickname == argument)
 			{
-				user_found = true;
-				it->is_admin = true;
+				//user_found = true;
+				ch_it->is_admin = true;
 				break ;
 			}
 		}
 	}
 	else if (mode == "-o")
 	{
-		// Expecting format: MODE <channel> -o <nickname>
-		size_t space_pos = message.find(' ', 5);  // Find space after "MODE "
-		if (space_pos == std::string::npos)
-			return (false);
-
-		std::string nickname = message.substr(space_pos + 1);
-
-		bool user_found = false;
-		for (std::vector<User>::iterator it = channel->users_in_channel.begin(); it != channel->users_in_channel.end(); ++it)
+		//bool user_found = false;
+		for (std::vector<User>::iterator ch_it = channel->users_in_channel.begin(); ch_it != channel->users_in_channel.end(); ++ch_it)
 		{
-			if (it->nickname == nickname)
+			if (ch_it->nickname == argument)
 			{
-				user_found = true;
-				it->is_admin = false;
+				//user_found = true;
+				ch_it->is_admin = false;
 				break ;
 			}
 		}
@@ -420,37 +490,64 @@ bool Commands::handle_topic(User& user, const std::string& message)
 	else if (mode == "+k")
 	{
 		// Expecting format: MODE <channel> +k <password>
-		size_t space_pos = message.find(' ', 5);  // Find space after "MODE "
-		if (space_pos == std::string::npos)
-			return (false);
-
-		std::string password = message.substr(space_pos + 1);
-		channel->password = password;
+		channel->password = argument;
+		std::cout << "Password set to " << argument << " on channel: " << channel->name << std::endl;
+		send(user.fd, "SUCCESS: Password set successfully!\r\n", 38, MSG_NOSIGNAL);
 	}
 	else if (mode == "-k")
 	{
 		// Expecting format: MODE <channel> -k
 		channel->password = "";
+		std::cout << "Password removed from channel: " << channel->name << std::endl;
+		send(user.fd, "SUCCESS: Password removed successfully!\r\n", 42, MSG_NOSIGNAL);
 	}
 	else if (mode == "+i")
 	{
 		// Expecting format: MODE <channel> +i
 		channel->is_invite_only = true;
+		std::cout << "Channel " << channel->name << " is now invite only." << std::endl;
+		send(user.fd, "SUCCESS: Channel is now invite only.\r\n", 39, MSG_NOSIGNAL);
 	}
 	else if (mode == "-i")
 	{
 		// Expecting format: MODE <channel> -i
 		channel->is_invite_only = false;
+		std::cout << "Channel " << channel->name << " is no longer invite only." << std::endl;
+		send(user.fd, "SUCCESS: Channel is no longer invite only.\r\n", 45, MSG_NOSIGNAL);
 	}
 	else if (mode == "+t")
 	{
 		// Expecting format: MODE <channel> +t
 		channel->is_topic_settable = true;
+		std::cout << "Channel " << channel->name << " topic is now settable." << std::endl;
+		send(user.fd, "SUCCESS: Channel topic is now settable.\r\n", 42, MSG_NOSIGNAL);
 	}
 	else if (mode == "-t")
 	{
 		// Expecting format: MODE <channel> -t
 		channel->is_topic_settable = false;
+		std::cout << "Channel " << channel->name << " topic is no longer settable." << std::endl;
+		send(user.fd, "SUCCESS: Channel topic is no longer settable.\r\n", 48, MSG_NOSIGNAL);
+	}
+	else if (mode == "+l")
+	{
+		// Expecting format: MODE <channel> +l <limit>
+
+		// Transform argument into a number
+		std::istringstream issz(argument);
+		long unsigned int limit;
+		issz >> limit;
+		
+		channel->limit = limit;
+		std::cout << "Channel " << channel->name << " limit is now set to " << channel->limit << "." << std::endl;
+		send(user.fd, "SUCCESS: Channel limit is now set.\r\n", 37, MSG_NOSIGNAL);
+	}
+	else if (mode == "-l")
+	{
+		// Expecting format: MODE <channel> -l
+		channel->limit = 0;
+		std::cout << "Channel " << channel->name << " limit is now removed." << std::endl;
+		send(user.fd, "SUCCESS: Channel limit is now removed.\r\n", 41, MSG_NOSIGNAL);
 	}
 	else
 	{
@@ -458,5 +555,5 @@ bool Commands::handle_topic(User& user, const std::string& message)
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
+	return (true);
 }
- */
