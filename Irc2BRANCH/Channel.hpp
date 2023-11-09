@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/09 16:34:26 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/09 18:37:49 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ class Channel
 		void				set_name(std::string name);
 
 		std::string			get_password(void) const;
-		int					set_password(std::string password);
+		void				set_password(std::string password);
 
 		std::string			get_topic() const;
 		void				set_topic(std::string topic);
@@ -76,10 +76,14 @@ class Channel
 		void 				add_client_to_clients_invited_vector(Client &client);
 		void 				remove_client_from_clients_invited_vector(Client &client);
 
+		Client				*find_client_in_channel_by_nickname(std::string &nickname_to_find);
 		Client				*find_banned_client(const std::string &client_banned);
+		Client				*find_banned_client_by_nickname(std::string &nickname_to_find);
 		Client				*find_clients_operator_channel(Client &client);
 		Client				*find_clients_operator_channel(std::string &nickname_to_find);
 		Client 				*find_clients_invited_to_channel(const std::string &clients_invited_to_channel);
+		Client 				*find_clients_invited_to_channel_by_nickname(std::string &nickname_to_find);
 		Client				*find_client(Client &client);
+		Client				*find_banned_client(Client &client);
 		void				message(Client &client, std::string msg);
 };
