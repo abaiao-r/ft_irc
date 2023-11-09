@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 14:42:17 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/09 17:57:30 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -455,6 +455,45 @@ bool Commands::handle_mode(User& user, const std::string& message)
 		}
 	}
 
+	//verify if the user is in operator_list.
+	//if not, return false with error message
+	if(channel->operator_list.size() > 0)
+	{
+		for (std::vector<std::string>::iterator it = channel->operator_list.begin(); it != channel->operator_list.end(); ++it)
+		{
+			if (*it == user.nickname)
+				break ;
+			else if (user.is_admin == true)
+				break ;
+			else
+			{
+				std::string error_msg = "ERROR: You are not an admin.\r\n";
+				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+				return (false);
+			}
+		}
+	}
+	else if (user.is_admin == true)
+	{
+		for (std::vector<std::string>::iterator it = channel->operator_list.begin(); it != channel->operator_list.end(); ++it)
+		{
+			if (*it == user.nickname)
+				break ;
+			else
+			{
+				std::string error_msg = "ERROR: You are not an admin.\r\n";
+				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+				return (false);
+			}
+		}
+	}
+	else
+	{
+		std::string error_msg = "ERROR: You are not an admin.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
+	}
+
 	if (!channel)
 	{
 		std::string error_msg = "ERROR: Channel " + channel_name + " not found.\r\n";
@@ -463,29 +502,82 @@ bool Commands::handle_mode(User& user, const std::string& message)
 	}
 	if (mode == "+o")
 	{
-		//bool user_found = false;
-		for (std::vector<User>::iterator ch_it = channel->users_in_channel.begin(); ch_it != channel->users_in_channel.end(); ++ch_it)
+		// Expecting format: MODE <channel> +o <nickname>
+		//verification if user is in operator_list
+		for (std::vector<std::string>::iterator it = channel->operator_list.begin(); it != channel->operator_list.end(); ++it)
 		{
-			if (ch_it->nickname == argument)
+			if (*it == user.nickname)
 			{
-				//user_found = true;
-				ch_it->is_admin = true;
+				for (std::vector<User>::iterator ch_it = channel->users_in_channel.begin(); ch_it != channel->users_in_channel.end(); ++ch_it)
+				{
+					if (ch_it->nickname == argument)
+					{
+						//pushback the user in admin_list
+						channel->operator_list.push_back(argument);
+
+						send(user.fd, "SUCCESS: User is now admin.\r\n", 30, MSG_NOSIGNAL);
+						break ;
+					}
+				}
 				break ;
 			}
+			else if (user.is_admin == true)
+			{
+				for (std::vector<User>::iterator ch_it = channel->users_in_channel.begin(); ch_it != channel->users_in_channel.end(); ++ch_it)
+				{
+					if (ch_it->nickname == argument)
+					{
+						channel->operator_list.push_back(argument);
+
+						send(user.fd, "SUCCESS: User is now admin.\r\n", 30, MSG_NOSIGNAL);
+						break ;
+					}
+				}
+			}
 		}
+		std::string error_msg = "ERROR: You are not an admin.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
 	}
 	else if (mode == "-o")
 	{
-		//bool user_found = false;
-		for (std::vector<User>::iterator ch_it = channel->users_in_channel.begin(); ch_it != channel->users_in_channel.end(); ++ch_it)
+		// Expecting format: MODE <channel> -o <nickname>
+		//verification if user is in operator_list
+		for (std::vector<std::string>::iterator it = channel->operator_list.begin(); it != channel->operator_list.end(); ++it)
 		{
-			if (ch_it->nickname == argument)
+			if (*it == user.nickname)
 			{
-				//user_found = true;
-				ch_it->is_admin = false;
+				for (std::vector<User>::iterator ch_it = channel->users_in_channel.begin(); ch_it != channel->users_in_channel.end(); ++ch_it)
+				{
+					if (ch_it->nickname == argument)
+					{
+						//remove the user from admin_list
+						channel->operator_list.erase(it);
+
+						send(user.fd, "SUCCESS: User is no longer admin.\r\n", 36, MSG_NOSIGNAL);
+						break ;
+					}
+				}
 				break ;
 			}
+			else if (user.is_admin == true)
+			{
+				for (std::vector<User>::iterator ch_it = channel->users_in_channel.begin(); ch_it != channel->users_in_channel.end(); ++ch_it)
+				{
+					if (ch_it->nickname == argument)
+					{
+						//pushback the user in admin_list
+						channel->operator_list.erase(it);
+
+						send(user.fd, "SUCCESS: User is no longer admin.\r\n", 36, MSG_NOSIGNAL);
+						break ;
+					}
+				}
+			}
 		}
+		std::string error_msg = "ERROR: You are not an admin.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
 	}
 	else if (mode == "+k")
 	{

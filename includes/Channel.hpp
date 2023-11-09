@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 14:52:25 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/09 14:52:27 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/09 17:34:42 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class Channel
 		std::string password;
 		std::vector<std::string> ban_list;
 		std::vector<std::string> invite_list;
+		std::vector<std::string> operator_list;
 
 		User admin;
 };
