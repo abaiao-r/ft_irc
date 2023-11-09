@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 13:56:47 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/09 15:42:57 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -678,7 +678,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	send(fd, final_msg.c_str(), final_msg.length(), MSG_NOSIGNAL);
 }
 
-/* cmd_kick: kick a user from a channel
+/* cmd_kick: kick a user from a channel (KICK <channel> <nickname> [<reason>])
  * 1. Parse input into channel name and nickname and reason
  * 2. Check if client is administrator
  * 3. Find the channel
@@ -695,19 +695,39 @@ int Server::cmd_kick(Client &client, std::string input)
 	// Parse input
     iss >> channel_to_find >> nickname;
     std::getline(iss, reason);
-    // Check if client is administrator
-	if (is_client_admin(client) == 0) // change to check if it is channel operator
-		return (1);
     // Find the channel
     Channel *channel = findChannel(client, channel_to_find);
-    if (!channel)
-        return (1);
-    // Find the nickname in the channel
-    Client *client_to_kick = findClientInChannel(client, channel, nickname);
-    if (!client_to_kick)
+	// Find if Client is in vector of clients operator_channel
+	if (!channel->find_clients_operator_channel(nickname))
+	{
+		std::string error = "Error: " + nickname + " is not an operator in channel " + channel_to_find + "\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
+	}
+    // Find the client to kick in the channel
+	if (!channel->find_client(client))
+	{
+		std::string error = "Error: " + client.get_nickname() + " is not in channel " + channel_to_find + "\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	Client *client_to_kick = NULL;
+	for (std::vector<Client *>::iterator it = channel->get_clients_in_channel().begin();
+		 it != channel->get_clients_in_channel().end(); ++it)
+	{
+		if ((*it)->get_nickname() == nickname)
+		{
+			client_to_kick = *it;
+			break;
+		}
+	}
+    if (!client_to_kick)
+	{
+		std::string error = "Error: " + nickname + " is not in channel " + channel_to_find + "\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
     // Kick the user
-    // int client_to_kick_fd = client_to_kick->get_client_fd();
     if (kickClientFromChannel(channel, client_to_kick, reason) == -1)
         return (1);
     return (0);
