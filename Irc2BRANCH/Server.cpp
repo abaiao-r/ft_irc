@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 13:41:30 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/09 13:56:47 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -315,6 +315,7 @@ int	Server::client_cmds(Client &client)
 
 	s >> cmd;
 	std::getline(s, input);
+	input.erase(0, input.find_first_not_of(" \t\n\r\f\v"));
 	if (cmd == "PASS")
 		cmd_pass(client, input);
 	else if (cmd == "USER")
