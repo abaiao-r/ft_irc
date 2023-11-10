@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 14:57:12 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 17:33:35 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,11 @@ Server::Server(): _port(0), _server_fd(-1)
 Server::Server(int port, std::string password): _port(port), _password(password)
 {
 	std::signal(SIGINT, signal_handler);
-	std::cout << CYAN << "Default constructor Server called" << RESET 
+	std::cout << CYAN << "Parameter constructor Server called" << RESET 
 		<< std::endl;
-	password_checker(password);
+	// check password
+	if (password_checker(password) == 1)
+		throw(std::runtime_error(""));
 	memset(&_address, 0, SOCKLEN);
 	//sets the address family of the socket to IPv4.
 	_address.sin_family = AF_INET;
@@ -111,7 +113,7 @@ int Server::start_listening(void)
 	if (listen(_server_fd, MAX_REQUESTS))
 	{
 		close(_server_fd);
-		return -1;
+		return (-1);
 	}
 	std::cout << GREEN << "Server listening on port " << _port << RESET
 		<< std::endl;
@@ -526,7 +528,6 @@ int Server::channel_name_validation(int client_fd, std::string check)
 	int	len = check.size();
 	std::string message;
 
-	std::cout << "check: " << check << std::endl;
 	if (check[0] != '#')
 	{
 		message = "Channel name must start with '#'\r\n";
@@ -595,8 +596,11 @@ int Server::cmd_join(Client &client, std::string input)
 		}
 		else
 		{
-			if (password_checker(input_password, client.get_client_fd()))
-				return 1;
+			//debug
+			std::cout << "password: " << input_password << "." << std::endl;
+			//check if password is valid
+			if (password_checker(input_password, fd) == 1)
+				return (1);
 			Channel new_channel(input_channel_name, input_password);
 			_channels.push_back(new_channel);
 		}
@@ -1013,41 +1017,49 @@ int Server::cmd_invite(Client &client, std::string input)
 	return (0);
 }
 
-void	Server::password_checker(std::string password)
+int	Server::password_checker(std::string password)
 {
-	std::stringstream	s(password);
-	int					size = password.length();
-	char				c = password[0];
-
-	if (size < 3 || size > 12)
-		throw(std::runtime_error("Error. Password must be between 3 and 12 characters"));
-	while (c)
+	// Check if password is between 3 and 12 characters
+	if (password.length() < 3 || password.length() > 12)
 	{
-		s >> c;
-		if (!isprint(c))
-			throw(std::runtime_error("Error. Password must not contain non-printable characters"));
+		std::cerr << RED << "ERROR: " << RESET 
+			<< "Password must be between 3 and 12 characters" << std::endl;
+		return (1);
 	}
-}
-
-int	Server::password_checker(std::string password, int fd)
-{
-	std::stringstream	s(password);
-	int					size = password.length();
-	char				c = password[0];
-
-	if (size < 3 || size > 12)
+	// Check if password contains non-printable characters
+	for (size_t i = 0; i < password.length(); i++)
 	{
-		sendErrorMessage(fd, "Error. Password must be between 3 and 12 characters\r\n");
-		return 1;
-	}
-	while (c)
-	{
-		s >> c;
-		if (!isprint(c))
+		if (!isprint(password[i]))
 		{
-			sendErrorMessage(fd, "Error. Password must not contain non-printable characters\r\n");
-			return 1;
+			std::cerr << RED << "ERROR: " << RESET 
+				<< "Password must not contain non-printable characters" << std::endl;
+			return (1);
 		}
 	}
-	return 0;
+	return (0);
+}
+/* password_checker: check if password is valid
+ * 1. Check if password is between 3 and 12 characters
+ * 2. Check if password contains non-printable characters
+ */
+int	Server::password_checker(std::string password, int fd)
+{
+	// Check if password is between 3 and 12 characters
+	if (password.length() < 3 || password.length() > 12)
+	{
+		std::string error = "Error. Password must be between 3 and 12 characters\r\n";
+		sendErrorMessage(fd, error);
+		return (1);
+	}
+	// Check if password contains non-printable characters
+	for (size_t i = 0; i < password.length(); i++)
+	{
+		if (!isprint(password[i]))
+		{
+			std::string error = "Error. Password must not contain non-printable characters\r\n";
+			sendErrorMessage(fd, error);
+			return (1);
+		}
+	}
+	return (0);
 }

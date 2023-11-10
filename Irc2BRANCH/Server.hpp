@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 14:52:45 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 17:17:41 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,6 @@ class Server
 		void		disconnect_client(int fd);
 		void		leave_all_rooms(int fd);
 		static void	signal_handler(int sig);
-		void		password_checker(std::string password);
+		int		password_checker(std::string password);
 		int			password_checker(std::string password, int fd);
 };
