@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 11:27:05 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 13:14:02 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,5 +111,6 @@ class Server
 		bool		name_validation(std::string check);
 		int			nick_validation(std::string check);
 		void		disconnect_client(int fd);
+		void		leave_all_rooms(int fd);
 		static void	signal_handler(int sig);
 };

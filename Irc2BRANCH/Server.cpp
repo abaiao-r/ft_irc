@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 11:31:09 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 13:32:53 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -403,8 +403,18 @@ void	Server::disconnect_client(int fd)
 
 	if (match == end)
 		throw(std::runtime_error("Error. Could not find client"));
+	leave_all_rooms(fd);
 	close(fd);
 	_clients.erase(match);
+}
+
+void	Server::leave_all_rooms(int fd)
+{
+	CH_IT	it = _channels.begin();
+	Client	remove = *find(_clients.begin(), _clients.end(), fd).base();
+
+	for (; it < _channels.end(); it++)
+		it->remove_client(remove);
 }
 
 void	Server::signal_handler(int sig)
