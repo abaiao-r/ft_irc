@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 12:30:25 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 15:30:24 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,6 +208,20 @@ bool Commands::handle_join(User& user, const std::string& message)
 				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 				return (false);
 			}
+			//verification if user is banned
+			if(ch_it->ban_list.size() > 0)
+			{
+				for (std::vector<std::string>::iterator it = ch_it->ban_list.begin(); it != ch_it->ban_list.end(); ++it)
+				{
+					if (*it == user.nickname)
+					{
+						std::string error_msg = "\033[31mERROR: You are banned from this channel.\033[0m\r\n";
+						send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+						return (false);
+					}
+				}
+			}
+			
 			//verification if channel is full
 			if(ch_it->limit > 0)
 			{
@@ -300,7 +314,7 @@ bool Commands::handle_channel(User& user, const std::string& message)
 	new_channel.operator_list.push_back(user.nickname);
 	
 	send(user.fd, "\033[32mSUCCESS: Channel created successfully!\033[0m\r\n", 50, MSG_NOSIGNAL);
-	std::cout << "\033[33mChannel: " << channel_name << " \033[32mwas created successfully!\033[0m" << std::endl;
+	std::cout << PINK << "Channel: " << BOLDPINK << channel_name << RESET << PINK << " was created successfully!\033[0m" << std::endl;
 	return (true);
 }
 
@@ -405,6 +419,19 @@ bool Commands::handle_invite(User& user, const std::string& message)
 					return (false);
 				}
 			}
+			//verification if invited user is banned
+			if(ch_it->ban_list.size() > 0)
+			{
+				for (std::vector<std::string>::iterator it = ch_it->ban_list.begin(); it != ch_it->ban_list.end(); ++it)
+				{
+					if (*it == nickname)
+					{
+						std::string error_msg = "\033[31mERROR: Invited user is banned from this channel.\033[0m\r\n";
+						send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+						return (false);
+					}
+				}
+			}
 			
 			for (std::vector<User>::iterator u_it = users.begin(); u_it != users.end(); ++u_it)
 			{
@@ -414,7 +441,7 @@ bool Commands::handle_invite(User& user, const std::string& message)
 					ch_it->invite_list.push_back(nickname);
 					std::string invite_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " INVITE " + nickname + " " + channel_name + "\r\n";
 					send(u_it->fd, invite_msg.c_str(), invite_msg.length(), MSG_NOSIGNAL);
-					std::cout << "Invited user successfully!" << std::endl;
+					std::cout << BOLDYELLOW << user.nickname << YELLOW << " has invited " << nickname << RESET << std::endl;
 					return (true);
 				}
 			}
@@ -472,7 +499,7 @@ bool Commands::handle_topic(User& user, const std::string& message)
 			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it) {
 				send(u_it->fd, topic_msg.c_str(), topic_msg.length(), MSG_NOSIGNAL);
 			}
-			std::cout << "Changed topic successfully!" << std::endl;
+			std::cout << BOLDYELLOW << user.nickname << RESET << YELLOW << " changed topic on channel: " << channel_name << RESET << std::endl;
 			return (true);
 		}
 	}
@@ -598,42 +625,42 @@ bool Commands::handle_mode(User& user, const std::string& message)
 	{
 		// Expecting format: MODE <channel> +k <password>
 		channel->password = argument;
-		std::cout << "Password set to " << argument << " on channel: " << channel->name << std::endl;
+		std::cout << BOLDYELLOW << user.nickname << RESET << YELLOW << " set a password on channel: " << channel_name << RESET << std::endl;
 		send(user.fd, "\033[32mSUCCESS: Password set successfully!\r\n\033[0m", 47, MSG_NOSIGNAL);
 	}
 	else if (mode == "-k")
 	{
 		// Expecting format: MODE <channel> -k
 		channel->password = "";
-		std::cout << "Password removed from channel: " << channel->name << std::endl;
+		std::cout << BOLDYELLOW << user.nickname << RESET << YELLOW << " removed password on channel: " << channel_name << RESET << std::endl;
 		send(user.fd, "\033[32mSUCCESS: Password removed successfully!\r\n\033[0m", 51, MSG_NOSIGNAL);
 	}
 	else if (mode == "+i")
 	{
 		// Expecting format: MODE <channel> +i
 		channel->is_invite_only = true;
-		std::cout << "Channel " << channel->name << " is now invite only." << std::endl;
+		std::cout << BOLDYELLOW << user.nickname << RESET << YELLOW << " set invite_only on channel: " << channel_name << RESET << std::endl;
 		send(user.fd, "\033[32mSUCCESS: Channel is now invite only.\r\n\033[0m", 48, MSG_NOSIGNAL);
 	}
 	else if (mode == "-i")
 	{
 		// Expecting format: MODE <channel> -i
 		channel->is_invite_only = false;
-		std::cout << "Channel " << channel->name << " is no longer invite only." << std::endl;
+		std::cout << BOLDYELLOW << user.nickname << " " << YELLOW << " removed invite_only on channel: " << channel_name << RESET << std::endl;
 		send(user.fd, "\033[32mSUCCESS: Channel is no longer invite only.\033[0m\r\n", 54, MSG_NOSIGNAL);
 	}
 	else if (mode == "+t")
 	{
 		// Expecting format: MODE <channel> +t
 		channel->is_topic_settable = true;
-		std::cout << "Channel " << channel->name << " topic is now settable." << std::endl;
+		std::cout << BOLDYELLOW << user.nickname << RESET << YELLOW << " added topic is settable on channel: " << channel_name << RESET << std::endl;
 		send(user.fd, "\033[32mSUCCESS: Channel topic is now settable.\033[0m\r\n", 51, MSG_NOSIGNAL);
 	}
 	else if (mode == "-t")
 	{
 		// Expecting format: MODE <channel> -t
 		channel->is_topic_settable = false;
-		std::cout << "Channel " << channel->name << " topic is no longer settable." << std::endl;
+		std::cout << BOLDYELLOW << user.nickname << RESET << YELLOW << " removed topic is settable on channel: " << channel_name << RESET << std::endl;
 		send(user.fd, "\033[32mSUCCESS: Channel topic is no longer settable.\033[0m\r\n", 57, MSG_NOSIGNAL);
 	}
 	else if (mode == "+l")
@@ -646,14 +673,14 @@ bool Commands::handle_mode(User& user, const std::string& message)
 		issz >> limit;
 		
 		channel->limit = limit;
-		std::cout << "Channel " << channel->name << " limit is now set to " << channel->limit << "." << std::endl;
+		std::cout << BOLDYELLOW << user.nickname << RESET << YELLOW << " set channel limit on channel: " << channel_name << RESET << std::endl;
 		send(user.fd, "\033[32mSUCCESS: Channel limit is now set.\033[0m\r\n", 46, MSG_NOSIGNAL);
 	}
 	else if (mode == "-l")
 	{
 		// Expecting format: MODE <channel> -l
 		channel->limit = 0;
-		std::cout << "Channel " << channel->name << " limit is now removed." << std::endl;
+		std::cout << BOLDYELLOW << user.nickname << RESET << YELLOW << " removed channel limit on channel: " << channel_name << RESET << std::endl;
 		send(user.fd, "\033[32mSUCCESS: Channel limit is now removed.\033[0m\r\n", 50, MSG_NOSIGNAL);
 	}
 	else

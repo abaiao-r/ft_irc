@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 14:47:01 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 14:18:46 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,7 @@
 /* Default constructor */
 Server::Server() : _port(0), _server_fd(-1)
 {
-	std::cout << CYAN << "Default constructor Server called" << RESET 
-		<< std::endl;
+	//std::cout << CYAN << "Default constructor Server called" << RESET << std::endl;
 	std::memset(&_address, 0, sizeof(_address));
 	_address.sin_family = AF_INET; // IPv4
 	_address.sin_addr.s_addr = INADDR_ANY; // Any available network interface
@@ -26,8 +25,7 @@ Server::Server() : _port(0), _server_fd(-1)
 /* Parameter constructor */
 Server::Server(int port) : _port(port), _server_fd(-1)
 {
-	std::cout << CYAN << "Default constructor Server called" << RESET 
-		<< std::endl;
+	//std::cout << CYAN << "Default constructor Server called" << RESET 	<< std::endl;
 	std::memset(&_address, 0, sizeof(_address));
 	//sets the address family of the socket to IPv4.
 	_address.sin_family = AF_INET;
@@ -106,7 +104,7 @@ int Server::start_listening(void)
 		close(_server_fd);
 		return (-1);
 	}
-	std::cout << GREEN << "Server listening on port " << _port << RESET
+	std::cout << GREEN << "Server is now listening on port: " << BOLDGREEN << _port << RESET
 		<< std::endl;
 	return (0);
 }

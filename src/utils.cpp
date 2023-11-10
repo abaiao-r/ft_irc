@@ -6,12 +6,12 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/21 23:24:43 by andrefranci       #+#    #+#             */
-/*   Updated: 2023/11/09 14:47:55 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 14:18:13 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils.hpp"
-
+#include "colours.hpp"
 
 /* safe_atoi: Converts a string to an integer.
  * Returns: The integer value of the string.
@@ -67,4 +67,16 @@ bool isAlpha(const std::string& str)
 			return (false);
 	}
 	return (true);
+}
+
+void printWelcome()
+{
+	std::cout << std::endl;
+	std::cout << YELLOW << "Welcome to... " << RESET << std::endl;
+	std::cout << BOLDBLUE << " .----..-----.       .-..---. .----. " << std::endl;
+	std::cout << " } |__}`-' '-'       { |} }}_}| }`-' " << std::endl;
+	std::cout << " } '_}   } {         | }| } \\ | },-. " << std::endl;
+	std::cout << " `--'    `-'  _______`-'`-'-' `----'  " << std::endl;
+	std::cout << "             {_______}               " << std::endl;
+	std::cout << RESET << std::endl;
 }

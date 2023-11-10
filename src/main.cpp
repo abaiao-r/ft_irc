@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:25 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 14:46:32 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 14:14:23 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ int main(int ac, char **av)
 	
 	Server server(port);
 	
+	printWelcome();
 	if (server.init_server() == -1) // not false but if equal to -1
 		return (1);
 	clients.handle_client(server.get_server_fd(), av[2], av);

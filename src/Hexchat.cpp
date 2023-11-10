@@ -6,12 +6,13 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/09 14:53:19 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/09 14:53:21 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 15:13:31 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "User.hpp"
 #include "Handle_user.hpp"
+#include "colours.hpp"
 
 std::vector<std::string> split(const std::string& s, const std::string& delimiter)
 {
@@ -63,7 +64,7 @@ bool handle_hexchat(const std::string& firstMessage, const std::string& secondMe
 
 	user.is_registered = true;
 	user.has_authenticated = true;
-	std::cout << "Registered successfully! Nickname:" << user.nickname << " for fd: " << client_fd << std::endl;
+	std::cout << GREEN << "User: " << BOLDGREEN << user.nickname << GREEN << " registered!" << RESET << std::endl;
 	std::string welcome_msg = ":FT_IRC 001 " + user.nickname + " :Welcome to the IRC network, " + user.nickname + "!\n" + user.username + "@" + user.hostname + "\r\n";
 	send(client_fd, welcome_msg.c_str(), welcome_msg.size(), MSG_NOSIGNAL);
 	return (true);

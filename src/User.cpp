@@ -6,12 +6,13 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:55:06 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 12:22:36 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 15:22:58 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "User.hpp"
 #include "Handle_user.hpp"
+#include "colours.hpp"
 
 std::vector<User> users;  // List of connected users
 
@@ -48,10 +49,7 @@ bool authenticate_user(int client_fd, const std::string& message, const std::str
 	if(message.find("NICK") == 0)
 	{
 		if(!handle_nick(user, message))
-		{
-			std::cout << "fd: " << user.fd << " - ERROR: Nickname is invalid or already in use" << std::endl;
 			return (true);
-		}
 		else
 		{
 			send(client_fd, "\033[32mSUCCESS: Nickname set successfully!\033[0m\r\n", 47, MSG_NOSIGNAL);
@@ -85,7 +83,7 @@ bool authenticate_user(int client_fd, const std::string& message, const std::str
 		send(client_fd, your_host_message.c_str(), your_host_message.length(), MSG_NOSIGNAL);
 		std::string created_message = "This server was created abaiao-r, gacorrei and joao-per \r\n";
 		send(client_fd, created_message.c_str(), created_message.length(), MSG_NOSIGNAL);
-		std::cout << "User:" << user.nickname << "Registered" << std::endl;
+		std::cout << CYAN << "User: " << BOLDCYAN << user.nickname << " registered" << RESET << std::endl;
 		
 	}
 	
