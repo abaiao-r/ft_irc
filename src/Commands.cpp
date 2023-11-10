@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 10:07:17 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 11:53:47 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,13 @@ bool Commands::msg_channel(User& user, const std::string& channel_name, const st
 	if (it == channels.end())
 	{
 		std::string error_msg = "ERROR: Channel " + channel_name + " not found.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.size(), MSG_NOSIGNAL);
+		return false;
+	}
+
+	if(isuser_onchannel(user, channel_name) == false)
+	{
+		std::string error_msg = "ERROR: You are not in the channel.\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.size(), MSG_NOSIGNAL);
 		return false;
 	}
@@ -253,7 +260,10 @@ bool Commands::handle_join(User& user, const std::string& message)
 			return (true);
 		}
 	}
+	//remove the first character from channel_name
+	channel_name.erase(0, 1);
 	handle_channel(user, "CREATE " + channel_name);
+	return (true);
 }
 
 
@@ -431,11 +441,24 @@ bool Commands::handle_topic(User& user, const std::string& message)
 	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
 		if (ch_it->name == channel_name)
 		{
+			if (isuser_onchannel(user, channel_name) == false)
+			{
+				std::string error_msg = "ERROR: You are not in the channel.\r\n";
+				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+				return (false);
+			}
 			if (ch_it->users_in_channel.size() == 0)
 			{
 				std::string error_msg = "ERROR: No users in channel.\r\n";
 				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 				return (false);
+			}
+			//if topic is empty, show the current topic
+			if (topic == "")
+			{
+				std::string topic_msg = ":" + user.hostname + " 332 " + user.nickname + " " + channel_name + " :" + ch_it->topic + "\r\n";
+				send(user.fd, topic_msg.c_str(), topic_msg.size(), 0);
+				return (true);
 			}
 			if (ch_it->is_topic_settable == false)
 			{
@@ -492,21 +515,12 @@ bool Commands::handle_mode(User& user, const std::string& message)
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
-	//verify if the user is on the channel
-	for (std::vector<User>::iterator u_it = channel->users_in_channel.begin(); u_it != channel->users_in_channel.end(); ++u_it)
+	if(!isuser_onchannel(user, channel_name))
 	{
-		if (u_it->nickname == user.nickname)
-			break ;
-		else if (user.is_admin == true)
-			break ;
-		else
-		{
-			std::string error_msg = "ERROR: You are not in the channel.\r\n";
-			send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-			return (false);
-		}
+		std::string error_msg = "ERROR: You are not in the channel.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
 	}
-
 	
 	if (mode == "+o")
 	{
