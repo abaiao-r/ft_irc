@@ -44,11 +44,11 @@ For example:
 ./ircserv 6667 12345
 ```
 ## 📖 Instructions
-PASS <password>
+PASS (password)
 
-NICK <nickname>
+NICK (nickname)
 
-USER <username> <mode> <hostname> :<realname>
+USER (username) (mode) (hostname) :(realname)
 
 **All available commands:** CREATE, JOIN, PRIVMSG, MODE(i,k,t,l,o)
 
