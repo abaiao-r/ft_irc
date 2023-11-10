@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 19:29:55 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/10 21:05:47 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -413,9 +413,16 @@ int Server::cmd_mode(Client &client, std::string input)
 		// add nickname to clients operator_channel
 		// find client by nickname
 		Client *client_to_add = find_client(client, argument);
+		if (!client_to_add)
+		{
+			std::string error = "Error: Client " + argument + " does not exist\r\n";
+			sendErrorMessage(client.get_client_fd(), error);
+			return (1);
+		}
 		channel->add_client_to_clients_operator_vector(*client_to_add);
 		std::string success = "Success: " + argument + " is now an admin in channel " + channel_to_find + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
+		sendSuccessMessage(client_to_add->get_client_fd(), success);
 		return (0);
 	}
 	else if (mode == "-o")
@@ -431,6 +438,12 @@ int Server::cmd_mode(Client &client, std::string input)
 		// remove nickname from clients operator_channel
 		// find client by nickname
 		Client *client_to_remove = find_client(client, argument);
+		if (!client_to_remove)
+		{
+			std::string error = "Error: Client " + argument + " does not exist\r\n";
+			sendErrorMessage(client.get_client_fd(), error);
+			return (1);
+		}
 		channel->remove_client_from_clients_operator_vector(*client_to_remove);
 		std::string success = "Success: " + argument + " is no longer an operator in channel " + channel_to_find + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
@@ -887,7 +900,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	getline(s, msg);
 	if (msg[0] != ':')
 	{
-		send(fd, "Error. Wrong message format (must start with ':')\r\n", 52, MSG_NOSIGNAL);
+		send(fd, "Error: Usage: PRIVMSG <destination> :<message>\r\n", 48, MSG_NOSIGNAL);
 		return;
 	}
 	if (dest[0] == '#')
@@ -956,7 +969,7 @@ int Server::cmd_kick(Client &client, std::string input)
 	// Find if Client is in vector of clients operator_channel
 	if (!channel->find_clients_operator_channel(client))
 	{
-		std::string error = "Error: " + nickname + " is not an operator in channel " + channel_to_find + "\r\n";
+		std::string error = "Error: " + client.get_nickname() + " is not an operator in channel " + channel_to_find + "\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
@@ -1057,14 +1070,12 @@ Channel	*Server::findChannel(Client &client, const std::string	&channelName)
 
 Client	*Server::find_client(Client &client, const std::string& nickname)
 {
+	(void)client;
+
 	std::vector<Client>::iterator it = find(_clients.begin(), _clients.end(), nickname);
 
 	if (it == _clients.end())
-	{
-		sendErrorMessage(client.get_client_fd(), "Error: " + nickname 
-			+ " does not exist\r\n");
 		return (NULL);
-	}
 	return &(*it);
 }
 
@@ -1148,7 +1159,7 @@ int Server::cmd_topic(Client &client, std::string input)
 		// Check if client is administrator
 		if (!channel->find_clients_operator_channel(client))
 		{
-			std::string error = "Error: " + client.get_nickname() + " is not administrator\r\n";
+			std::string error = "Error: " + client.get_nickname() + " is not an operator in channel " + channel_to_find + "\r\n";
 			sendErrorMessage(client.get_client_fd(), error);
 			return (-1);
 		}	
