@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 17:33:35 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/10 19:29:55 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -354,8 +354,8 @@ int	Server::client_cmds(Client &client)
 		cmd_invite(client, input);
 	else if (cmd == "TOPIC")
 		cmd_topic(client, input);
-	// else if (cmd == "MODE")
-	// 	cmd_mode(client, input);
+	else if (cmd == "MODE")
+		cmd_mode(client, input);
 	// else if (cmd == "PART")
 	// 	cmd_part(client, input);
 	//USE ITERATORS FOR THIS INSTEAD OF REFERENCES TO MAKE ACCESS EASIER??
@@ -368,6 +368,206 @@ int	Server::client_cmds(Client &client)
 	}
 	return(0);
 }
+
+/* cmd_mode: set mode of channel
+ * 1. Parse input into channel name and mode
+ * 2. Check if client is administrator
+ * 3. Find the channel
+ * 4. Set mode of channel
+ */
+int Server::cmd_mode(Client &client, std::string input)
+{
+	std::istringstream iss(input);
+	std::string channel_to_find;
+	std::string mode;
+	std::string argument;
+
+	// Parse input
+	iss >> channel_to_find >> mode >> argument;
+	// Find the channel
+	Channel *channel = findChannel(client, channel_to_find);
+	if (!channel)
+	{
+		std::string error = "Error: Channel " + channel_to_find + " does not exist\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	// Find if Client is in vector of clients operator_channel
+	if (!channel->find_clients_operator_channel(client))
+	{
+		std::string error = "Error: You are not an operator in channel " + channel_to_find + "\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	// Set mode of channel
+	if (mode == "+o")
+	{
+		// Expecting format: MODE <channel> +o <nickname>
+		// look for nickname in clients operator_channel
+		if (channel->find_clients_operator_channel(argument))
+		{
+			std::string error = "Error: " + argument + " is already an admin in channel " + channel_to_find + "\r\n";
+			sendErrorMessage(client.get_client_fd(), error);
+			return (1);
+		}
+		// add nickname to clients operator_channel
+		// find client by nickname
+		Client *client_to_add = find_client(client, argument);
+		channel->add_client_to_clients_operator_vector(*client_to_add);
+		std::string success = "Success: " + argument + " is now an admin in channel " + channel_to_find + "\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		return (0);
+	}
+	else if (mode == "-o")
+	{
+		// Expecting format: MODE <channel> +o <nickname>
+		// look for nickname in clients operator_channel
+		if (!channel->find_clients_operator_channel(argument))
+		{
+			std::string error = "Error: " + argument + " is not an admin in channel " + channel_to_find + "\r\n";
+			sendErrorMessage(client.get_client_fd(), error);
+			return (1);
+		}
+		// remove nickname from clients operator_channel
+		// find client by nickname
+		Client *client_to_remove = find_client(client, argument);
+		channel->remove_client_from_clients_operator_vector(*client_to_remove);
+		std::string success = "Success: " + argument + " is no longer an operator in channel " + channel_to_find + "\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		return (0);
+	}
+	else if (mode == "+k")
+	{
+		// Expecting format: MODE <channel> +k <password>
+		// check if password is valid
+		if (password_checker(argument, client.get_client_fd()) == 1)
+			return (1);
+		// change password of channel
+		channel->set_password(argument);
+		std::string success = "Success: Password of channel " + channel_to_find + " changed to " + argument + "\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		return (0);
+	}
+	else if (mode == "-k")
+	{
+		// Expecting format: MODE <channel> -k
+		// check if channel has password
+		if (channel->get_password().empty())
+		{
+			std::string error = "Error: Channel " + channel_to_find + " does not have a password\r\n";
+			sendErrorMessage(client.get_client_fd(), error);
+			return (1);
+		}
+		// remove password of channel
+		channel->set_password("");
+		std::string success = "Success: Password of channel " + channel_to_find + " removed\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		return (0);
+	}
+	else if (mode == "+i")
+	{
+		// Expecting format: MODE <channel> +i
+		// check if channel is invite only
+		if (channel->get_channel_invite_only() == true)
+		{
+			std::string error = "Error: Channel " + channel_to_find + " is already invite only\r\n";
+			sendErrorMessage(client.get_client_fd(), error);
+			return (1);
+		}
+		// set channel to invite only
+		channel->set_channel_invite_only(true);
+		std::string success = "Success: Channel " + channel_to_find + " is now invite only\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		return (0);
+	}
+	else if (mode == "-i")
+	{
+		// Expecting format: MODE <channel> -i
+		// check if channel is invite only
+		if (channel->get_channel_invite_only() == false)
+		{
+			std::string error = "Error: Channel " + channel_to_find + "already not invite only\r\n";
+			sendErrorMessage(client.get_client_fd(), error);
+			return (1);
+		}
+		// set channel to invite only
+		channel->set_channel_invite_only(false);
+		std::string success = "Success: Channel " + channel_to_find + " is now not invite only\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		return (0);
+	}
+	else if (mode == "+t")
+	{
+		// Expecting format: MODE <channel> +t
+		// check if channel topic_mode is true
+		if (channel->get_topic_mode() == true)
+		{
+			std::string error = "Error: Channel " + channel_to_find + " already has topic mode set\r\n";
+			sendErrorMessage(client.get_client_fd(), error);
+			return (1);
+		}
+		// set channel topic_mode to true
+		channel->set_topic_mode(true);
+		std::string success = "Success: Channel " + channel_to_find + " now has topic mode set\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		return (0);
+	}
+	else if (mode == "-t")
+	{
+		// Expecting format: MODE <channel> -t
+		// check if channel topic_mode is false
+		if (channel->get_topic_mode() == false)
+		{
+			std::string error = "Error: Channel " + channel_to_find + " already has topic mode not set\r\n";
+			sendErrorMessage(client.get_client_fd(), error);
+			return (1);
+		}
+		// set channel topic_mode to false
+		channel->set_topic_mode(false);
+		std::string success = "Success: Channel " + channel_to_find + " now has topic mode not set\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		return (0);
+	}
+	else if (mode == "+l")
+	{
+		// Expecting format: MODE <channel> +l <limit>
+		// transform argument into a number
+		std::istringstream issz(argument);
+		long unsigned int limit;
+		issz >> limit;
+		// change channel limit
+		channel->set_channel_limit(limit);
+		std::string success = "Success: Channel " + channel_to_find + " now has limit " + argument + "\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		return (0);
+	}
+	else if (mode == "-l")
+	{
+		// Expecting format: MODE <channel> -l
+		// check if channel limit is 0
+		if (channel->get_channel_limit() == 0)
+		{
+			std::string error = "Error: Channel " + channel_to_find + " already has no limit\r\n";
+			sendErrorMessage(client.get_client_fd(), error);
+			return (1);
+		}
+		// change channel limit
+		channel->set_channel_limit(0);
+		std::string success = "Success: Channel " + channel_to_find + " now has no limit\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		return (0);
+	}
+	else
+	{
+		std::string error = "Error: Usage: MODE <channel> [+|-][o|k|i|t|l] <argument>\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	return (0);
+}
+
+		
+
 
 bool	Server::pass_validation(std::string check) const
 {
@@ -625,7 +825,7 @@ int Server::cmd_join(Client &client, std::string input)
 	}
 	// check if channel is full, or invite only or it needs a password to do
 	// checks if it needs a password and if the password is correct
-	if (it->get_clients_in_channel().size() >= it->get_channel_limit())
+	if (it->get_clients_in_channel().size() >= it->get_channel_limit() && it->get_channel_limit() != 0)
 	{
 		message = "Channel " + input_channel_name + " is full\r\n";
 		sendErrorMessage(fd, message);
@@ -942,12 +1142,16 @@ int Server::cmd_topic(Client &client, std::string input)
 		sendSuccessMessage(client.get_client_fd(), message);
 		return (0);
 	}
-	// Check if client is administrator
-	if (!channel->find_clients_operator_channel(client))
+	// check if topic_mode is true
+	if (channel->get_topic_mode() == true)
 	{
-		std::string error = "Error: " + client.get_nickname() + " is not administrator\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
-		return (-1);
+		// Check if client is administrator
+		if (!channel->find_clients_operator_channel(client))
+		{
+			std::string error = "Error: " + client.get_nickname() + " is not administrator\r\n";
+			sendErrorMessage(client.get_client_fd(), error);
+			return (-1);
+		}	
 	}
 	channel->set_topic(topic);
 	return (0);

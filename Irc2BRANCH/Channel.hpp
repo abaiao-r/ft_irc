@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/10 14:58:05 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 18:42:59 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ class Channel
 		std::string			_name;
 		std::string			_password;
 		std::string			_topic;
+		bool 				_topic_mode;
 		int					_mode;
 		unsigned int 		_channel_limit;
 		bool				_channel_invite_only;
@@ -49,6 +50,9 @@ class Channel
 
 		std::string			get_topic() const;
 		void				set_topic(std::string topic);
+
+		bool 				get_topic_mode() const;
+		void				set_topic_mode(bool topic_mode);
 
 		int					get_mode() const;
 		void				set_mode(int mode);

@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/10 14:58:10 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 19:45:07 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
 
 Channel::Channel()
-	:_name(""), _password(""), _topic(""), _mode(-1), 
+	:_name(""), _password(""), _topic(""), _topic_mode(false), _mode(-1), 
 	_channel_limit(0), _channel_invite_only(false)
 {
 	std::cout << CYAN << "Channel: Default constructor called" << RESET
@@ -28,25 +28,19 @@ Channel::Channel(std::string name)
 	_name = name;
 	_password = "";
 	_topic = "";
+	_topic_mode = false;
 	_mode = -1;
-	_channel_limit = UINT_MAX;
+	_channel_limit = 0;
 	_channel_invite_only = false;
 }
 
 /* Parameter constructor: name and pass*/
 Channel::Channel(std::string name, std::string password)
-	:_name(name), _password(password), _topic(""), _mode(-1), 
-	_channel_limit(UINT_MAX), _channel_invite_only(false)
+	:_name(name), _password(password), _topic(""), _topic_mode(false), _mode(-1), 
+	_channel_limit(0), _channel_invite_only(false)
 {
 	std::cout << CYAN << "Channel: Parameter constructor called" << RESET
 		<< std::endl;
-
-	// int	check = password_checker(password);
-
-	// if (check == 1)
-		//Message pass size
-	// else if (check == 2)
-		//Message non printable
 }
 
 /* Copy constructor */
@@ -123,6 +117,18 @@ std::string	Channel::get_topic(void) const
 void	Channel::set_topic(std::string topic)
 {
 	_topic = topic;
+}
+
+/* get_topic_mode() returns true if the topic is settable. */
+bool	Channel::get_topic_mode(void) const
+{
+	return (_topic_mode);
+}
+
+/* set_topic_mode() sets the topic to be settable. */
+void	Channel::set_topic_mode(bool topic_mode)
+{
+	_topic_mode = topic_mode;
 }
 
 /* get_mode() returns the mode of the channel. */
