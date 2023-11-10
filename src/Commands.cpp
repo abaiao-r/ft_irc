@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 17:57:30 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 09:59:53 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,42 @@ Channel* find_channel_by_user(const User& user)
 		}
 	}
 	return (NULL); // user not in any channel
+}
+
+bool Commands::isuser_onchannel(User& user, const std::string& channel_name)
+{
+	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it)
+	{
+		if (ch_it->name == channel_name)
+		{
+			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it)
+			{
+				if (u_it->nickname == user.nickname)
+					return (true);
+			}
+		}
+	}
+	return (false);
+}
+
+bool Commands::verify_operator(User& user, const std::string& channel_name)
+{
+	if(user.is_admin == true)
+		return (true);
+	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it)
+	{
+		if (ch_it->name == channel_name)
+		{
+			for (std::vector<std::string>::iterator it = ch_it->operator_list.begin(); it != ch_it->operator_list.end(); ++it)
+			{
+				if (*it == user.nickname)
+					return (true);
+				else if(user.is_admin == true)
+					return (true);
+			}
+		}
+	}
+	return (false);
 }
 
 bool Commands::msg_channel(User& user, const std::string& channel_name, const std::string& message)
@@ -157,18 +193,15 @@ bool Commands::handle_join(User& user, const std::string& message)
 	std::string channel_name;
 	std::string password;
 	iss >> command >> channel_name >> password;
-	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
-		std::cout << "Channel name:" << channel_name << "|" << std::endl;
-		std::cout << "real|" << ch_it->name << "|" << std::endl;
+	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it)
+	{
 		if (ch_it->name == channel_name)
 		{
-			for (std::vector<User>::iterator u_it = ch_it->users_in_channel.begin(); u_it != ch_it->users_in_channel.end(); ++u_it)
+			if(isuser_onchannel(user, channel_name))
 			{
-				if (u_it->nickname == user.nickname)
-				{
-					std::cout << "User already in channel" << std::endl;
-					return (false);
-				}
+				std::string error_msg = "ERROR: You are already in the channel.\r\n";
+				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+				return (false);
 			}
 			//verification if channel is full
 			if(ch_it->limit > 0)
@@ -269,21 +302,20 @@ bool Commands::handle_channel(User& user, const std::string& message)
 
 bool Commands::handle_kick(User& user, const std::string& message)
 {
-	if(!user.is_admin)
-	{
-		std::string error_msg = "ERROR: Only admin can kick users.\r\n";
-		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-		return (false);
-	}
-	
 	std::istringstream iss(message);
 	std::string command;
 	std::string channel_name;
 	std::string nickname;
 	iss >> command >> channel_name >> nickname;
+	//verify if user is in operator_list
+	if(!verify_operator(user, channel_name))
+	{
+		std::string error_msg = "ERROR: You are not an admin.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
+	}
 	
-	std::vector<Channel>::iterator ch_it = channels.begin();
-	for (; ch_it != channels.end(); ++ch_it)
+	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it)
 	{
 		
 		if (ch_it->name == channel_name)
@@ -409,11 +441,14 @@ bool Commands::handle_topic(User& user, const std::string& message)
 				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 				return (false);
 			}
-			if (ch_it->users_in_channel[0].nickname != user.nickname)
+			if (ch_it->is_topic_settable == false)
 			{
-				std::string error_msg = "ERROR: Only admin can change topic.\r\n";
-				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-				return (false);
+				if(verify_operator(user, channel_name) == false)
+				{
+					std::string error_msg = "ERROR: topic is only settable for operators\r\n";
+					send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+					return (false);
+				}
 			}
 			ch_it->topic = topic;
 			std::string topic_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " TOPIC " + channel_name + " :" + topic + "\r\n";
@@ -431,12 +466,7 @@ bool Commands::handle_topic(User& user, const std::string& message)
 
 bool Commands::handle_mode(User& user, const std::string& message)
 {
-	// Expecting format: MODE <channel> <mode>
-	size_t space_pos = message.find(' ', 5);  // Find space after "MODE "
-	if (space_pos == std::string::npos)
-		return (false);
-
-	//do a istream
+	// Expecting format: MODE <channel> <mode> <OPCIONAL:argument>
 	std::istringstream iss(message);
 	std::string command;
 	std::string channel_name;
@@ -445,68 +475,62 @@ bool Commands::handle_mode(User& user, const std::string& message)
 	iss >> command >> channel_name >> mode >> argument;
 
 	Channel* channel = NULL;
-	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it) {
-		std::cout << "Channel name:" << channel_name << "|" << std::endl;
-		std::cout << "real|" << ch_it->name << "|" << std::endl;
+	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it)
+	{
 		if (ch_it->name == channel_name)
 		{
 			channel = &(*ch_it);
 			break ;
 		}
 	}
-
-	//verify if the user is in operator_list.
-	//if not, return false with error message
-	if(channel->operator_list.size() > 0)
-	{
-		for (std::vector<std::string>::iterator it = channel->operator_list.begin(); it != channel->operator_list.end(); ++it)
-		{
-			if (*it == user.nickname)
-				break ;
-			else if (user.is_admin == true)
-				break ;
-			else
-			{
-				std::string error_msg = "ERROR: You are not an admin.\r\n";
-				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-				return (false);
-			}
-		}
-	}
-	else if (user.is_admin == true)
-	{
-		for (std::vector<std::string>::iterator it = channel->operator_list.begin(); it != channel->operator_list.end(); ++it)
-		{
-			if (*it == user.nickname)
-				break ;
-			else
-			{
-				std::string error_msg = "ERROR: You are not an admin.\r\n";
-				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-				return (false);
-			}
-		}
-	}
-	else
-	{
-		std::string error_msg = "ERROR: You are not an admin.\r\n";
-		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-		return (false);
-	}
-
 	if (!channel)
 	{
 		std::string error_msg = "ERROR: Channel " + channel_name + " not found.\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
+
+	if(!verify_operator(user, channel_name))
+	{
+		std::string error_msg = "ERROR: You are not an admin.\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
+	}
+	//verify if the user is on the channel
+	for (std::vector<User>::iterator u_it = channel->users_in_channel.begin(); u_it != channel->users_in_channel.end(); ++u_it)
+	{
+		if (u_it->nickname == user.nickname)
+			break ;
+		else if (user.is_admin == true)
+			break ;
+		else
+		{
+			std::string error_msg = "ERROR: You are not in the channel.\r\n";
+			send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+			return (false);
+		}
+	}
+
+	
 	if (mode == "+o")
 	{
 		// Expecting format: MODE <channel> +o <nickname>
-		//verification if user is in operator_list
 		for (std::vector<std::string>::iterator it = channel->operator_list.begin(); it != channel->operator_list.end(); ++it)
 		{
 			if (*it == user.nickname)
+			{
+				for (std::vector<User>::iterator ch_it = channel->users_in_channel.begin(); ch_it != channel->users_in_channel.end(); ++ch_it)
+				{
+					if (ch_it->nickname == argument)
+					{
+						std::string error_msg = "ERROR: User is already an admin.\r\n";
+						send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+						return (false);
+					}
+				}
+				break ;
+			}
+			else if (user.is_admin == true)
 			{
 				for (std::vector<User>::iterator ch_it = channel->users_in_channel.begin(); ch_it != channel->users_in_channel.end(); ++ch_it)
 				{
@@ -515,29 +539,12 @@ bool Commands::handle_mode(User& user, const std::string& message)
 						//pushback the user in admin_list
 						channel->operator_list.push_back(argument);
 
-						send(user.fd, "SUCCESS: User is now admin.\r\n", 30, MSG_NOSIGNAL);
-						break ;
-					}
-				}
-				break ;
-			}
-			else if (user.is_admin == true)
-			{
-				for (std::vector<User>::iterator ch_it = channel->users_in_channel.begin(); ch_it != channel->users_in_channel.end(); ++ch_it)
-				{
-					if (ch_it->nickname == argument)
-					{
-						channel->operator_list.push_back(argument);
-
-						send(user.fd, "SUCCESS: User is now admin.\r\n", 30, MSG_NOSIGNAL);
+						send(user.fd, "SUCCESS: User is now admin.\r\n", 31, MSG_NOSIGNAL);
 						break ;
 					}
 				}
 			}
 		}
-		std::string error_msg = "ERROR: You are not an admin.\r\n";
-		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-		return (false);
 	}
 	else if (mode == "-o")
 	{

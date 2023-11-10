@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:51:11 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 14:51:19 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 09:53:47 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ class Commands
 		bool	handle_kick(User& user, const std::string& message);
 		bool	handle_invite(User& user, const std::string& message);
 		bool	handle_topic(User& user, const std::string& message);
+		bool	verify_operator(User& user, const std::string& channel_name);
+		bool	isuser_onchannel(User& user, const std::string& channel_name)
 
 	private:
 		std::map<std::string, std::vector<std::string> > user_messages;  // Messages associated with usernames
