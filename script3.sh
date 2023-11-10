@@ -4,10 +4,10 @@
 { 
   echo "PASS 1234"
   sleep 0.2
-  echo "USER test 0 * :Rodrigo"
+  echo "USER lolz 1 * :Rodrigo"
   sleep 0.2
-  echo "NICK testador"
+  echo "NICK test"
   sleep 0.2
-  echo "JOIN #test 12345"
+  echo "KICK #test testador"
   sleep 0.2
 } | nc localhost 6697
