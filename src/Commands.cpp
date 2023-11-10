@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 09:59:53 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 10:07:17 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,22 +253,13 @@ bool Commands::handle_join(User& user, const std::string& message)
 			return (true);
 		}
 	}
-	std::cout << "Channel does not exist" << std::endl;
-	std::string error_msg = "ERROR: Channel does not exist.\r\n";
-	send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-	return false;
+	handle_channel(user, "CREATE " + channel_name);
 }
 
 
 bool Commands::handle_channel(User& user, const std::string& message)
 {
-	if(!user.is_admin)
-	{
-		std::string error_msg = "ERROR: Only admin can create channels.\r\n";
-		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-		return (false);
-	}
-
+	//expected format: CREATE <channel> <OPTIONAL:topic>
 	std::istringstream iss(message);
 	std::string command;
 	std::string channel_name;
@@ -289,14 +280,19 @@ bool Commands::handle_channel(User& user, const std::string& message)
 	new_channel.name = "#" + channel_name;
 	new_channel.admin = user;
 	new_channel.users_in_channel.push_back(user);
+	std::string join_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " JOIN :" + channel_name + "\r\n";
+	send(user.fd, join_msg.c_str(), join_msg.length(), MSG_NOSIGNAL);
 	new_channel.is_invite_only = false;
 	if (topic != "")
 		new_channel.topic = topic;
 	else
-		new_channel.topic = "No topic";
+		new_channel.topic = "Not defined";
 	channels.push_back(new_channel);
+	//add user to operator_list
+	new_channel.operator_list.push_back(user.nickname);
+	
 	send(user.fd, "SUCCESS: Channel created successfully!\r\n", 40, MSG_NOSIGNAL);
-	std::cout << "Channel created successfully!" << std::endl;
+	std::cout << "Channel: " << channel_name << " was created successfully!" << std::endl;
 	return (true);
 }
 
