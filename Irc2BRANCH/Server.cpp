@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 13:56:47 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/10 10:13:07 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ Server::Server(): _port(0), _server_fd(-1)
 /* Parameter constructor */
 Server::Server(int port, std::string password): _port(port), _password(password)
 {
+	std::signal(SIGINT, signal_handler);
 	std::cout << CYAN << "Default constructor Server called" << RESET 
 		<< std::endl;
 	memset(&_address, 0, SOCKLEN);
@@ -57,7 +58,7 @@ Server::~Server()
 		close(it->get_client_fd());
 	close(_server_fd);
 	close(_epoll_fd);
-	signal_reset();
+	std::signal(SIGINT, SIG_DFL);
 }
 
 /* Assignment operator overload (Update) */
@@ -229,7 +230,6 @@ void	Server::connection()
 	int		client_fd;
 	C_IT	match;
 
-	std::cout << "WAITING FOR CONNECTIONS ON PORT: " << _port << std::endl;
 	while (_loop_state)
 	{
 		//ONLY FOR TESTING!!! DELETE AFTER
@@ -247,7 +247,11 @@ void	Server::connection()
 		//
 		count = epoll_wait(_epoll_fd, _events, MAX_EVENTS, -1);
 		if (count == -1)
+		{
+			if (!_loop_state)
+				break;
 			throw(std::runtime_error("Error in epoll_wait"));
+		}
 		for (int i = 0; i < count; i++)
 		{
 			if (_events[i].data.fd == _server_fd)
@@ -268,7 +272,11 @@ void	Server::connection()
 				client_fd = _events[i].data.fd;
 				match = std::find(_clients.begin(), _clients.end(), client_fd);
 				if (match == _clients.end())
-					throw(std::runtime_error("Error. Could not find client"));
+				{
+					std::cout << "Error. Could not find client\n";
+					disconnect_client(match->get_client_fd());
+					continue;
+				}
 				client_cmds(*match);
 			}
 		}
@@ -392,19 +400,10 @@ void	Server::disconnect_client(int fd)
 void	Server::signal_handler(int sig)
 {
 	if (sig == SIGINT)
+	{
+		std::cout << std::endl;
 		_loop_state = 0;
-}
-
-void	Server::signal_global()
-{
-	signal(SIGINT, signal_handler);
-	signal(SIGQUIT, SIG_IGN);
-}
-
-void	Server::signal_reset()
-{
-	signal(SIGINT, SIG_DFL);
-	signal(SIGQUIT, SIG_DFL);
+	}
 }
 
 void	Server::cmd_pass(Client &client, std::string input)
