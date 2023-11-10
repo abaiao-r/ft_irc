@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/10 14:48:54 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 14:58:10 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -379,20 +379,3 @@ Client	*Channel::find_clients_invited_to_channel_by_nickname(std::string &nickna
 			return (it.base());
 	return (NULL);
 }
-
-// int	Channel::password_checker(std::string password)
-// {
-// 	std::stringstream	s(password);
-// 	int					size = password.length();
-// 	char				c = password[0];
-
-// 	if (size < 3 || size > 12)
-// 		return 1;
-// 	while (c)
-// 	{
-// 		s >> c;
-// 		if (!isprint(c))
-// 			return 2;
-// 	}
-// 	return 0;
-// }

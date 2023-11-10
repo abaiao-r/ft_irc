@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/10 14:56:03 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 14:58:05 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,5 +86,4 @@ class Channel
 		Client				*find_client(Client &client);
 		Client				*find_banned_client(Client &client);
 		void				message(Client &client, std::string msg);
-		int					password_checker(std::string password);
 };
