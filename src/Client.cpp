@@ -6,12 +6,13 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/09 17:06:32 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 12:25:40 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 #include "Commands.hpp"
+#include "colours.hpp"
 
 Client::Client() {} // Constructor
 
@@ -41,7 +42,7 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 		
 		if(poll_ret == -1)
 		{
-			std::cerr << "Error: poll failed" << std::endl;
+			std::cerr << RED << "Error: poll failed" << RESET << std::endl;
 			break;
 		}
 		// Check if the server socket is ready to read
@@ -57,11 +58,11 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 					
 					if(client_fd == -1)
 					{
-						std::cerr << "Error: Cannot accept client" << std::endl;
+						std::cerr << RED << "Error: Cannot accept client" << RESET << std::endl;
 						continue;
 					}
 					// -3 because the first client always starts on 4th socket
-					std::cout << "Client number " << client_fd - 3 << " connected" << std::endl;
+					std::cout << "\033[33mClient number " << client_fd - 3 << " \033[32mconnected\033[0m" << std::endl;
 					pollfd client_pfd;
 					client_pfd.fd = client_fd;
 					client_pfd.events = POLLIN;
@@ -79,7 +80,7 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 					User* user = find_user_by_fd(clients[i].fd);
 					if(!user)
 					{
-						std::cerr << "Error: User not found for fd " << clients[i].fd << std::endl;
+						std::cerr << RED << "Error: User not found for fd " << RESET << clients[i].fd << std::endl;
 						close(clients[i].fd);
 						clients.erase(clients.begin() + i);
 						i--;
@@ -92,7 +93,7 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 						int bytesReceived = recv(clients[i].fd, buffer, sizeof(buffer) - 1, 0);
 						if (bytesReceived <= 0) 
 						{
-							std::cerr << "Error reading from client or client disconnected." << std::endl;
+							std::cerr << RED << "Error reading from client or client disconnected." << RESET << std::endl;
 							close(clients[i].fd);
 							clients.erase(clients.begin() + i);
 							i--;
@@ -100,7 +101,7 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 						}
 						buffer[bytesReceived] = '\0';
 						std::string initialCommand = std::string(buffer);
-						std::cout << "Received:" << initialCommand << std::endl;
+						// DEBUG std::cout << "Received:" << initialCommand << std::endl;
 						if (initialCommand.substr(0, 3) == "CAP")
 							clientBuffers[clients[i].fd] = initialCommand; // Store CAP command
 						if (clientBuffers.count(clients[i].fd))
@@ -108,7 +109,7 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 							// If we have a stored CAP command for this client, process both messages
 							if (!handle_hexchat(clientBuffers[clients[i].fd], initialCommand, *user, password, clients[i].fd))
 							{
-								std::cerr << "Error: User failed Hexchat authentication." << std::endl;
+								std::cerr << RED << "Error: User failed Hexchat authentication." << RESET << std::endl;
 								close(clients[i].fd);
 								clients.erase(clients.begin() + i);
 								i--;
@@ -123,7 +124,7 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 								initialCommand.erase(initialCommand.find("\n"));
 							if (!authenticate_user(clients[i].fd, initialCommand, password, *user))
 							{
-								std::cerr << "Error: User failed authentication." << std::endl;
+								std::cerr << RED << "Error: User failed authentication." << RESET << std::endl;
 								close(clients[i].fd);
 								clients.erase(clients.begin() + i);
 								i--;

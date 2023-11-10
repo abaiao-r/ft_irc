@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 11:53:47 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 12:30:25 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,14 +83,14 @@ bool Commands::msg_channel(User& user, const std::string& channel_name, const st
 	// If the channel is not found, return false
 	if (it == channels.end())
 	{
-		std::string error_msg = "ERROR: Channel " + channel_name + " not found.\r\n";
+		std::string error_msg = "\033[31mERROR: Channel " + channel_name + " not found.\033[0m\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.size(), MSG_NOSIGNAL);
 		return false;
 	}
 
 	if(isuser_onchannel(user, channel_name) == false)
 	{
-		std::string error_msg = "ERROR: You are not in the channel.\r\n";
+		std::string error_msg = "\033[31mERROR: You are not in the channel.\033[0m\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.size(), MSG_NOSIGNAL);
 		return false;
 	}
@@ -132,7 +132,7 @@ bool Commands::handle_privmsg(User& user, const std::string& message)
 
 		if (it == users.end())
 		{
-			std::string error_msg = "ERROR: User " + recipient + " not found.\r\n";
+			std::string error_msg = "\033[31mERROR: User " + recipient + " not found.\033[0m\r\n";
 			send(user.fd, error_msg.c_str(), error_msg.size(), MSG_NOSIGNAL);
 			return (false);
 		}
@@ -166,9 +166,7 @@ bool Commands::handle_commands(int client_fd, User &user)
 			message.erase(message.find("\r\n"), 2);
 		else if(message.find("\n") != std::string::npos)
 			message.erase(message.find("\n"), 1);
-		std::cout << "Command received: |" << message << "|" << std::endl;
-		//print size of command
-		std::cout << "Command size: " << message.size() << std::endl;
+		//std::cout << "Command received: |" << message << "|" << std::endl;
 		if(message.find("JOIN") == 0)
 			handle_join(user, message);
 		else if(message.find("CREATE") == 0)
@@ -185,7 +183,7 @@ bool Commands::handle_commands(int client_fd, User &user)
 			handle_mode(user, message);
 		else
 		{
-			std::string error_msg = "ERROR: No command found\r\n";
+			std::string error_msg = "\033[31mERROR: No command found\033[0m\r\n";
 			send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		}
 	}
@@ -206,7 +204,7 @@ bool Commands::handle_join(User& user, const std::string& message)
 		{
 			if(isuser_onchannel(user, channel_name))
 			{
-				std::string error_msg = "ERROR: You are already in the channel.\r\n";
+				std::string error_msg = "\033[31mERROR: You are already in the channel.\033[0m\r\n";
 				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 				return (false);
 			}
@@ -215,7 +213,7 @@ bool Commands::handle_join(User& user, const std::string& message)
 			{
 				if(ch_it->users_in_channel.size() >= ch_it->limit)
 				{
-					std::string error_msg = std::string("RED") + "ERROR: Channel is full.\r\n" + std::string(RESET);
+					std::string error_msg = std::string(RED) + "ERROR: Channel is full.\r\n" + std::string(RESET);
 					send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 					return (false);
 				}
@@ -232,11 +230,11 @@ bool Commands::handle_join(User& user, const std::string& message)
 						send(user.fd, join_msg.c_str(), join_msg.length(), MSG_NOSIGNAL);
 						std::string topic_message = ":" + user.hostname + " 332 " + user.nickname + " " + channel_name + " :" + ch_it->topic + "\r\n";
 						send(user.fd, topic_message.c_str(), topic_message.size(), 0);
-						std::cout << "Joined channel successfully!" << std::endl;
+						std::cout << "\033[33mUser: " << user.nickname << " \033[32mjoined " << channel_name << " channel successfully!\033[0m" << std::endl;
 						return (true);
 					}
 				}
-				std::string error_msg = "ERROR: Channel is invite only.\r\n";
+				std::string error_msg = "\033[31mERROR: Channel is invite only.\033[0m\r\n";
 				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 				return (false);
 			}
@@ -256,7 +254,7 @@ bool Commands::handle_join(User& user, const std::string& message)
 			send(user.fd, join_msg.c_str(), join_msg.length(), MSG_NOSIGNAL);
 			std::string topic_message = ":" + user.hostname + " 332 " + user.nickname + " " + channel_name + " :" + ch_it->topic + "\r\n";
 			send(user.fd, topic_message.c_str(), topic_message.size(), 0);
-			std::cout << "Joined channel successfully!" << std::endl;
+			std::cout << "\033[33mUser: " << user.nickname << " \033[32mjoined " << channel_name << " channel successfully!\033[0m" << std::endl;
 			return (true);
 		}
 	}
@@ -280,7 +278,7 @@ bool Commands::handle_channel(User& user, const std::string& message)
 	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
 		if (it->name == channel_name)
 		{
-			std::string error_msg = "ERROR: Channel already exists.\r\n";
+			std::string error_msg = "\033[31mERROR: Channel already exists.\033[0m\r\n";
 			send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 			return (false);
 		}
@@ -301,8 +299,8 @@ bool Commands::handle_channel(User& user, const std::string& message)
 	//add user to operator_list
 	new_channel.operator_list.push_back(user.nickname);
 	
-	send(user.fd, "SUCCESS: Channel created successfully!\r\n", 40, MSG_NOSIGNAL);
-	std::cout << "Channel: " << channel_name << " was created successfully!" << std::endl;
+	send(user.fd, "\033[32mSUCCESS: Channel created successfully!\033[0m\r\n", 50, MSG_NOSIGNAL);
+	std::cout << "\033[33mChannel: " << channel_name << " \033[32mwas created successfully!\033[0m" << std::endl;
 	return (true);
 }
 
@@ -316,7 +314,7 @@ bool Commands::handle_kick(User& user, const std::string& message)
 	//verify if user is in operator_list
 	if(!verify_operator(user, channel_name))
 	{
-		std::string error_msg = "ERROR: You are not an admin.\r\n";
+		std::string error_msg = "\033[31mERROR: You are not an admin.\033[0m\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
@@ -337,7 +335,7 @@ bool Commands::handle_kick(User& user, const std::string& message)
 						{
 							if (*it == nickname)
 							{
-								std::string error_msg = "ERROR: User already kicked.\r\n";
+								std::string error_msg = "\033[31mERROR: User's already kicked.\033[0m\r\n";
 								send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 								return (false);
 							}
@@ -346,17 +344,17 @@ bool Commands::handle_kick(User& user, const std::string& message)
 					ch_it->users_in_channel.erase(u_it);
 					std::string kick_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " KICK " + channel_name + " " + nickname + "\r\n";
 					send(user.fd, kick_msg.c_str(), kick_msg.length(), MSG_NOSIGNAL);
-					std::cout << "Kicked user successfully!" << std::endl;
+					std::cout << "\033[33m" << user.nickname <<" kicked " << nickname << " from channel: " << channel_name << "\033[0m" << std::endl;
 					ch_it->ban_list.push_back(nickname);
 					return (true);
 				}
 			}
-			std::string error_msg = "ERROR: User not found in channel.\r\n";
+			std::string error_msg = "\033[31mERROR: User not found in channel.\033[0m\r\n";
 			send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 			return (false);
 		}
 	}
-	std::string error_msg = "ERROR: Channel does not exist.\r\n";
+	std::string error_msg = "\033[31mERROR: Channel does not exist.\033[0m\r\n";
 	send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 	return (false);
 }
@@ -365,7 +363,7 @@ bool Commands::handle_invite(User& user, const std::string& message)
 {
 	if(!user.is_admin)
 	{
-		std::string error_msg = "ERROR: Only admin can invite users.\r\n";
+		std::string error_msg = "\033[31mERROR: Only admin can invite users.\033[0m\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
@@ -379,7 +377,7 @@ bool Commands::handle_invite(User& user, const std::string& message)
 	//if variable resto is not empty, return false with error message
 	if(resto != "")
 	{
-		std::string error_msg = "ERROR: Usage: INVITE <channel> <user>\r\n";
+		std::string error_msg = "\033[31mERROR: \033[33mUsage: INVITE <channel> <user>\033[0m\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
@@ -392,7 +390,7 @@ bool Commands::handle_invite(User& user, const std::string& message)
 			{
 				if (u_it->nickname == nickname)
 				{
-					std::string error_msg = "ERROR: User already in channel.\r\n";
+					std::string error_msg = "\033[31mERROR: User already in channel.\033[0m\r\n";
 					send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 					return (false);
 				}
@@ -420,12 +418,12 @@ bool Commands::handle_invite(User& user, const std::string& message)
 					return (true);
 				}
 			}
-			std::string error_msg = "ERROR: User not found.\r\n";
+			std::string error_msg = "\033[31mERROR: User not found.\033[0m\r\n";
 			send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 			return (false);
 		}
 	}
-	std::string error_msg = "ERROR: Channel does not exist.\r\n";
+	std::string error_msg = "\033[31mERROR: Channel does not exist.\033[0m\r\n";
 	send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 	return (false);
 }
@@ -443,13 +441,13 @@ bool Commands::handle_topic(User& user, const std::string& message)
 		{
 			if (isuser_onchannel(user, channel_name) == false)
 			{
-				std::string error_msg = "ERROR: You are not in the channel.\r\n";
+				std::string error_msg = "\033[31mERROR: You are not in the channel.\033[0m\r\n";
 				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 				return (false);
 			}
 			if (ch_it->users_in_channel.size() == 0)
 			{
-				std::string error_msg = "ERROR: No users in channel.\r\n";
+				std::string error_msg = "\033[31mERROR: No users in channel.\033[0m\r\n";
 				send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 				return (false);
 			}
@@ -464,7 +462,7 @@ bool Commands::handle_topic(User& user, const std::string& message)
 			{
 				if(verify_operator(user, channel_name) == false)
 				{
-					std::string error_msg = "ERROR: topic is only settable for operators\r\n";
+					std::string error_msg = "\033[31mERROR: topic is only settable for operators\033[0m\r\n";
 					send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 					return (false);
 				}
@@ -478,7 +476,7 @@ bool Commands::handle_topic(User& user, const std::string& message)
 			return (true);
 		}
 	}
-	std::string error_msg = "ERROR: Channel does not exist.\r\n";
+	std::string error_msg = "\033[31mERROR: Channel does not exist.\033[0m\r\n";
 	send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 	return (false);
 }
@@ -504,20 +502,20 @@ bool Commands::handle_mode(User& user, const std::string& message)
 	}
 	if (!channel)
 	{
-		std::string error_msg = "ERROR: Channel " + channel_name + " not found.\r\n";
+		std::string error_msg = "\033[31mERROR: Channel " + channel_name + " not found.\033[0m\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
 
 	if(!verify_operator(user, channel_name))
 	{
-		std::string error_msg = "ERROR: You are not an admin.\r\n";
+		std::string error_msg = "\033[31mERROR: You are not an admin.\033[0m\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
 	if(!isuser_onchannel(user, channel_name))
 	{
-		std::string error_msg = "ERROR: You are not in the channel.\r\n";
+		std::string error_msg = "\033[31mERROR: You are not in the channel.\033[0m\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
@@ -533,7 +531,7 @@ bool Commands::handle_mode(User& user, const std::string& message)
 				{
 					if (ch_it->nickname == argument)
 					{
-						std::string error_msg = "ERROR: User is already an admin.\r\n";
+						std::string error_msg = "\033[31mERROR: User is already an admin.\033[0m\r\n";
 						send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 						return (false);
 					}
@@ -549,7 +547,7 @@ bool Commands::handle_mode(User& user, const std::string& message)
 						//pushback the user in admin_list
 						channel->operator_list.push_back(argument);
 
-						send(user.fd, "SUCCESS: User is now admin.\r\n", 31, MSG_NOSIGNAL);
+						send(user.fd, "\033[32mSUCCESS: User is now admin.\033[0m\r\n", 31, MSG_NOSIGNAL);
 						break ;
 					}
 				}
@@ -571,7 +569,7 @@ bool Commands::handle_mode(User& user, const std::string& message)
 						//remove the user from admin_list
 						channel->operator_list.erase(it);
 
-						send(user.fd, "SUCCESS: User is no longer admin.\r\n", 36, MSG_NOSIGNAL);
+						send(user.fd, "\033[32mSUCCESS: User is no longer admin.\033[0m\r\n", 45, MSG_NOSIGNAL);
 						break ;
 					}
 				}
@@ -586,13 +584,13 @@ bool Commands::handle_mode(User& user, const std::string& message)
 						//pushback the user in admin_list
 						channel->operator_list.erase(it);
 
-						send(user.fd, "SUCCESS: User is no longer admin.\r\n", 36, MSG_NOSIGNAL);
+						send(user.fd, "\033[32mSUCCESS: User is no longer admin.\033[0m\r\n", 45, MSG_NOSIGNAL);
 						break ;
 					}
 				}
 			}
 		}
-		std::string error_msg = "ERROR: You are not an admin.\r\n";
+		std::string error_msg = "\033[31mERROR: You are not an admin.\033[0m\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}
@@ -601,42 +599,42 @@ bool Commands::handle_mode(User& user, const std::string& message)
 		// Expecting format: MODE <channel> +k <password>
 		channel->password = argument;
 		std::cout << "Password set to " << argument << " on channel: " << channel->name << std::endl;
-		send(user.fd, "SUCCESS: Password set successfully!\r\n", 38, MSG_NOSIGNAL);
+		send(user.fd, "\033[32mSUCCESS: Password set successfully!\r\n\033[0m", 47, MSG_NOSIGNAL);
 	}
 	else if (mode == "-k")
 	{
 		// Expecting format: MODE <channel> -k
 		channel->password = "";
 		std::cout << "Password removed from channel: " << channel->name << std::endl;
-		send(user.fd, "SUCCESS: Password removed successfully!\r\n", 42, MSG_NOSIGNAL);
+		send(user.fd, "\033[32mSUCCESS: Password removed successfully!\r\n\033[0m", 51, MSG_NOSIGNAL);
 	}
 	else if (mode == "+i")
 	{
 		// Expecting format: MODE <channel> +i
 		channel->is_invite_only = true;
 		std::cout << "Channel " << channel->name << " is now invite only." << std::endl;
-		send(user.fd, "SUCCESS: Channel is now invite only.\r\n", 39, MSG_NOSIGNAL);
+		send(user.fd, "\033[32mSUCCESS: Channel is now invite only.\r\n\033[0m", 48, MSG_NOSIGNAL);
 	}
 	else if (mode == "-i")
 	{
 		// Expecting format: MODE <channel> -i
 		channel->is_invite_only = false;
 		std::cout << "Channel " << channel->name << " is no longer invite only." << std::endl;
-		send(user.fd, "SUCCESS: Channel is no longer invite only.\r\n", 45, MSG_NOSIGNAL);
+		send(user.fd, "\033[32mSUCCESS: Channel is no longer invite only.\033[0m\r\n", 54, MSG_NOSIGNAL);
 	}
 	else if (mode == "+t")
 	{
 		// Expecting format: MODE <channel> +t
 		channel->is_topic_settable = true;
 		std::cout << "Channel " << channel->name << " topic is now settable." << std::endl;
-		send(user.fd, "SUCCESS: Channel topic is now settable.\r\n", 42, MSG_NOSIGNAL);
+		send(user.fd, "\033[32mSUCCESS: Channel topic is now settable.\033[0m\r\n", 51, MSG_NOSIGNAL);
 	}
 	else if (mode == "-t")
 	{
 		// Expecting format: MODE <channel> -t
 		channel->is_topic_settable = false;
 		std::cout << "Channel " << channel->name << " topic is no longer settable." << std::endl;
-		send(user.fd, "SUCCESS: Channel topic is no longer settable.\r\n", 48, MSG_NOSIGNAL);
+		send(user.fd, "\033[32mSUCCESS: Channel topic is no longer settable.\033[0m\r\n", 57, MSG_NOSIGNAL);
 	}
 	else if (mode == "+l")
 	{
@@ -649,18 +647,18 @@ bool Commands::handle_mode(User& user, const std::string& message)
 		
 		channel->limit = limit;
 		std::cout << "Channel " << channel->name << " limit is now set to " << channel->limit << "." << std::endl;
-		send(user.fd, "SUCCESS: Channel limit is now set.\r\n", 37, MSG_NOSIGNAL);
+		send(user.fd, "\033[32mSUCCESS: Channel limit is now set.\033[0m\r\n", 46, MSG_NOSIGNAL);
 	}
 	else if (mode == "-l")
 	{
 		// Expecting format: MODE <channel> -l
 		channel->limit = 0;
 		std::cout << "Channel " << channel->name << " limit is now removed." << std::endl;
-		send(user.fd, "SUCCESS: Channel limit is now removed.\r\n", 41, MSG_NOSIGNAL);
+		send(user.fd, "\033[32mSUCCESS: Channel limit is now removed.\033[0m\r\n", 50, MSG_NOSIGNAL);
 	}
 	else
 	{
-		std::string error_msg = "ERROR: Invalid mode.\r\n";
+		std::string error_msg = "\033[31mERROR: Invalid mode.\033[0m\r\n";
 		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 		return (false);
 	}

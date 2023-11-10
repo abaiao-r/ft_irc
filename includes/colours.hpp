@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   colours.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: andrefrancisco <andrefrancisco@student.    +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/21 21:07:59 by andrefranci       #+#    #+#             */
-/*   Updated: 2023/10/21 21:08:37 by andrefranci      ###   ########.fr       */
+/*   Updated: 2023/11/10 12:12:30 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

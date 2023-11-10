@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:55:06 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 17:08:37 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/10 12:22:36 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,13 +33,13 @@ bool authenticate_user(int client_fd, const std::string& message, const std::str
 	{
 		if (message.find("PASS") != 0 || !handle_pass(user, message, password))
 		{
-			send(client_fd, "ERROR: Invalid password. Please try again.\r\n", 45, MSG_NOSIGNAL);
+			send(client_fd, "\033[33mERROR: Invalid password. Please try again.\033[0m\r\n", 54, MSG_NOSIGNAL);
 			close(client_fd);
 			return (false);
 		}
 		else
 		{
-			send(client_fd, "SUCCESS: Password accepted!\r\n", 29, MSG_NOSIGNAL);
+			send(client_fd, "\033[32mSUCCESS: Password accepted!\033[0m\r\n", 39, MSG_NOSIGNAL);
 			user.has_authenticated = true;
 			return (true);
 		}
@@ -54,7 +54,7 @@ bool authenticate_user(int client_fd, const std::string& message, const std::str
 		}
 		else
 		{
-			send(client_fd, "SUCCESS: Nickname set successfully!\r\n", 38, MSG_NOSIGNAL);
+			send(client_fd, "\033[32mSUCCESS: Nickname set successfully!\033[0m\r\n", 47, MSG_NOSIGNAL);
 			user.nick_registered = true;
 		}
 	}
@@ -68,8 +68,8 @@ bool authenticate_user(int client_fd, const std::string& message, const std::str
 		}
 		else
 		{
-			send(client_fd, "SUCCESS: Name set successfully!\r\n", 34, MSG_NOSIGNAL);
-			std::cout << "SUCCESS: Name set successfully!" << std::endl;
+			send(client_fd, "\033[32mSUCCESS: Name set successfully!\033[0m\r\n", 43, MSG_NOSIGNAL);
+			std::cout << "\033[32mSUCCESS: Name set successfully!\033[0m" << std::endl;
 			user.user_registered = true;
 		}
 	}
