@@ -23,6 +23,7 @@ class Client
 		std::string _nickname; // can not be repeated
 		std::string _username; // can be repeated
 		bool		_is_admin;
+		std::string	_cmd_buffer;
 
 	public:
 		Client(void);
@@ -51,6 +52,10 @@ class Client
 		
 		const bool &get_is_admin(void) const;
 		void set_is_admin(const bool &value);
+
+		std::string	get_cmd() const;
+		void	add_to_cmd(std::string str);
+		void	clear_cmd();
 		
 		//operators
 		bool	operator==(const Client &comp);

@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 10:16:55 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 11:31:09 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -313,7 +313,17 @@ int	Server::client_cmds(Client &client)
 	}
 	buffer[n] = 0;
 	if (n > 0 && buffer[n - 1] == '\n')
+	{
 		buffer[n - 1] = 0;
+		client.add_to_cmd(static_cast<std::string>(buffer));
+		strncpy(buffer, client.get_cmd().c_str(), BUFFER_READ_SIZE);
+		client.clear_cmd();
+	}
+	else if (n > 0 && buffer[n - 1] != '\n')
+	{
+		client.add_to_cmd(static_cast<std::string>(buffer));
+		return 0;
+	}
 	if (n > 0 && buffer[n - 2] == '\r')
 		buffer[n - 2] = 0;
 
@@ -905,11 +915,12 @@ int Server::cmd_topic(Client &client, std::string input)
 	// Set topic of channel
 	if (topic.empty() || strIsWhitespace(topic))
 	{
+		std::string message;
 		// send the topic to client
 		if (channel->get_topic().empty())
-			std::string message = "Topic of " + channel->get_name() + " is not set\r\n";
+			message = "Topic of " + channel->get_name() + " is not set\r\n";
 		else
-			std::string message = "Topic of " + channel->get_name() + " is: " + channel->get_topic() + "\r\n";
+			message = "Topic of " + channel->get_name() + " is: " + channel->get_topic() + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), message);
 		return (0);
 	}

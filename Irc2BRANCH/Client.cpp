@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/09 10:51:31 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 11:04:40 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,21 @@ const bool &Client::get_is_admin(void) const
 void	Client::set_is_admin(const bool &value)
 {
 	_is_admin = value;
+}
+
+std::string	Client::get_cmd() const
+{
+	return _cmd_buffer;
+}
+
+void	Client::add_to_cmd(std::string str)
+{
+	_cmd_buffer += str;
+}
+
+void	Client::clear_cmd()
+{
+	_cmd_buffer.clear();
 }
 
 bool Client::operator==(const Client &comp)
