@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 13:32:53 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 14:57:12 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ Server::Server(int port, std::string password): _port(port), _password(password)
 	std::signal(SIGINT, signal_handler);
 	std::cout << CYAN << "Default constructor Server called" << RESET 
 		<< std::endl;
+	password_checker(password);
 	memset(&_address, 0, SOCKLEN);
 	//sets the address family of the socket to IPv4.
 	_address.sin_family = AF_INET;
@@ -218,6 +219,7 @@ void	Server::create_epoll()
 	_epoll_fd = epoll_create1(0);
 	if (_epoll_fd == -1)
 		throw(std::runtime_error("Error when creating epoll"));
+	memset(&_main_event, 0, sizeof(_main_event));
 	_main_event.events = EPOLLIN;
 	_main_event.data.fd = _server_fd;
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _server_fd, &_main_event) == -1)
@@ -593,6 +595,8 @@ int Server::cmd_join(Client &client, std::string input)
 		}
 		else
 		{
+			if (password_checker(input_password, client.get_client_fd()))
+				return 1;
 			Channel new_channel(input_channel_name, input_password);
 			_channels.push_back(new_channel);
 		}
@@ -1007,4 +1011,43 @@ int Server::cmd_invite(Client &client, std::string input)
 	std::string message = client.get_nickname() + " has invited you to join " + channel->get_name() + "\r\n";
 	sendSuccessMessage(client_to_invite->get_client_fd(), message);
 	return (0);
+}
+
+void	Server::password_checker(std::string password)
+{
+	std::stringstream	s(password);
+	int					size = password.length();
+	char				c = password[0];
+
+	if (size < 3 || size > 12)
+		throw(std::runtime_error("Error. Password must be between 3 and 12 characters"));
+	while (c)
+	{
+		s >> c;
+		if (!isprint(c))
+			throw(std::runtime_error("Error. Password must not contain non-printable characters"));
+	}
+}
+
+int	Server::password_checker(std::string password, int fd)
+{
+	std::stringstream	s(password);
+	int					size = password.length();
+	char				c = password[0];
+
+	if (size < 3 || size > 12)
+	{
+		sendErrorMessage(fd, "Error. Password must be between 3 and 12 characters\r\n");
+		return 1;
+	}
+	while (c)
+	{
+		s >> c;
+		if (!isprint(c))
+		{
+			sendErrorMessage(fd, "Error. Password must not contain non-printable characters\r\n");
+			return 1;
+		}
+	}
+	return 0;
 }

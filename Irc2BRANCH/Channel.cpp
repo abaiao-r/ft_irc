@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/10 13:32:26 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/10 14:48:54 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,13 @@ Channel::Channel(std::string name, std::string password)
 {
 	std::cout << CYAN << "Channel: Parameter constructor called" << RESET
 		<< std::endl;
+
+	// int	check = password_checker(password);
+
+	// if (check == 1)
+		//Message pass size
+	// else if (check == 2)
+		//Message non printable
 }
 
 /* Copy constructor */
@@ -97,6 +104,12 @@ std::string	Channel::get_password(void) const
 /* set_password() sets the password of the channel. */
 void	Channel::set_password(std::string password)
 {
+	// int	check = password_checker(password);
+
+	// if (check == 1)
+		//Message pass size
+	// else if (check == 2)
+		//Message non printable
 	_password = password;
 }
 
@@ -366,3 +379,20 @@ Client	*Channel::find_clients_invited_to_channel_by_nickname(std::string &nickna
 			return (it.base());
 	return (NULL);
 }
+
+// int	Channel::password_checker(std::string password)
+// {
+// 	std::stringstream	s(password);
+// 	int					size = password.length();
+// 	char				c = password[0];
+
+// 	if (size < 3 || size > 12)
+// 		return 1;
+// 	while (c)
+// 	{
+// 		s >> c;
+// 		if (!isprint(c))
+// 			return 2;
+// 	}
+// 	return 0;
+// }
