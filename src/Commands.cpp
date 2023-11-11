@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 15:30:24 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/11 15:59:03 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,7 +166,7 @@ bool Commands::handle_commands(int client_fd, User &user)
 			message.erase(message.find("\r\n"), 2);
 		else if(message.find("\n") != std::string::npos)
 			message.erase(message.find("\n"), 1);
-		//std::cout << "Command received: |" << message << "|" << std::endl;
+		std::cout << "Command received: |" << message << "|" << std::endl;
 		if(message.find("JOIN") == 0)
 			handle_join(user, message);
 		else if(message.find("CREATE") == 0)
@@ -198,6 +198,15 @@ bool Commands::handle_join(User& user, const std::string& message)
 	std::string channel_name;
 	std::string password;
 	iss >> command >> channel_name >> password;
+
+	//if channel_name doesnt start with # then it is not a channel
+	if(channel_name[0] != '#')
+	{
+		std::string error_msg = "\033[31mERROR: Invalid channel name.\033[0m\r\n";
+		send(user.fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
+		return (false);
+	}
+	
 	for (std::vector<Channel>::iterator ch_it = channels.begin(); ch_it != channels.end(); ++ch_it)
 	{
 		if (ch_it->name == channel_name)
@@ -272,8 +281,6 @@ bool Commands::handle_join(User& user, const std::string& message)
 			return (true);
 		}
 	}
-	//remove the first character from channel_name
-	channel_name.erase(0, 1);
 	handle_channel(user, "CREATE " + channel_name);
 	return (true);
 }
@@ -289,7 +296,8 @@ bool Commands::handle_channel(User& user, const std::string& message)
 	//if there is topic:
 	iss >> command >> channel_name >> topic;
 
-	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it) {
+	for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
+	{
 		if (it->name == channel_name)
 		{
 			std::string error_msg = "\033[31mERROR: Channel already exists.\033[0m\r\n";
@@ -299,7 +307,7 @@ bool Commands::handle_channel(User& user, const std::string& message)
 	}
 
 	Channel new_channel;
-	new_channel.name = "#" + channel_name;
+	new_channel.name = channel_name;
 	new_channel.admin = user;
 	new_channel.users_in_channel.push_back(user);
 	std::string join_msg = ":" + user.nickname + "!" + user.username + "@" + user.hostname + " JOIN :" + channel_name + "\r\n";
@@ -312,6 +320,18 @@ bool Commands::handle_channel(User& user, const std::string& message)
 	channels.push_back(new_channel);
 	//add user to operator_list
 	new_channel.operator_list.push_back(user.nickname);
+	//print operators
+	std::string operator_msg = "\033[32mOperators: ";
+	for (std::vector<std::string>::iterator it = new_channel.operator_list.begin(); it != new_channel.operator_list.end(); ++it)
+	{
+		operator_msg += *it;
+		if (it + 1 != new_channel.operator_list.end())
+			operator_msg += ", ";
+	}
+	operator_msg += "\033[0m\r\n";
+	send(user.fd, operator_msg.c_str(), operator_msg.length(), MSG_NOSIGNAL);
+	std::cout << operator_msg << std::endl;
+	std::string topic_message = ":" + user.hostname + " 332 " + user.nickname + " " + channel_name + " :" + new_channel.topic + "\r\n";
 	
 	send(user.fd, "\033[32mSUCCESS: Channel created successfully!\033[0m\r\n", 50, MSG_NOSIGNAL);
 	std::cout << PINK << "Channel: " << BOLDPINK << channel_name << RESET << PINK << " was created successfully!\033[0m" << std::endl;

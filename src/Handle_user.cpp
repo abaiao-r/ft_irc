@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:54:17 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 15:12:32 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/11 14:15:41 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,9 @@ bool handle_user(User& user, const std::string& message)
 	}
 
 	// Check if the realname is a single word with only letters
-	if (realname.empty() || !isAlpha(realname))
+	if (realname.empty())
 	{
-		send(user.fd, "ERROR: Realname empty or non-Alpha\r\n", 37, MSG_NOSIGNAL);
+		send(user.fd, "ERROR: Realname empty\r\n", 37, MSG_NOSIGNAL);
 		return (false);
 	}
 
