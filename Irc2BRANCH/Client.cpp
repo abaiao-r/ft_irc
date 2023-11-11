@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/10 11:04:40 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/11 16:56:39 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ Client::Client(void)
 /* copy constructor */
 Client::Client(const Client &copy)
 	: _client_fd(copy._client_fd), _authenticated(copy._authenticated),
-	_registered(false), _tries(copy._tries), _client_addr(copy._client_addr)
+	_registered(copy._registered), _tries(copy._tries), _client_addr(copy._client_addr)
 {
 	std::cout << CYAN << "Client: Copy constructor called" << RESET
 		<< std::endl;
