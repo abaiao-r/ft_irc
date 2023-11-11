@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/10 12:25:40 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/11 19:31:17 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,6 @@
 Client::Client() {} // Constructor
 
 Client::~Client() {} // Destructor
-
-std::map<int, std::string> clientBuffers;  // FD -> Accumulated commands
 
 bool hasAllCommands(const std::string& buffer)
 {

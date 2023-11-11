@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:51:19 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 14:50:29 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/11 18:43:33 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,5 +26,9 @@
 # include <algorithm> // For std::find
 # include <sstream> // For std::stringstream
 # include <climits> // For INT_MAX
+# include <sys/epoll.h> // For epoll_create1, epoll_ctl, epoll_wait
+# include <csignal> // For signal
+# include <errno.h> // For errno
+
 
 #endif

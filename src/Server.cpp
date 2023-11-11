@@ -6,11 +6,14 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 14:18:46 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/11 19:30:40 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include "Commands.hpp"
+
+std::map<int, std::string> clientBuffers;  // FD -> Accumulated commands
 
 /* Default constructor */
 Server::Server() : _port(0), _server_fd(-1)
@@ -26,6 +29,10 @@ Server::Server() : _port(0), _server_fd(-1)
 Server::Server(int port) : _port(port), _server_fd(-1)
 {
 	//std::cout << CYAN << "Default constructor Server called" << RESET 	<< std::endl;
+	/* `std::memset(&_address, 0, sizeof(_address));` is initializing the memory block of `_address` with
+	zeros. It sets all the bytes in `_address` to zero, effectively initializing all the fields of the
+	`sockaddr_in` structure to zero. This is commonly done before setting specific values to ensure
+	that there are no garbage values in the structure. */
 	std::memset(&_address, 0, sizeof(_address));
 	//sets the address family of the socket to IPv4.
 	_address.sin_family = AF_INET;
@@ -83,18 +90,6 @@ sockaddr_in Server::get_address(void) const
 	return (_address);
 }
 
-
-/* start_listening: Starts listening for connections
-** listen() marks the socket referred to by server_fd as a passive socket, that
-** is, as a socket that will be used to accept incoming connection requests
-** using accept(). The socket must be bound to a local address using bind()
-** before this call can be made. The backlog parameter defines the maximum
-** length to which the queue of pending connections for server_fd may grow.
-** If a connection request arrives when the queue is full, the client may
-** receive an error with an indication of ECONNREFUSED or, if the underlying
-** protocol supports retransmission, the request may be ignored so that a
-** later reattempt at connection succeeds.
-*/
 int Server::start_listening(void)
 {
 	if (listen(_server_fd, 5) == -1)
@@ -109,14 +104,6 @@ int Server::start_listening(void)
 	return (0);
 }
 
-/* bind_socket: Binds the socket to the address and port number
-** bind() assigns the address specified by addr to the socket referred to by
-** the file descriptor server_fd. addrlen specifies the size, in bytes, of the
-** address structure pointed to by addr. Traditionally, this operation is
-** called “assigning a name to a socket”. It is normally necessary to assign a
-** local address using bind() before a SOCK_STREAM socket may receive
-** connections.
-*/
 int Server::bind_socket(void)
 {
 
@@ -131,15 +118,6 @@ int Server::bind_socket(void)
 	return (0);
 }
 
-/* set_socket_options: Sets the socket options
-** Note: setsockopt() sets the value of a socket option. The parameters are:
-** 1. Socket file descriptor
-** 2. Level: SOL_SOCKET (socket-level options)
-** 3. Option name: SO_REUSEADDR (reuses the address and port)
-** 4. Option value: 1 (true)
-** 5. Option length: sizeof(int)
-** Returns true if the socket options are set successfully, false otherwise
-*/ 
 int Server::set_socket_options(void) // use int
 {
 	int opt = 1;
@@ -149,22 +127,14 @@ int Server::set_socket_options(void) // use int
 		std::cerr << RED <<"Error:" << RESET << " Cannot set socket options" 
 			<< std::endl;
 		close (_server_fd);
-		//close_server();
 		return (-1);
 	}
 	return (0);
 }
 
-/* create_socket: Creates the socket
-** Note: socket() returns a file descriptor (int). The parameters are:
-** 1. Domain: AF_INET (IPv4) or AF_INET6 (IPv6)
-** 2. Type: SOCK_STREAM (TCP) or SOCK_DGRAM (UDP)
-** 3. Protocol: 0 (IP)
-** Returns true if the socket is created successfully, false otherwise
-*/
 int Server::create_socket(void) // use int
 {
-	_server_fd = socket(AF_INET, SOCK_STREAM, 0);
+	_server_fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (_server_fd == -1)
 	{
 		std::cerr << RED <<"Error:" << RESET << " Cannot create socket" 
@@ -174,16 +144,43 @@ int Server::create_socket(void) // use int
 	return (0);
 }
 
-/* init_server: Initializes the server
-** 1. Creates the socket
-** 2. Sets the socket options
-** 3. Binds the socket
-** 4. Starts listening
-** Returns true if all steps are successful, false otherwise
-*/
+int	Server::unblock_socket(int fd)
+{
+	int flags;
+
+	if ((flags = fcntl(fd, F_GETFL)) == -1)
+	{
+		std::cout << "Error when getting fcntl flags\n";
+		std::cout << strerror(errno) << std::endl;
+		return -1;
+	}
+	flags |= O_NONBLOCK;
+	if (fcntl(fd, F_SETFL, flags) == -1)
+	{
+		std::cout << "Error when setting O_NONBLOCK flag\n";
+		return -1;
+	}
+	return 0;
+}
+
+void	Server::create_epoll()
+{
+	memset(&_events, 0, sizeof(_events));
+	_epoll_fd = epoll_create1(0);
+	if (_epoll_fd == -1)
+		throw(std::runtime_error("Error when creating epoll"));
+	memset(&_main_event, 0, sizeof(_main_event));
+	_main_event.events = EPOLLIN;
+	_main_event.data.fd = _server_fd;
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _server_fd, &_main_event) == -1)
+		throw(std::runtime_error("Error in epoll_ctl"));
+}
+
 int Server::init_server(void) // use int
 {
 	if (create_socket() == -1)
+		return (-1);
+	if (unblock_socket(_server_fd) == -1)
 		return (-1);
 	if (set_socket_options() == -1)
 		return (-1);
@@ -191,5 +188,139 @@ int Server::init_server(void) // use int
 		return (-1);
 	if (start_listening() == -1)
 		return (-1);
+	create_epoll();
 	return (0);
+}
+
+int Server::make_socket_non_blocking(int fd)
+{
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1)
+    {
+        std::cerr << RED << "Error getting flags for fd " << fd << RESET << std::endl;
+        return -1;
+    }
+
+    flags |= O_NONBLOCK;
+    if (fcntl(fd, F_SETFL, flags) == -1)
+    {
+        std::cerr << RED << "Error setting fd " << fd << " to non-blocking" << RESET << std::endl;
+        return -1;
+    }
+
+    return 0; // Successfully set to non-blocking
+}
+
+// This function adds a file descriptor to the epoll instance.
+int Server::add_fd_to_epoll(int epoll_fd, int fd)
+{
+    struct epoll_event event;
+    memset(&event, 0, sizeof(event));
+    event.data.fd = fd;
+    event.events = EPOLLIN | EPOLLET; // Read operation | Edge Triggered behavior
+
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1)
+    {
+        std::cerr << RED << "Error adding fd " << fd << " to epoll" << RESET << std::endl;
+        return -1;
+    }
+
+    return 0; // Successfully added fd to epoll
+}
+
+void Server::handle_client(int server_fd, const std::string &password, char ** /* av */)
+{
+    Commands commands;
+    int count = 0;
+
+    // Assuming _epoll_fd is initialized and the server_fd has been added to it
+    // and _events is an array of epoll_event with MAX_EVENTS size.
+
+	(void)password;
+	
+
+    while (1)
+    {
+        count = epoll_wait(_epoll_fd, _events, 5, -1);
+        if (count == -1)
+        {
+            if (errno == EINTR)
+            {
+                // Interrupted by a signal, continue to wait
+                continue;
+            }
+            std::cerr << RED << "Error in epoll_wait: " << strerror(errno) << RESET << std::endl;
+            break;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            if (_events[i].events & (EPOLLERR | EPOLLHUP))
+            {
+                std::cerr << RED << "Epoll error on fd: " << _events[i].data.fd << RESET << std::endl;
+                close(_events[i].data.fd);
+                // Handle client disconnection
+                continue;
+            }
+            else if (_events[i].data.fd == server_fd)
+            {
+                // Handle new connections
+                sockaddr_in client_address;
+                socklen_t client_addrlen = sizeof(client_address);
+                int client_fd = accept(server_fd, (struct sockaddr*)&client_address, &client_addrlen);
+                if (client_fd == -1)
+                {
+                    std::cerr << RED << "Error: Cannot accept client" << RESET << std::endl;
+                    continue;
+                }
+                make_socket_non_blocking(client_fd); // You need to implement this
+                add_fd_to_epoll(_epoll_fd, client_fd); // You need to implement this
+
+                User user;
+                user.fd = client_fd;
+                user.has_authenticated = false;
+                user.is_registered = false;
+                users.push_back(user);
+				std::cout << GREEN << "New client connected with fd: " << client_fd << RESET << std::endl;
+            }
+            else
+            {
+                // Handle data from clients
+                User* user = find_user_by_fd(_events[i].data.fd);
+                if (!user)
+                {
+                    std::cerr << RED << "Error: User not found for fd " << RESET << _events[i].data.fd << std::endl;
+                    close(_events[i].data.fd);
+                    continue;
+                }
+
+                if (!user->is_registered)
+                {
+                    // Authenticate user
+                    // The authenticate_user function should now start reading from the start of the buffer
+                    // since we're now inside the epoll loop and the data is ready to be read
+                   /*  if (!authenticate_user(_events[i].data.fd, password, *user))
+                    {
+                        std::cerr << RED << "Error: User failed authentication." << RESET << std::endl;
+                        close(_events[i].data.fd);
+                        // Erase the user from the users list
+                        // ...
+                        continue;
+                    } */
+                }
+                else
+                {
+                    // User is already authenticated, handle their commands
+                    bool stillConnected = commands.handle_commands(_events[i].data.fd, *user);
+                    if (!stillConnected)
+                    {
+                        close(_events[i].data.fd);
+                        // Erase the user from the users list
+                        // ...
+                        continue;
+                    }
+                }
+        }
+    }
+}
 }

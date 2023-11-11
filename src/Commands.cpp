@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:53:51 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/11 15:59:03 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/11 17:19:40 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ bool Commands::isuser_onchannel(User& user, const std::string& channel_name)
 	}
 	return (false);
 }
+
 
 bool Commands::verify_operator(User& user, const std::string& channel_name)
 {
@@ -198,6 +199,8 @@ bool Commands::handle_join(User& user, const std::string& message)
 	std::string channel_name;
 	std::string password;
 	iss >> command >> channel_name >> password;
+	
+	std::cout << "Password: " << password << std::endl;
 
 	//if channel_name doesnt start with # then it is not a channel
 	if(channel_name[0] != '#')

@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/09 14:49:34 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/11 19:26:58 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,9 @@ class Server
 		int			_port;
 		int			_server_fd;
 		sockaddr_in _address;
+		epoll_event					_main_event;
+		epoll_event					_events[5];
+		int							_epoll_fd;
 
 		// private because we don't want to allow copies of this class
 		Server(void);
@@ -52,6 +55,11 @@ class Server
 		int set_socket_options(void);
 		int bind_socket(void);
 		int start_listening(void);
+		int	unblock_socket(int fd);
+		void create_epoll();
+		int	add_fd_to_epoll(int epoll_fd, int fd);
+		int make_socket_non_blocking(int fd);
+		void handle_client(int server_fd, const std::string &password, char ** /* av */);
 };
 
 #endif
