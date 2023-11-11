@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/11 16:56:39 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/11/11 21:37:48 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ Client &Client::operator=(const Client &copy)
 		_client_fd = copy._client_fd;
 		_client_addr = copy._client_addr;
 		_authenticated = copy._authenticated;
+		_registered = copy._registered;
 		_tries = copy._tries;
 		_nickname = copy._nickname;
 		_username = copy._username;

@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/10 19:45:07 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/11 21:40:34 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,8 @@ Channel::Channel(std::string name, std::string password)
 /* Copy constructor */
 Channel::Channel(const Channel &copy)
 {
+	std::cout << CYAN << "Channel: Copy constructor called" << RESET
+		<< std::endl;
 	*this = copy;
 }
 
@@ -63,6 +65,7 @@ Channel	&Channel::operator=(const Channel &copy)
 		_name = copy._name;
 		_password = copy._password;
 		_topic = copy._topic;
+		_topic_mode = copy._topic_mode;
 		_mode = copy._mode;
 		_channel_invite_only = copy._channel_invite_only;
 		_channel_limit = copy._channel_limit;
