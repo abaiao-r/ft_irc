@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/10 21:05:47 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/12 00:02:45 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,7 +248,45 @@ void	Server::connection()
 				std::cout << "Channel " << it->get_name() << " has " << it->get_clients_in_channel().size() << " clients\n";
 			}
 		}
-		//
+/* 		//which channels each client is in
+		if (_clients.size() > 0)
+		{
+			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+			{
+				std::cout << "Client " << it->get_nickname() << " is in channels: ";
+				for (std::vector<Channel>::iterator it2 = _channels.begin(); it2 != _channels.end(); it2++)
+				{
+					if (it2->get_clients_in_channel().size() > 0)
+					{
+						for (std::vector<Client>::iterator it3 = it2->get_clients_in_channel().begin(); it3 != it2->get_clients_in_channel().end(); it3++)
+						{
+							if (it3->get_nickname() == it->get_nickname())
+								std::cout << it2->get_name() << " ";
+						}
+					}
+				}
+				std::cout << std::endl;
+			}
+		}
+		// nick of each client
+		if (_clients.size() > 0)
+		{
+			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+			{
+				std::cout << "Client " << it->get_nickname() << std::endl;
+			}
+		}
+		// client that is registered
+		if (_clients.size() > 0)
+		{
+			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+			{
+				if (it->get_registered())
+					std::cout << "Client " << it->get_nickname() << " is registered\n";
+			}
+		}
+
+		// */
 		count = epoll_wait(_epoll_fd, _events, MAX_EVENTS, -1);
 		if (count == -1)
 		{
