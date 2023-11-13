@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/13 09:30:35 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/13 13:16:12 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -660,7 +660,11 @@ void	Server::leave_all_rooms(int fd)
 	Client	remove = *find(_clients.begin(), _clients.end(), fd).base();
 
 	for (; it < _channels.end(); it++)
+	{
 		it->remove_client(remove);
+		if (it->get_clients_in_channel().size() == 0)
+			_channels.erase(it);
+	}
 }
 
 void	Server::signal_handler(int sig)
