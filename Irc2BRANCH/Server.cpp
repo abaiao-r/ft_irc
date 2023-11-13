@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/12 00:02:45 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/13 09:30:35 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,16 +161,7 @@ int Server::set_socket_options(void) // use int
 
 int	Server::unblock_socket(int fd)
 {
-	int flags;
-
-	if ((flags = fcntl(fd, F_GETFL)) == -1)
-	{
-		std::cout << "Error when getting fcntl flags\n";
-		std::cout << strerror(errno) << std::endl;
-		return -1;
-	}
-	flags |= O_NONBLOCK;
-	if (fcntl(fd, F_SETFL, flags) == -1)
+	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
 	{
 		std::cout << "Error when setting O_NONBLOCK flag\n";
 		return -1;
