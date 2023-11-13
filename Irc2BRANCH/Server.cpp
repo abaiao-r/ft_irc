@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/13 14:53:41 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/13 16:49:23 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -362,6 +362,11 @@ int	Server::client_cmds(Client &client)
 	}
 	if (n > 0 && buffer[n - 2] == '\r')
 		buffer[n - 2] = 0;
+	if (!client.get_authenticated() && !strncmp(buffer, "CAP LS 302", 10))
+	{
+		std::cout << "TEST\n";
+		return 0;
+	}
 
 	std::stringstream	s(buffer);
 	std::string			cmd;
@@ -720,7 +725,10 @@ void	Server::cmd_pass(Client &client, std::string input)
 void	Server::cmd_user(Client &client, std::string input)
 {
 	int	fd = client.get_client_fd();
+	std::stringstream	ss(input);
+	std::string			username;
 
+	ss >> username;
 	if (client.get_registered())
 	{
 		send(fd, "You are already registered\r\n", 29, MSG_NOSIGNAL);
@@ -731,10 +739,10 @@ void	Server::cmd_user(Client &client, std::string input)
 		send(fd, "Username already set\r\n", 23, MSG_NOSIGNAL);
 		return;
 	}
-	if (name_validation(input))
+	if (name_validation(username))
 	{
-		client.set_username(input);
-		send(fd, "Username set\r\n", 15, MSG_NOSIGNAL);
+		client.set_username(username);
+		send(fd, "Username set\r\n", 14, MSG_NOSIGNAL);
 		if (!client.get_nickname().empty())
 		{
 			send(fd, "Successfully registered\r\n", 26, MSG_NOSIGNAL);
@@ -948,11 +956,13 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	}
 	s >> dest;
 	getline(s, msg);
+	msg.erase(0, msg.find_first_not_of(" \t\n\r\f\v"));
 	if (msg[0] != ':')
 	{
 		send(fd, "Error: Usage: PRIVMSG <destination> :<message>\r\n", 48, MSG_NOSIGNAL);
 		return;
 	}
+	msg = msg.substr(1, msg.length() - 1);
 	if (dest[0] == '#')
 	{
 		ch_test = findChannel(client, dest);
@@ -961,7 +971,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 			send(fd, "Error. Could not find destination\r\n", 36, MSG_NOSIGNAL);
 			return;
 		}
-		ch_test->message(client, msg.substr(1, msg.length() - 1));
+		ch_test->message(client, msg);
 	}
 	c_test = find_client(client, dest);
 	if (!c_test)
