@@ -2,14 +2,14 @@
 
 # Function to launch IRC client script in the background
 launch_client() {
-    ./Andre.sh "$1" &
-    ./Joao.sh "$2" &
+    # $1 = Andre.sh
+    # $2 = Joao.sh
     ./Gabriel.sh "$3" &
 }
 
 # Launch multiple clients concurrently
-for ((i=0; i<2; i++)); do
-    launch_client "Andre_Client$i" "Joao_Client$i" "Gabriel_Client$i"
+for ((i=0; i<1; i++)); do
+    launch_client "Gabriel_Client$i"
     sleep 5
 done
 
