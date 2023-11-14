@@ -359,6 +359,11 @@ int	Server::client_cmds(Client &client)
 		disconnect_client(fd);
 		throw(std::runtime_error("Error. Failed in rcv."));
 	}
+	else if (n == 0) // recv returns 0 if client disconnects
+	{
+		disconnect_client(fd);
+		return 0;
+	}
 	buffer[n] = 0;
 	if (n > 0 && buffer[n - 1] == '\n')
 	{
@@ -372,7 +377,7 @@ int	Server::client_cmds(Client &client)
 		client.add_to_cmd(static_cast<std::string>(buffer));
 		return 0;
 	}
-	if (n > 0 && buffer[n - 2] == '\r')
+	if (n >= 2 && buffer[n - 2] == '\r') //overflow fix??
 		buffer[n - 2] = 0;
 	if (!client.get_authenticated() && !strncmp(buffer, "CAP LS 302", 10))
 	{
