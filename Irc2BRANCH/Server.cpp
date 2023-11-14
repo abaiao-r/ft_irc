@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/14 11:33:58 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/14 11:55:45 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,60 +227,72 @@ void	Server::connection()
 
 	while (_loop_state)
 	{
-		//ONLY FOR TESTING!!! DELETE AFTER
+		// for debugging Print the number of clients connected, the number of channels,the clients connected,  the number of clients in each channel, the clients in each channel, the operations in each channel, the invites in each channel, the bans in each channel,
+		std::cout << "-----------SERVER INFO-----------\n";
+		// number of clients connected to the server
 		std::cout << "There are " << _clients.size() << " clients connected\n";
+		// clients connected to the server
+		if (_clients.size() > 0)
+		{
+			std::cout << "\nClients connected to the server:\n";
+			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+			{
+				std::cout << it->get_nickname() << "\n";
+			}
+			std::cout << "\nClients authenticated to the server:\n";
+			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+			{
+				if (it->get_authenticated())
+					std::cout << it->get_nickname() << "\n";
+			}
+			std::cout << "\nClients registered to the server:\n";
+			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+			{
+				if (it->get_registered())
+					std::cout << it->get_nickname() << "\n";
+			}
+		}
 		// number of channels
-		std::cout << "There are " << _channels.size() << " channels\n";
-		// number of clients in each channel
+		std::cout << "\nThere are " << _channels.size() << " channels\n";
+		// names of the channels
+		if (_channels.size() > 0)
+		{
+			std::cout << "\nChannels:\n";
+			for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
+			{
+				std::cout << it->get_name() << "\n";
+			}
+		}
+		// clients in each channel, operations in each channel, invites in each channel, bans in each channel
 		if (_channels.size() > 0)
 		{
 			for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
 			{
-				std::cout << "Channel " << it->get_name() << " has " << it->get_clients_in_channel().size() << " clients\n";
-			}
-		}
-		//which channels each client is in
-		if (_clients.size() > 0)
-		{
-			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
-			{
-				std::cout << "Client " << it->get_nickname() << " is in channels: ";
-				for (std::vector<Channel>::iterator it2 = _channels.begin(); it2 != _channels.end(); it2++)
+				std::cout << "\nChannel " << it->get_name() << " has " << it->get_clients_in_channel().size() << " clients\n";
+				std::cout << "\nClients in channel " << it->get_name() << ":\n";
+				for (std::vector<Client>::iterator it2 = it->get_clients_in_channel().begin(); it2 != it->get_clients_in_channel().end(); it2++)
 				{
-					if (it2->get_clients_in_channel().size() > 0)
-					{
-						for (std::vector<Client>::iterator it3 = it2->get_clients_in_channel().begin(); it3 != it2->get_clients_in_channel().end(); it3++)
-						{
-							if (it3->get_nickname() == it->get_nickname())
-								std::cout << it2->get_name() << " " << std::endl;
-						}
-						if (it2->get_clients_operator_channel().size() > 0)
-							for (std::vector<Client>::iterator it4 = it2->get_clients_operator_channel().begin(); it4 != it2->get_clients_operator_channel().end(); it4++)
-								std::cout << "Operators in channel " << it2->get_name() << ": " << it4->get_nickname() << std::endl;
-					}
+					std::cout << it2->get_nickname() << "\n";
 				}
-				std::cout << std::endl;
+				std::cout << "\nOperators in channel " << it->get_name() << ":\n";
+				for (std::vector<Client>::iterator it2 = it->get_clients_operator_channel().begin(); it2 != it->get_clients_operator_channel().end(); it2++)
+				{
+					std::cout << it2->get_nickname() << "\n";
+				}
+				std::cout << "\nInvites in channel " << it->get_name() << ":\n";
+				for (std::vector<Client>::iterator it2 = it->get_clients_invited_to_channel().begin(); it2 != it->get_clients_invited_to_channel().end(); it2++)
+				{
+					std::cout << it2->get_nickname() << "\n";
+				}
+				std::cout << "\nBans in channel " << it->get_name() << ":\n";
+				for (std::vector<Client>::iterator it2 = it->get_clients_banned().begin(); it2 != it->get_clients_banned().end(); it2++)
+				{
+					std::cout << it2->get_nickname() << "\n";
+				}
 			}
 		}
-		// nick of each client
-		if (_clients.size() > 0)
-		{
-			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
-			{
-				std::cout << "Client " << it->get_nickname() << std::endl;
-			}
-		}
-		// client that is registered
-		if (_clients.size() > 0)
-		{
-			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
-			{
-				if (it->get_registered())
-					std::cout << "Client " << it->get_nickname() << " is registered\n";
-			}
-		}
-
-		//
+		std::cout << "---------------------------------\n";
+		// end of debugging
 		count = epoll_wait(_epoll_fd, _events, MAX_EVENTS, -1);
 		if (count == -1)
 		{
@@ -346,6 +358,11 @@ int	Server::client_cmds(Client &client)
 	{
 		disconnect_client(fd);
 		throw(std::runtime_error("Error. Failed in rcv."));
+	}
+	else if (n == 0) // recv returns 0 if client disconnects
+	{
+		disconnect_client(fd);
+		return 0;
 	}
 	buffer[n] = 0;
 	if (n > 0 && buffer[n - 1] == '\n')
@@ -863,16 +880,14 @@ int Server::cmd_join(Client &client, std::string input)
 			Channel new_channel(input_channel_name);
 			_channels.push_back(new_channel);
 		}
-		else
-		{
-			//debug
-			std::cout << "password: " << input_password << "." << std::endl;
-			//check if password is valid
-			if (password_checker(input_password, fd) == 1)
-				return (1);
-			Channel new_channel(input_channel_name, input_password);
-			_channels.push_back(new_channel);
-		}
+		//else
+		//{
+		//	//check if password is valid
+		//	if (password_checker(input_password, fd) == 1)
+		//		return (1);
+		//	Channel new_channel(input_channel_name, input_password);
+		//	_channels.push_back(new_channel);
+		//}
 		// add client to channel
 		it = find(_channels.begin(), _channels.end(), input_channel_name);
 		
@@ -957,7 +972,8 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	msg.erase(0, msg.find_first_not_of(" \t\n\r\f\v"));
 	if (msg[0] != ':')
 	{
-		send(fd, "Error: Usage: PRIVMSG <destination> :<message>\r\n", 48, MSG_NOSIGNAL);
+		std::string error = "Error[PRIVMSG]: Usage: /PRIVMSG <destination> :<message>\r\n";
+		sendErrorMessage(fd, error);
 		return;
 	}
 	msg = msg.substr(1, msg.length() - 1);
@@ -981,7 +997,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	std::string	final_msg = ":" + client.get_nickname() + "!"
 	+ client.get_username() + "@" + "localhost" + " PRIVMSG "
 	+ c_test->get_nickname() + " :" + msg + "\r\n";
-	send(fd, final_msg.c_str(), final_msg.length(), MSG_NOSIGNAL);
+	sendSuccessMessage(fd, final_msg);
 }
 
 /* cmd_kick: kick a user from a channel (KICK <channel> <nickname> [<reason>])
@@ -1028,6 +1044,13 @@ int Server::cmd_kick(Client &client, std::string input)
 	if (!channel->find_clients_operator_channel(client))
 	{
 		std::string error = "Error[KICK]: " + client.get_nickname() + " is not an operator in channel " + channel_to_find + "\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	// find if nickname is in operator_channel
+	if (channel->find_clients_operator_channel(nickname))
+	{
+		std::string error = "Error[KICK]: " + nickname + " is an operator in channel " + channel_to_find + "\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}

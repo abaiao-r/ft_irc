@@ -7,28 +7,24 @@
     # sleep 5  # Adjust as needed to ensure Andre.sh has completed its actions
     echo "PASS pass"
     sleep 0.5
-    echo "NICK gabriel_$i"
-    sleep 0.5
-    echo "USER Gabriel_$i"
-
     # Join channel_x with a unique nick for each Gabriel
-    # for ((i=1; i<=1; i++)); do
-    #     echo "NICK gabriel_$i"
-    #     sleep 0.5
-    #     echo "USER Gabriel_$i"
-    #     sleep 0.5
-    #     echo "JOIN #channel_x"
-    #     sleep 0.1
-    #     echo "TOPIC #channel_x"
-    #     sleep 0.2
-    #     echo "TOPIC #channel_x IRC"
-    #     sleep 0.2
-    #     echo "KICK #channel_x andre_1"
-    #     sleep 0.2
-    #     echo "INVITE andre_1 #channel_x"
-    #     sleep 0.2
-    #     echo "MODE #channel_x +o gabriel_$i"
-    # done
+    for ((i=1; i<=1; i++)); do
+        echo "NICK gabriel_$i"
+        sleep 0.5
+        echo "USER Gabriel_$i"
+        sleep 0.5
+        echo "JOIN #channel_x"
+        sleep 0.1
+        echo "TOPIC #channel_x"
+        sleep 0.2
+        echo "TOPIC #channel_x IRC"
+        sleep 0.2
+        echo "KICK #channel_x andre_1"
+        sleep 0.2
+        echo "INVITE andre_1 #channel_x"
+        sleep 0.2
+        echo "MODE #channel_x +o gabriel_$i"
+    done
 
     # Join channel_y (uncomment if you have channel_y)
     # for ((i=1; i<=60; i++)); do

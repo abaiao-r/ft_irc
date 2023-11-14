@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+         #
+#    By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/01 11:14:25 by gacorrei          #+#    #+#              #
-#    Updated: 2023/11/13 14:53:35 by gacorrei         ###   ########.fr        #
+#    Updated: 2023/11/13 21:17:48 by abaiao-r         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,6 +17,7 @@ CC		= @c++
 CFLAGS	= -Wall -Wextra -Werror -pedantic -Wshadow -g -std=c++98 -fsanitize=address,undefined
 # FOR DEBUGGER TO SHOW STD::STRING
 # CFLAGS	= -Wall -Wextra -Werror -pedantic -Wshadow -g -fno-limit-debug-info -std=c++98 -fsanitize=address,undefined
+
 
 all:		$(NAME)
 
@@ -29,5 +30,8 @@ fclean:		clean
 			@rm -f $(NAME)
 
 re:			fclean all
+
+valgrind:	$(NAME)
+			valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./$(NAME) 6697 pass
 
 .PHONY:		all clean re fclean
