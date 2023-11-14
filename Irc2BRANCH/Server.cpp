@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/13 16:49:23 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/14 11:33:58 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -360,7 +360,7 @@ int	Server::client_cmds(Client &client)
 		client.add_to_cmd(static_cast<std::string>(buffer));
 		return 0;
 	}
-	if (n > 0 && buffer[n - 2] == '\r')
+	if (n > 1 && buffer[n - 2] == '\r')
 		buffer[n - 2] = 0;
 	if (!client.get_authenticated() && !strncmp(buffer, "CAP LS 302", 10))
 	{
@@ -704,21 +704,21 @@ void	Server::cmd_pass(Client &client, std::string input)
 
 	if (client.get_authenticated())
 	{
-		send(fd, "You are already authenticated\r\n", 32, MSG_NOSIGNAL);
+		send(fd, "You are already authenticated\r\n", 31, MSG_NOSIGNAL);
 		return;
 	}
 	if (pass_validation(input))
 	{
-		send(fd, "Success!\r\n", 11, MSG_NOSIGNAL);
+		send(fd, "Success!\r\n", 10, MSG_NOSIGNAL);
 		client.set_authenticated(true);
 		return;
 	}
 	if (client.pass_counter(0, 0) == 2)
 	{
-		send(fd, "Too many wrong attempts, disconnecting\r\n", 41, MSG_NOSIGNAL);
+		send(fd, "Too many wrong attempts, disconnecting\r\n", 40, MSG_NOSIGNAL);
 		disconnect_client(fd);
 	}
-	send(fd, "Wrong password\r\n", 17, MSG_NOSIGNAL);
+	send(fd, "Wrong password\r\n", 16, MSG_NOSIGNAL);
 	client.pass_counter(1, 0);
 }
 
@@ -731,12 +731,12 @@ void	Server::cmd_user(Client &client, std::string input)
 	ss >> username;
 	if (client.get_registered())
 	{
-		send(fd, "You are already registered\r\n", 29, MSG_NOSIGNAL);
+		send(fd, "You are already registered\r\n", 28, MSG_NOSIGNAL);
 		return;
 	}
 	if (!client.get_username().empty())
 	{
-		send(fd, "Username already set\r\n", 23, MSG_NOSIGNAL);
+		send(fd, "Username already set\r\n", 22, MSG_NOSIGNAL);
 		return;
 	}
 	if (name_validation(username))
@@ -745,14 +745,13 @@ void	Server::cmd_user(Client &client, std::string input)
 		send(fd, "Username set\r\n", 14, MSG_NOSIGNAL);
 		if (!client.get_nickname().empty())
 		{
-			send(fd, "Successfully registered\r\n", 26, MSG_NOSIGNAL);
+			send(fd, "Successfully registered\r\n", 25, MSG_NOSIGNAL);
 			client.set_registered(true);
 		}
 		return;
 	}
 	else
-		send(fd, "Name can't have spaces or symbols (except '_' and '-') \
-		and must be between 3 and 10 characters long\r\n", 104, MSG_NOSIGNAL);
+		send(fd, "Name can't have spaces or symbols (except '_' and '-') and must be between 3 and 10 characters long\r\n", 101, MSG_NOSIGNAL);
 }
 
 void	Server::cmd_nick(Client &client, std::string input)
@@ -762,31 +761,30 @@ void	Server::cmd_nick(Client &client, std::string input)
 
 	if (client.get_registered())
 	{
-		send(fd, "You are already registered\r\n", 29, MSG_NOSIGNAL);
+		send(fd, "You are already registered\r\n", 28, MSG_NOSIGNAL);
 		return;
 	}
 	if (!client.get_nickname().empty())
 	{
-		send(fd, "Nickname already set\r\n", 23, MSG_NOSIGNAL);
+		send(fd, "Nickname already set\r\n", 22, MSG_NOSIGNAL);
 		return;
 	}
 	test = nick_validation(input);
 	if (!test)
 	{
 		client.set_nickname(input);
-		send(fd, "Nickname set\r\n", 15, MSG_NOSIGNAL);
+		send(fd, "Nickname set\r\n", 14, MSG_NOSIGNAL);
 		if (!client.get_username().empty())
 		{
-			send(fd, "Successfully registered\r\n", 26, MSG_NOSIGNAL);
+			send(fd, "Successfully registered\r\n", 25, MSG_NOSIGNAL);
 			client.set_registered(true);
 		}
 		return;
 	}
 	else if (test == 1)
-		send(fd, "Name can't have spaces or symbols (except '_' and '-') \
-		and must be between 3 and 10 characters long\r\n", 104, MSG_NOSIGNAL);
+		send(fd, "Name can't have spaces or symbols (except '_' and '-') and must be between 3 and 10 characters long\r\n", 101, MSG_NOSIGNAL);
 	else
-		send(fd, "Nickname already in use, choose another\r\n", 42, MSG_NOSIGNAL);
+		send(fd, "Nickname already in use, choose another\r\n", 41, MSG_NOSIGNAL);
 }
 
 /* channel_name_validation: check if channel name is valid
@@ -951,7 +949,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 
 	if (!client.get_registered())
 	{
-		send(fd, "Error. Can't use commands before registering\r\n", 47, MSG_NOSIGNAL);
+		send(fd, "Error. Can't use commands before registering\r\n", 46, MSG_NOSIGNAL);
 		return;
 	}
 	s >> dest;
@@ -968,7 +966,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 		ch_test = findChannel(client, dest);
 		if (!ch_test)
 		{
-			send(fd, "Error. Could not find destination\r\n", 36, MSG_NOSIGNAL);
+			send(fd, "Error. Could not find destination\r\n", 35, MSG_NOSIGNAL);
 			return;
 		}
 		ch_test->message(client, msg);
@@ -976,7 +974,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	c_test = find_client(client, dest);
 	if (!c_test)
 	{
-		send(fd, "Error. Could not find destination\r\n", 36, MSG_NOSIGNAL);
+		send(fd, "Error. Could not find destination\r\n", 35, MSG_NOSIGNAL);
 		return;
 	}
 	fd = c_test->get_client_fd();
