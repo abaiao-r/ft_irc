@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/14 12:11:08 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/14 12:46:16 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -377,7 +377,7 @@ int	Server::client_cmds(Client &client)
 		client.add_to_cmd(static_cast<std::string>(buffer));
 		return 0;
 	}
-	if (n >= 2 && buffer[n - 2] == '\r') //overflow fix??
+	if (n > 1 && buffer[n - 2] == '\r')
 		buffer[n - 2] = 0;
 	if (!client.get_authenticated() && !strncmp(buffer, "CAP LS 302", 10))
 	{
@@ -999,8 +999,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 		ch_test = findChannel(client, dest);
 		if (!ch_test)
 		{
-			std::string error = "Error[PRIVMSG]: Could not find channel " + dest + "\r\n";
-			sendErrorMessage(fd, error);
+			send(fd, "Error. Could not find destination\r\n", 35, MSG_NOSIGNAL);
 			return;
 		}
 		ch_test->message(client, msg);
@@ -1008,8 +1007,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	c_test = find_client(client, dest);
 	if (!c_test)
 	{
-		std::string error = "Error[PRIVMSG]: Could not find client " + dest + "\r\n";
-		sendErrorMessage(fd, error);
+		send(fd, "Error. Could not find destination\r\n", 35, MSG_NOSIGNAL);
 		return;
 	}
 	fd = c_test->get_client_fd();
