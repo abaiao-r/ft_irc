@@ -882,16 +882,14 @@ int Server::cmd_join(Client &client, std::string input)
 			Channel new_channel(input_channel_name);
 			_channels.push_back(new_channel);
 		}
-		else
-		{
-			//debug
-			std::cout << "password: " << input_password << "." << std::endl;
-			//check if password is valid
-			if (password_checker(input_password, fd) == 1)
-				return (1);
-			Channel new_channel(input_channel_name, input_password);
-			_channels.push_back(new_channel);
-		}
+		//else
+		//{
+		//	//check if password is valid
+		//	if (password_checker(input_password, fd) == 1)
+		//		return (1);
+		//	Channel new_channel(input_channel_name, input_password);
+		//	_channels.push_back(new_channel);
+		//}
 		// add client to channel
 		it = find(_channels.begin(), _channels.end(), input_channel_name);
 		
