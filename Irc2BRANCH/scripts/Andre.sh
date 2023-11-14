@@ -18,11 +18,11 @@
         for ((j=1; j<=1; j++)); do
             echo "TOPIC #channel_x IRC"
             sleep 0.2
-            echo "INVITE gabriel_$i [INVITE]"
-            sleep 0.2
-            echo "MODE #channel_x +o gabriel_$i"
+            #echo "MODE #channel_x +i gabriel_$i"
             sleep 0.1
-            echo "KICK #channel_x gabriel_$i"
+            echo "INVITE gabriel_$i #channel_x"
+            sleep 0.2
+            echo "KICK New Network #channel_x gabriel_$i"
             sleep 0.2
         done
     done
