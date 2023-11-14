@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/14 12:46:16 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/14 14:15:10 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,7 +242,7 @@ void	Server::connection()
 			std::cout << "\nClients authenticated to the server:\n";
 			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
 			{
-				if (it->get_authenticated())
+				if (it->get_authenticated() == true)
 					std::cout << it->get_nickname() << "\n";
 			}
 			std::cout << "\nClients registered to the server:\n";
@@ -365,6 +365,7 @@ int	Server::client_cmds(Client &client)
 		return 0;
 	}
 	buffer[n] = 0;
+	std::cout << "Received:" << buffer << ".\n";
 	if (n > 0 && buffer[n - 1] == '\n')
 	{
 		buffer[n - 1] = 0;
@@ -769,7 +770,7 @@ void	Server::cmd_user(Client &client, std::string input)
 		sendSuccessMessage(fd, success);
 		if (!client.get_nickname().empty())
 		{
-			std::string success = "Success[USER]: You are now registered\r\n";
+			success = "Success[USER]: You are now registered\r\n";
 			sendSuccessMessage(fd, success);
 			client.set_registered(true);
 		}
@@ -808,7 +809,7 @@ void	Server::cmd_nick(Client &client, std::string input)
 		sendSuccessMessage(fd, success);
 		if (!client.get_username().empty())
 		{
-			std::string success = "Success[NICK]: You are now registered\r\n";
+			success = "Success[NICK]: You are now registered\r\n";
 			sendSuccessMessage(fd, success);
 			client.set_registered(true);
 		}
@@ -895,23 +896,10 @@ int Server::cmd_join(Client &client, std::string input)
 		{
 			return (1);
 		}
-		// create channel
-		if (input_password.empty() || strIsWhitespace(input_password) == true)
-		{
-			Channel new_channel(input_channel_name);
-			_channels.push_back(new_channel);
-		}
-		//else
-		//{
-		//	//check if password is valid
-		//	if (password_checker(input_password, fd) == 1)
-		//		return (1);
-		//	Channel new_channel(input_channel_name, input_password);
-		//	_channels.push_back(new_channel);
-		//}
-		// add client to channel
+		// create channel		
+		Channel new_channel(input_channel_name);
+		_channels.push_back(new_channel);
 		it = find(_channels.begin(), _channels.end(), input_channel_name);
-		
 		it->add_client(client);
 		//set client as operator
 		it->add_client_to_clients_operator_vector(client);
@@ -1003,6 +991,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 			return;
 		}
 		ch_test->message(client, msg);
+		return;
 	}
 	c_test = find_client(client, dest);
 	if (!c_test)
