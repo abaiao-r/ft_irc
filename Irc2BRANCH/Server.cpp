@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/14 16:57:50 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/15 10:35:21 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -671,14 +671,27 @@ bool	Server::name_validation(std::string check)
 
 int	Server::nick_validation(std::string check)
 {
-	if (!name_validation(check))	
+	if (!name_validation(check))
 		return 1;
 
-	C_IT	end = _clients.end();
-	C_IT	match = std::find(_clients.begin(), end, check);
+	C_IT	it = _clients.begin();
 
-	if (match != end)
-		return 2;
+	for (; it != _clients.end(); it++)
+	{
+		if (name_compare(check, it->get_nickname()))
+			return 2;
+	}
+	return 0;
+}
+
+int	Server::name_compare(std::string check, std::string comp)
+{
+	std::cout << "Name to check is: " << check << " comparing against: " << comp << "\n";
+	std::transform(check.begin(), check.end(), check.begin(), tolower);
+	std::transform(comp.begin(), comp.end(), comp.begin(), tolower);
+	std::cout << "After tolower: " << check << " and " << comp << "\n";
+	if (check == comp)
+		return 1;
 	return 0;
 }
 

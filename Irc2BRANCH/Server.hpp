@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/14 16:27:37 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/15 10:02:15 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,13 +106,14 @@ class Server
 
 		int 		cmd_invite(Client &client, std::string input);
 		int			cmd_topic(Client &client, std::string input);
-		int		cmd_mode(Client &client, std::string input);
+		int			cmd_mode(Client &client, std::string input);
 		bool		pass_validation(std::string check) const;
 		bool		name_validation(std::string check);
 		int			nick_validation(std::string check);
+		int			name_compare(std::string check, std::string comp);
 		void		disconnect_client(int fd);
 		void		leave_all_rooms(int fd);
 		static void	signal_handler(int sig);
-		int		password_checker(std::string password);
+		int			password_checker(std::string password);
 		int			password_checker(std::string password, int fd);
 };
