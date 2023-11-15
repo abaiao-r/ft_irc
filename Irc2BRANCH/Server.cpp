@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/15 10:35:21 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/15 13:02:00 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1384,4 +1384,29 @@ int	Server::password_checker(std::string password, int fd)
 		}
 	}
 	return (0);
+}
+
+
+//THIS MIGHT BE USELESS
+std::string	Server::message_parser(int fd, std::string msg)
+{
+	//ADD CASE TO STRIP LEADING FIRST CONNECTION MESSAGE?
+	if (msg[0] == '@')
+	{
+		std::string error = "Error. Message tags are not allowed by the server\r\n";
+		sendErrorMessage(fd, error);
+		return "";
+	}
+
+	std::stringstream	ss(msg);
+	std::string			ret;
+
+	while (ss.peek() != ':')
+		ss.ignore();
+	while (ss.peek() != ' ')
+		ss.ignore();
+	while (ss.peek() == ' ')
+		ss.ignore();
+	std::getline(ss, ret);
+	return ret;
 }
