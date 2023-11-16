@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/16 11:13:37 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/16 13:44:48 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,4 +248,5 @@ class Server
 		static void	signal_handler(int sig);
 		int			password_checker(std::string password);
 		int			password_checker(std::string password, int fd);
+		std::string	get_users_string(Channel &channel);
 };

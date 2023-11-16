@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/16 13:20:18 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/16 15:31:15 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -927,16 +927,15 @@ int Server::cmd_join(Client &client, std::string input)
 		it->add_client(client);
 		//set client as operator
 		it->add_client_to_clients_operator_vector(client);
-		message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN " + input_channel_name + "\r\n";
-		sendSuccessMessage(fd, message);
-		message = ":localhost JOIN " + input_channel_name + "\r\n";
+		message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN :" + input_channel_name + "\r\n";
 		sendSuccessMessage(fd, message);
 		if (it->get_topic().empty())
-		message = ":localhost " + RPL_TOPIC + " : No topic is set" + "\r\n";
+			message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " :No topic is set" + "\r\n";
 		else
 			message = ":localhost " + RPL_TOPIC + " : " + it->get_topic() + "\r\n";
 		sendSuccessMessage(fd, message);
-		message = ":localhost " + RPL_ENDOFNAMES + "\r\n";
+		// message = ":localhost " + RPL_ENDOFNAMES + "\r\n";
+		// sendSuccessMessage(fd, message);
 		return (0);
 	}
 	in_channel = it->get_clients_in_channel();
@@ -984,25 +983,19 @@ int Server::cmd_join(Client &client, std::string input)
 
 	// add client to channel
 	it->add_client(client);
-	/* message = "Success[JOIN]: " + client.get_nickname() + " has joined channel " + input_channel_name + "\r\n";
-	sendSuccessMessage(fd, message); */
-	message = ":localhost JOIN " + input_channel_name + "\r\n";
+	message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN :" + input_channel_name + "\r\n";
 	sendSuccessMessage(fd, message);
 	if (it->get_topic().empty())
 		message = ":localhost " + RPL_TOPIC + "\r\n";
 	else
-		message = ":localhost " + RPL_TOPIC + " : " + it->get_topic() + "\r\n";
+		message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + it->get_topic() + " :No topic is set" + "\r\n";
 	sendSuccessMessage(fd, message);
+	// MAKE A WHO FUNCTION
 	// send message to all clients in channel loop through clients in channel and send message
-	C_IT	it2 = in_channel.begin();
-
-	for (; it2 != in_channel.end(); it2++)
-	{
-		message = ":localhost " + RPL_NAMREPLY + " : " + it2->get_nickname() + "\r\n";
-		sendSuccessMessage(fd, message);
-	}
-	message = ":localhost " + RPL_ENDOFNAMES + "\r\n";
-	sendSuccessMessage(fd, message);
+	// message = ":localhost " + RPL_NAMREPLY + " : " + get_users_string(*it.base()) + "\r\n";
+	// sendSuccessMessage(fd, message);
+	// message = ":localhost " + RPL_ENDOFNAMES + "\r\n";
+	// sendSuccessMessage(fd, message);
 	return (0);
 }
 
@@ -1417,4 +1410,22 @@ int	Server::password_checker(std::string password, int fd)
 		}
 	}
 	return (0);
+}
+
+std::string	Server::get_users_string(Channel &channel)
+{
+	std::string			ret;
+	std::vector<Client>	list = channel.get_clients_in_channel();
+	C_IT	it = list.begin();
+
+	for (; it != list.end(); it++)
+	{
+		if (channel.find_clients_operator_channel(*it.base()) == NULL)
+			ret += "%" + it->get_nickname() + " ";
+		else
+			ret += "@" + it->get_nickname() + " ";
+	}
+	if (ret.empty())
+		ret = " ";
+	return ret;
 }
