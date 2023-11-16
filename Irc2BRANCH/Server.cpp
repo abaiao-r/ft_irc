@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/16 15:36:36 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/16 16:29:42 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1071,6 +1071,8 @@ int Server::cmd_kick(Client &client, std::string input)
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
+	if (nickname[0] == ':')
+		nickname.erase(0, 1);
 	// if nickname is equal to client nickname
 	if (nickname == client.get_nickname())
 	{
