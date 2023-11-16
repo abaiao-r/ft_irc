@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/14 17:00:26 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/16 15:36:58 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
 
 Channel::Channel()
-	:_name(""), _password(""), _topic(""), _topic_mode(false), _mode(-1), 
+	:_name(""), _password(""), _topic("No topic is set"), _topic_mode(false), _mode(-1), 
 	_channel_limit(0), _channel_invite_only(false)
 {
 	std::cout << CYAN << "Channel: Default constructor called" << RESET
@@ -27,7 +27,7 @@ Channel::Channel(std::string name)
 		<< std::endl;
 	_name = name;
 	_password = "";
-	_topic = "";
+	_topic = "No topic is set";
 	_topic_mode = false;
 	_mode = -1;
 	_channel_limit = 0;
@@ -36,7 +36,7 @@ Channel::Channel(std::string name)
 
 /* Parameter constructor: name and pass*/
 Channel::Channel(std::string name, std::string password)
-	:_name(name), _password(password), _topic(""), _topic_mode(false), _mode(-1), 
+	:_name(name), _password(password), _topic("No topic is set"), _topic_mode(false), _mode(-1), 
 	_channel_limit(0), _channel_invite_only(false)
 {
 	std::cout << CYAN << "Channel: Parameter constructor called" << RESET

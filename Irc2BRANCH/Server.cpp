@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/16 15:31:15 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/16 15:36:36 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -929,10 +929,7 @@ int Server::cmd_join(Client &client, std::string input)
 		it->add_client_to_clients_operator_vector(client);
 		message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN :" + input_channel_name + "\r\n";
 		sendSuccessMessage(fd, message);
-		if (it->get_topic().empty())
-			message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " :No topic is set" + "\r\n";
-		else
-			message = ":localhost " + RPL_TOPIC + " : " + it->get_topic() + "\r\n";
+		message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " :" + it->get_topic() + "\r\n";
 		sendSuccessMessage(fd, message);
 		// message = ":localhost " + RPL_ENDOFNAMES + "\r\n";
 		// sendSuccessMessage(fd, message);
@@ -985,10 +982,7 @@ int Server::cmd_join(Client &client, std::string input)
 	it->add_client(client);
 	message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN :" + input_channel_name + "\r\n";
 	sendSuccessMessage(fd, message);
-	if (it->get_topic().empty())
-		message = ":localhost " + RPL_TOPIC + "\r\n";
-	else
-		message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + it->get_topic() + " :No topic is set" + "\r\n";
+	message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " :" + it->get_topic() + "\r\n";
 	sendSuccessMessage(fd, message);
 	// MAKE A WHO FUNCTION
 	// send message to all clients in channel loop through clients in channel and send message
