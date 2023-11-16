@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/16 11:56:56 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/16 13:20:18 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -772,6 +772,12 @@ void	Server::cmd_user(Client &client, std::string input)
 		sendErrorMessage(fd, error);
 		return;
 	}
+	if (!client.get_authenticated())
+	{
+		std::string error = "Error[USER]: You are not authenticated. Input password first\r\n";
+		sendErrorMessage(fd, error);
+		return;
+	}
 	if (!client.get_username().empty())
 	{
 		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[USER]: You already have a username\r\n";
@@ -806,6 +812,12 @@ void	Server::cmd_nick(Client &client, std::string input)
 	if (client.get_registered())
 	{
 		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[NICK]: You are already registered\r\n";
+		sendErrorMessage(fd, error);
+		return;
+	}
+	if (!client.get_authenticated())
+	{
+		std::string error = "Error[NICK]: You are not authenticated. Input password first\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
@@ -915,11 +927,16 @@ int Server::cmd_join(Client &client, std::string input)
 		it->add_client(client);
 		//set client as operator
 		it->add_client_to_clients_operator_vector(client);
-		/* message = "Success[JOIN]:" + client.get_nickname() + " has created the channel " + input_channel_name + "\r\n";
-		sendSuccessMessage(fd, message); */
+		message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN " + input_channel_name + "\r\n";
+		sendSuccessMessage(fd, message);
 		message = ":localhost JOIN " + input_channel_name + "\r\n";
 		sendSuccessMessage(fd, message);
-		//send message to all clients in channel?
+		if (it->get_topic().empty())
+		message = ":localhost " + RPL_TOPIC + " : No topic is set" + "\r\n";
+		else
+			message = ":localhost " + RPL_TOPIC + " : " + it->get_topic() + "\r\n";
+		sendSuccessMessage(fd, message);
+		message = ":localhost " + RPL_ENDOFNAMES + "\r\n";
 		return (0);
 	}
 	in_channel = it->get_clients_in_channel();
