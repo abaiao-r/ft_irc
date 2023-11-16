@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/15 13:02:00 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/16 11:56:56 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -660,11 +660,13 @@ bool	Server::name_validation(std::string check)
 {
 	int	len = check.size();
 
-	if (len > MAX_LEN || len < MIN_LEN)
+	if (len > MAX_LEN || len < MIN_LEN || check[0] == '#' || check[0] == ':')
 		return false;
 	for (int i = 0; i < len; i++)
 		if (std::isspace(check[i]) || (!std::isalnum(check[i])
-			&& (check[i] != '_') && (check[i] != '-')))
+			&& (check[i] != '_') && (check[i] != '-') && (check[i] != '[')
+			&& (check[i] != ']') && (check[i] != '{') && (check[i] != '}')
+			&& (check[i] != '\\') && (check[i] != '|')))
 			return false;
 	return true;
 }
@@ -735,7 +737,7 @@ void	Server::cmd_pass(Client &client, std::string input)
 
 	if (client.get_authenticated())
 	{
-		std::string error = "Error[PASS]: You are already authenticated\r\n";
+		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[PASS]: You are already authenticated\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
@@ -748,11 +750,11 @@ void	Server::cmd_pass(Client &client, std::string input)
 	}
 	if (client.pass_counter(0, 0) == 2)
 	{
-		std::string error = "Error[PASS]: Too many wrong attempts, disconnecting\r\n";
+		std::string error = ":localhost " + ERR_PASSWDMISMATCH + " : Error[PASS]: Too many wrong attempts, disconnecting\r\n";
 		sendErrorMessage(fd, error);
 		disconnect_client(fd);
 	}
-	std::string error = "Error[PASS]: Wrong password\r\n";
+	std::string error = ":localhost " + ERR_PASSWDMISMATCH + " : Error[PASS]: Wrong password\r\n";
 	sendErrorMessage(fd, error);
 	client.pass_counter(1, 0);
 }
@@ -766,13 +768,13 @@ void	Server::cmd_user(Client &client, std::string input)
 	ss >> username;
 	if (client.get_registered())
 	{
-		std::string error = "Error[USER]: You are already registered\r\n";
+		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[USER]: You are already registered\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
 	if (!client.get_username().empty())
 	{
-		std::string error = "Error[USER]: You already have a username\r\n";
+		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[USER]: You already have a username\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
@@ -791,8 +793,7 @@ void	Server::cmd_user(Client &client, std::string input)
 	}
 	else
 	{
-		std::string error = "Error[USER]: Username can't have spaces or symbols (except '_' and '-') \
-		and must be between 3 and 10 characters long\r\n";
+		std::string error = ":localhost " + ERR_NEEDMOREPARAMS + " : Error[USER]: Username can't have spaces or symbols (except [-_[]{}\\|]), can't start with '#' or ':' and must be between 3 and 10 characters long\r\n";
 		sendErrorMessage(fd, error);
 	}
 }
@@ -804,13 +805,13 @@ void	Server::cmd_nick(Client &client, std::string input)
 
 	if (client.get_registered())
 	{
-		std::string error = "Error[NICK]: You are already registered\r\n";
+		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[NICK]: You are already registered\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
 	if (!client.get_nickname().empty())
 	{
-		std::string error = "Error[NICK]: You already have a nickname\r\n";
+		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[NICK]: You already have a nickname\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
@@ -830,12 +831,12 @@ void	Server::cmd_nick(Client &client, std::string input)
 	}
 	else if (test == 1)
 	{
-		std::string error = "Error[NICK]: Nickname can't have spaces or symbols (except '_' and '-') and must be between 3 and 10 characters long\r\n";
+		std::string error = ":localhost " + ERR_ERRONEUSNICKNAME + " : Error[NICK]: Nickname can't have spaces or symbols (except [-_[]{}\\|]), can't start with '#' or ':' and must be between 3 and 10 characters long\r\n";
 		sendErrorMessage(fd, error);
 	}
 	else
 	{
-		std::string error = "Error[NICK]: Nickname already in use, choose another\r\n";
+		std::string error = ":localhost " + ERR_NICKNAMEINUSE + " : Error[NICK]: Nickname already in use, choose another\r\n";
 		sendErrorMessage(fd, error);
 	}
 }
@@ -906,9 +907,7 @@ int Server::cmd_join(Client &client, std::string input)
 	if (it == _channels.end())
 	{
 		if (channel_name_validation(fd, input_channel_name) == 1)
-		{
 			return (1);
-		}
 		// create channel		
 		Channel new_channel(input_channel_name);
 		_channels.push_back(new_channel);
@@ -916,7 +915,9 @@ int Server::cmd_join(Client &client, std::string input)
 		it->add_client(client);
 		//set client as operator
 		it->add_client_to_clients_operator_vector(client);
-		message = "Success[JOIN]:" + client.get_nickname() + " has created the channel " + input_channel_name + "\r\n";
+		/* message = "Success[JOIN]:" + client.get_nickname() + " has created the channel " + input_channel_name + "\r\n";
+		sendSuccessMessage(fd, message); */
+		message = ":localhost JOIN " + input_channel_name + "\r\n";
 		sendSuccessMessage(fd, message);
 		//send message to all clients in channel?
 		return (0);
@@ -966,10 +967,25 @@ int Server::cmd_join(Client &client, std::string input)
 
 	// add client to channel
 	it->add_client(client);
-	message = "Success[JOIN]: " + client.get_nickname() + " has joined channel " + input_channel_name + "\r\n";
+	/* message = "Success[JOIN]: " + client.get_nickname() + " has joined channel " + input_channel_name + "\r\n";
+	sendSuccessMessage(fd, message); */
+	message = ":localhost JOIN " + input_channel_name + "\r\n";
+	sendSuccessMessage(fd, message);
+	if (it->get_topic().empty())
+		message = ":localhost " + RPL_TOPIC + "\r\n";
+	else
+		message = ":localhost " + RPL_TOPIC + " : " + it->get_topic() + "\r\n";
 	sendSuccessMessage(fd, message);
 	// send message to all clients in channel loop through clients in channel and send message
+	C_IT	it2 = in_channel.begin();
 
+	for (; it2 != in_channel.end(); it2++)
+	{
+		message = ":localhost " + RPL_NAMREPLY + " : " + it2->get_nickname() + "\r\n";
+		sendSuccessMessage(fd, message);
+	}
+	message = ":localhost " + RPL_ENDOFNAMES + "\r\n";
+	sendSuccessMessage(fd, message);
 	return (0);
 }
 
@@ -1384,29 +1400,4 @@ int	Server::password_checker(std::string password, int fd)
 		}
 	}
 	return (0);
-}
-
-
-//THIS MIGHT BE USELESS
-std::string	Server::message_parser(int fd, std::string msg)
-{
-	//ADD CASE TO STRIP LEADING FIRST CONNECTION MESSAGE?
-	if (msg[0] == '@')
-	{
-		std::string error = "Error. Message tags are not allowed by the server\r\n";
-		sendErrorMessage(fd, error);
-		return "";
-	}
-
-	std::stringstream	ss(msg);
-	std::string			ret;
-
-	while (ss.peek() != ':')
-		ss.ignore();
-	while (ss.peek() != ' ')
-		ss.ignore();
-	while (ss.peek() == ' ')
-		ss.ignore();
-	std::getline(ss, ret);
-	return ret;
 }
