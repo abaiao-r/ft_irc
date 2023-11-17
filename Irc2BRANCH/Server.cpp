@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/16 16:29:42 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/17 20:02:52 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -380,10 +380,49 @@ int	Server::client_cmds(Client &client)
 	}
 	if (n > 1 && buffer[n - 2] == '\r')
 		buffer[n - 2] = 0;
-	if (!client.get_authenticated() && !strncmp(buffer, "CAP LS 302", 10))
+	/* if (!client.get_authenticated() && !strncmp(buffer, "CAP LS 302", 10))
 	{
 		std::cout << "TEST\n";
 		return 0;
+	} */
+
+	//if client is not authenticated and not registered yet split the buffer by \n and store the commands in a map with the key being the command name and the value being the command arguments
+	if (!client.get_authenticated() || !client.get_registered())
+	{
+		// the first key is the first word in the buffer, the value is the rest of the buffer till the next \n, remove leading and trailing whitespace from the value
+		std::map<std::string, std::string>	cmds;
+		std::stringstream					s(buffer);
+		std::string							cmd;
+		std::string							input;
+
+		while (std::getline(s, cmd, '\n'))
+		{
+			cmd.erase(0, cmd.find_first_not_of(" \t\n\r\f\v"));
+			if (cmd.empty())
+				continue;
+			input = cmd.substr(cmd.find(' ') + 1);
+			cmd = cmd.substr(0, cmd.find(' '));
+			cmds[cmd] = input;
+			std::cout << ORANGE<< "cmd: " << cmd << " input:" << input << RESET << std::endl;
+			//remove /r/n from the input
+			if (cmds[cmd].find("\r") != std::string::npos)
+				cmds[cmd].erase(cmds[cmd].find("\r"), 2);
+			//remove leading and trailing whitespace from the input
+			cmds[cmd].erase(0, cmds[cmd].find_first_not_of(" \t\n\r\f\v"));
+			cmds[cmd].erase(cmds[cmd].find_last_not_of(" \t\n\r\f\v") + 1);
+			
+		}
+		// execute the commands in the map (PASS, USER, NICK if they exist) First look for PASS, then USER, then NICK
+		if (cmds.find("PASS") != cmds.end())
+			cmd_pass(client, cmds["PASS"]);
+		if (cmds.find("NICK") != cmds.end())
+			cmd_nick(client, cmds["NICK"]);
+		if (cmds.find("USER") != cmds.end())
+			cmd_user(client, cmds["USER"]);
+		//delete the commands and input from the map
+		cmds.clear();
+
+		return (0);
 	}
 
 	std::stringstream	s(buffer);
