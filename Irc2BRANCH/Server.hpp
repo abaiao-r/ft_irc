@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/17 19:13:38 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/17 21:01:16 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,6 +217,8 @@ class Server
 		void		connection();
 		void		client_connection();
 		int 		client_cmds(Client &client);
+		void parseLoginLine(const std::string &line, std::map<std::string, std::string> &cmds);
+		void login(Client &client, const std::string &buffer);
 		void		cmd_pass(Client &client, std::string input);
 		void		cmd_user(Client &client, std::string input);
 		void		cmd_nick(Client &client, std::string input);

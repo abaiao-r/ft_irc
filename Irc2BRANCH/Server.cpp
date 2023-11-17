@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/17 20:02:52 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/17 21:13:20 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -348,6 +348,74 @@ void	Server::client_connection()
 	_clients.push_back(client);
 }
 
+/* parseLoginLine:
+ * 1. Extract the command and its arguments from the line.
+ * 2. Store the command and its arguments in the map.
+ * 3. Remove \r\n from the input.
+ */
+void Server::parseLoginLine(const std::string &line, std::map<std::string, std::string> &cmds)
+{
+	std::string cmd = line;
+    std::string input;
+
+    // Remove leading and trailing whitespaces from the command.
+    cmd.erase(0, cmd.find_first_not_of(" \t\n\r\f\v"));
+
+    // Skip empty lines.
+    if (cmd.empty())
+        return;
+
+    // Extract the command and its arguments from the line.
+    input = cmd.substr(cmd.find(' ') + 1);
+    cmd = cmd.substr(0, cmd.find(' '));
+
+    // Store the command and its arguments in the map.
+    cmds[cmd] = input;
+
+    // Debug print: Display the command and its arguments.
+    std::cout << ORANGE << "cmd: " << cmd << " input:" << input << RESET << std::endl;
+
+    // Remove \r\n from the input.
+    if (cmds[cmd].find("\r") != std::string::npos)
+        cmds[cmd].erase(cmds[cmd].find("\r"), 2);
+
+    // Remove leading and trailing whitespace from the input.
+    cmds[cmd].erase(0, cmds[cmd].find_first_not_of(" \t\n\r\f\v"));
+    cmds[cmd].erase(cmds[cmd].find_last_not_of(" \t\n\r\f\v") + 1);
+}
+
+
+/*login:
+** 1. Parse the buffer into a map of commands and their arguments.
+** 2. Execute the commands in the map (PASS, USER, NICK if they exist).
+** 3. Clear the commands and input from the map.
+*/
+void Server::login(Client &client, const std::string &buffer)
+{
+ std::map<std::string, std::string> cmds;
+    std::stringstream s(buffer);
+
+    // Iterate through lines in the buffer (split by \n) and parse each command.
+    std::string line;
+    while (std::getline(s, line, '\n'))
+    {
+        parseLoginLine(line, cmds);
+    }
+
+    // Execute the commands in the map (PASS, USER, NICK if they exist). 
+	// First look for PASS, then USER, then NICK.
+    if (cmds.find("PASS") != cmds.end())
+        cmd_pass(client, cmds["PASS"]);
+    if (cmds.find("NICK") != cmds.end())
+        cmd_nick(client, cmds["NICK"]);
+    if (cmds.find("USER") != cmds.end())
+        cmd_user(client, cmds["USER"]);
+
+    // Clear the commands and input from the map.
+    cmds.clear();
+}
+
+
 int	Server::client_cmds(Client &client)
 {
 	char		buffer[BUFFER_READ_SIZE];
@@ -380,51 +448,14 @@ int	Server::client_cmds(Client &client)
 	}
 	if (n > 1 && buffer[n - 2] == '\r')
 		buffer[n - 2] = 0;
-	/* if (!client.get_authenticated() && !strncmp(buffer, "CAP LS 302", 10))
-	{
-		std::cout << "TEST\n";
-		return 0;
-	} */
 
-	//if client is not authenticated and not registered yet split the buffer by \n and store the commands in a map with the key being the command name and the value being the command arguments
+	// if client is not registered, check for login commands
 	if (!client.get_authenticated() || !client.get_registered())
 	{
-		// the first key is the first word in the buffer, the value is the rest of the buffer till the next \n, remove leading and trailing whitespace from the value
-		std::map<std::string, std::string>	cmds;
-		std::stringstream					s(buffer);
-		std::string							cmd;
-		std::string							input;
-
-		while (std::getline(s, cmd, '\n'))
-		{
-			cmd.erase(0, cmd.find_first_not_of(" \t\n\r\f\v"));
-			if (cmd.empty())
-				continue;
-			input = cmd.substr(cmd.find(' ') + 1);
-			cmd = cmd.substr(0, cmd.find(' '));
-			cmds[cmd] = input;
-			std::cout << ORANGE<< "cmd: " << cmd << " input:" << input << RESET << std::endl;
-			//remove /r/n from the input
-			if (cmds[cmd].find("\r") != std::string::npos)
-				cmds[cmd].erase(cmds[cmd].find("\r"), 2);
-			//remove leading and trailing whitespace from the input
-			cmds[cmd].erase(0, cmds[cmd].find_first_not_of(" \t\n\r\f\v"));
-			cmds[cmd].erase(cmds[cmd].find_last_not_of(" \t\n\r\f\v") + 1);
-			
-		}
-		// execute the commands in the map (PASS, USER, NICK if they exist) First look for PASS, then USER, then NICK
-		if (cmds.find("PASS") != cmds.end())
-			cmd_pass(client, cmds["PASS"]);
-		if (cmds.find("NICK") != cmds.end())
-			cmd_nick(client, cmds["NICK"]);
-		if (cmds.find("USER") != cmds.end())
-			cmd_user(client, cmds["USER"]);
-		//delete the commands and input from the map
-		cmds.clear();
-
+		login(client, buffer);
 		return (0);
 	}
-
+	
 	std::stringstream	s(buffer);
 	std::string			cmd;
 	std::string			input;
@@ -452,7 +483,7 @@ int	Server::client_cmds(Client &client)
 		cmd_mode(client, input);
 	// else if (cmd == "PART")
 	// 	cmd_part(client, input);
-	//USE ITERATORS FOR THIS INSTEAD OF REFERENCES TO MAKE ACCESS EASIER??
+	//USE ITERATORS FOR THIS INSTEAD OF REFERENCES TO MAKE ACCESS EASIER?? NO!
 	else if (cmd == "EXIT")
 		disconnect_client(client.get_client_fd());
 	else
