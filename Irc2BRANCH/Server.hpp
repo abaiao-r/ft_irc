@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/17 21:01:16 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/20 13:02:40 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,6 +242,7 @@ class Server
 		int 		cmd_invite(Client &client, std::string input);
 		int			cmd_topic(Client &client, std::string input);
 		int			cmd_mode(Client &client, std::string input);
+		int			cmd_who(Client &client, std::string input);
 		bool		pass_validation(std::string check) const;
 		bool		name_validation(std::string check);
 		int			nick_validation(std::string check);

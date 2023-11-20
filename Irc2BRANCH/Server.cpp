@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/20 11:41:55 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/20 13:59:07 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -481,6 +481,8 @@ int	Server::client_cmds(Client &client)
 		cmd_topic(client, input);
 	else if (cmd == "MODE")
 		cmd_mode(client, input);
+	else if (cmd == "WHO")
+		cmd_who(client, input);
 	// else if (cmd == "PART")
 	// 	cmd_part(client, input);
 	else if (cmd == "EXIT")
@@ -491,6 +493,42 @@ int	Server::client_cmds(Client &client)
 		return (-1);
 	}
 	return(0);
+}
+
+int	Server::cmd_who(Client &client, std::string input)
+{
+	if (input.empty())
+	{
+		std::string error = "Error[MODE]: No argument provided\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+
+	Channel *channel = findChannel(client, input);
+
+	if (!channel)
+	{
+		std::string error = ":localhost " + ERR_NOSUCHCHANNEL + " : Error[MODE]: Channel " + input + " does not exist\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+
+	C_IT		it = channel->get_clients_in_channel().begin();
+	C_IT		end = channel->get_clients_in_channel().end();
+	std::string	msg;
+
+	for (; it != end; it++)
+	{
+		std::string	nick = it->get_nickname();
+		Client		*curr = channel->find_clients_operator_channel(nick);
+		std::string	opr = curr ? " H" : " G";
+		std::string	status = curr ? "@" : "+";
+		msg = ":localhost " + RPL_WHOREPLY + " : " + channel->get_name() + " ft_irc " + client.get_nickname() + opr + status + " :1 " + it->get_username() + "\r\n";
+		sendSuccessMessage(client.get_client_fd(), msg);
+	}
+	msg = ":localhost " + RPL_ENDOFWHO + " " + channel->get_name() + ": End of WHO list\r\n";
+	sendSuccessMessage(client.get_client_fd(), msg);
+	return 0;
 }
 
 /* cmd_mode: set mode of channel
@@ -508,18 +546,19 @@ int Server::cmd_mode(Client &client, std::string input)
 
 	// Parse input
 	iss >> channel_to_find >> mode >> argument;
+	//ADD CASE FOR MODE WITH NO ARGUMENTS TO RETURN CURRENT MODES!!!
 	// Find the channel
 	Channel *channel = findChannel(client, channel_to_find);
 	if (!channel)
 	{
-		std::string error = "Error[MODE]: Channel " + channel_to_find + " does not exist\r\n";
+		std::string error = ":localhost " + ERR_NOSUCHCHANNEL + " : Error[MODE]: Channel " + channel_to_find + " does not exist\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// Find if Client is in vector of clients operator_channel
 	if (!channel->find_clients_operator_channel(client))
 	{
-		std::string error = "Error[MODE]: You are not an operator in channel " + channel_to_find + "\r\n";
+		std::string error = ":localhost " + ERR_CHANOPRIVSNEEDED + " : Error[MODE]: You are not an operator in channel " + channel_to_find + "\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
@@ -530,7 +569,7 @@ int Server::cmd_mode(Client &client, std::string input)
 		// look if argument(client to become operator) is in the channel
 		if (!channel->find_client_in_channel_by_nickname(argument))
 		{
-			std::string error = "Error[MODE +o]: " + argument + " is not in the channel " + channel->get_name() + "\r\n"; 
+			std::string error = ":localhost " + ERR_NOSUCHNICK + " : Error[MODE +o]: " + argument + " is not in the channel " + channel->get_name() + "\r\n"; 
 			sendErrorMessage(client.get_client_fd(), error);
 			return (1);
 		}
@@ -546,7 +585,7 @@ int Server::cmd_mode(Client &client, std::string input)
 		Client *client_to_add = find_client(client, argument);
 		if (!client_to_add)
 		{
-			std::string error = "Error[MODE +o]: Client " + argument + " does not exist\r\n";
+			std::string error = ":localhost " + ERR_NOSUCHNICK + " : Error[MODE +o]: Client " + argument + " does not exist\r\n";
 			sendErrorMessage(client.get_client_fd(), error);
 			return (1);
 		}
@@ -578,7 +617,7 @@ int Server::cmd_mode(Client &client, std::string input)
 		Client *client_to_remove = find_client(client, argument);
 		if (!client_to_remove)
 		{
-			std::string error = "Error[MODE -o]: Client " + argument + " does not exist\r\n";
+			std::string error = ":localhost " + ERR_NOSUCHNICK + " : Error[MODE -o]: Client " + argument + " does not exist\r\n";
 			sendErrorMessage(client.get_client_fd(), error);
 			return (1);
 		}
@@ -716,9 +755,6 @@ int Server::cmd_mode(Client &client, std::string input)
 	}
 	return (0);
 }
-
-		
-
 
 bool	Server::pass_validation(std::string check) const
 {
@@ -1074,7 +1110,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 
 	if (!client.get_registered())
 	{
-		std::string error = "Error[PRIVMSG]: You must be registered to send a message\r\n";
+		error = "Error[PRIVMSG]: You must be registered to send a message\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
