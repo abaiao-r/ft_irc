@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/17 21:13:20 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/20 11:41:55 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -483,7 +483,6 @@ int	Server::client_cmds(Client &client)
 		cmd_mode(client, input);
 	// else if (cmd == "PART")
 	// 	cmd_part(client, input);
-	//USE ITERATORS FOR THIS INSTEAD OF REFERENCES TO MAKE ACCESS EASIER?? NO!
 	else if (cmd == "EXIT")
 		disconnect_client(client.get_client_fd());
 	else
@@ -1017,7 +1016,7 @@ int Server::cmd_join(Client &client, std::string input)
 	// checks if it needs a password and if the password is correct
 	if (it->get_clients_in_channel().size() >= it->get_channel_limit() && it->get_channel_limit() != 0)
 	{
-		message = "Error[JOIN]: Channel " + input_channel_name + " is full\r\n";
+		message = ":localhost " + ERR_CHANNELISFULL + " : Error[JOIN]: Channel " + input_channel_name + " is full\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
@@ -1026,7 +1025,7 @@ int Server::cmd_join(Client &client, std::string input)
 		// check if not client is on invite list
 		if (find(it->get_clients_invited_to_channel().begin(), it->get_clients_invited_to_channel().end(), client.get_client_fd()) == it->get_clients_invited_to_channel().end())
 		{
-			message = "Error[JOIN]: Channel " + input_channel_name + " is invite only\r\n";
+			message = ":localhost " + ERR_INVITEONLYCHAN + " : Error[JOIN]: Channel " + input_channel_name + " is invite only\r\n";
 			sendErrorMessage(fd, message);
 			return (1);
 		}
@@ -1043,7 +1042,7 @@ int Server::cmd_join(Client &client, std::string input)
 	// check if client is banned use find_banned_client
 	if (it->find_banned_client(client))
 	{
-		message = "Error[JOIN]: You (" + client.get_nickname() + ") are banned from channel " + input_channel_name + "\r\n";
+		message = ":localhost " + ERR_BANNEDFROMCHAN + " : Error[JOIN]: You (" + client.get_nickname() + ") are banned from channel " + input_channel_name + "\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
@@ -1069,6 +1068,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	int					fd = client.get_client_fd();
 	std::stringstream	s(input);
 	std::string			dest, msg;
+	std::string			error;
 	Channel				*ch_test = NULL;
 	Client				*c_test = NULL;
 
@@ -1083,7 +1083,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	msg.erase(0, msg.find_first_not_of(" \t\n\r\f\v"));
 	if (msg[0] != ':')
 	{
-		std::string error = "Error[PRIVMSG]: Usage: /PRIVMSG <destination> :<message>\r\n";
+		error = "Error[PRIVMSG]: Usage: /PRIVMSG <destination> :<message>\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
@@ -1093,7 +1093,8 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 		ch_test = findChannel(client, dest);
 		if (!ch_test)
 		{
-			send(fd, "Error. Could not find destination\r\n", 35, MSG_NOSIGNAL);
+			error = ":localhost " + ERR_NOSUCHSERVER + " : Error. Could not find destination\r\n";
+			sendErrorMessage(fd, error);
 			return;
 		}
 		ch_test->message(client, msg);
@@ -1102,7 +1103,8 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	c_test = find_client(client, dest);
 	if (!c_test)
 	{
-		send(fd, "Error. Could not find destination\r\n", 35, MSG_NOSIGNAL);
+		error = ":localhost " + ERR_NOSUCHSERVER + " : Error. Could not find destination\r\n";
+		sendErrorMessage(fd, error);
 		return;
 	}
 	fd = c_test->get_client_fd();
