@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/20 13:59:07 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/21 12:11:57 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -523,7 +523,7 @@ int	Server::cmd_who(Client &client, std::string input)
 		Client		*curr = channel->find_clients_operator_channel(nick);
 		std::string	opr = curr ? " H" : " G";
 		std::string	status = curr ? "@" : "+";
-		msg = ":localhost " + RPL_WHOREPLY + " : " + channel->get_name() + " ft_irc " + client.get_nickname() + opr + status + " :1 " + it->get_username() + "\r\n";
+		msg = ":localhost " + RPL_WHOREPLY + " " + it->get_nickname() + " " + channel->get_name() + " ft_irc " + client.get_nickname() + opr + status + " :1 " + it->get_username() + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), msg);
 	}
 	msg = ":localhost " + RPL_ENDOFWHO + " " + channel->get_name() + ": End of WHO list\r\n";
