@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/21 12:26:23 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/21 13:52:13 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -358,22 +358,18 @@ void Server::parseLoginLine(const std::string &line, std::map<std::string, std::
 	std::string cmd = line;
     std::string input;
 
-    // Remove leading and trailing whitespaces from the command.
-    cmd.erase(0, cmd.find_first_not_of(" \t\n\r\f\v"));
-
     // Skip empty lines.
     if (cmd.empty())
-        return;
+		return;
 
     // Extract the command and its arguments from the line.
-    input = cmd.substr(cmd.find(' ') + 1);
-    cmd = cmd.substr(0, cmd.find(' '));
+	std::stringstream s(cmd);
+	s >> cmd;
+	std::getline(s, input);
+	input.erase(0, input.find_first_not_of(" \t\n\r\f\v"));
 
     // Store the command and its arguments in the map.
     cmds[cmd] = input;
-
-    // Debug print: Display the command and its arguments.
-    std::cout << ORANGE << "cmd: " << cmd << " input:" << input << RESET << std::endl;
 
     // Remove \r\n from the input.
     if (cmds[cmd].find("\r") != std::string::npos)
@@ -382,6 +378,10 @@ void Server::parseLoginLine(const std::string &line, std::map<std::string, std::
     // Remove leading and trailing whitespace from the input.
     cmds[cmd].erase(0, cmds[cmd].find_first_not_of(" \t\n\r\f\v"));
     cmds[cmd].erase(cmds[cmd].find_last_not_of(" \t\n\r\f\v") + 1);
+
+    // Debug print: Display the command and its arguments.
+	std::cout << YELLOW << "cmd:" << cmd << "| input:" << input << "|"<< RESET << std::endl;
+    std::cout << ORANGE << "cmd:" << cmd << " input:" << input << RESET << std::endl;
 }
 
 
