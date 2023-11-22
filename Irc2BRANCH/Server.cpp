@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/21 13:52:13 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/22 17:08:30 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -526,7 +526,7 @@ int	Server::cmd_who(Client &client, std::string input)
 		msg = ":localhost " + RPL_WHOREPLY + " " + it->get_nickname() + " " + channel->get_name() + " ft_irc " + client.get_nickname() + opr + status + " :1 " + it->get_username() + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), msg);
 	}
-	msg = ":localhost " + RPL_ENDOFWHO + " " + channel->get_name() + ": End of WHO list\r\n";
+	msg = ":localhost " + RPL_ENDOFWHO + " " + client.get_nickname() + " " + channel->get_name() + " :End of WHO list\r\n";
 	sendSuccessMessage(client.get_client_fd(), msg);
 	return 0;
 }
@@ -1036,8 +1036,10 @@ int Server::cmd_join(Client &client, std::string input)
 		sendSuccessMessage(fd, message);
 		message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " :" + it->get_topic() + "\r\n";
 		sendSuccessMessage(fd, message);
-		// message = ":localhost " + RPL_ENDOFNAMES + "\r\n";
-		// sendSuccessMessage(fd, message);
+		message = ":localhost " + RPL_NAMREPLY + " " + client.get_nickname() + " = " + input_channel_name + " :" + get_users_string(*it) + "\r\n";
+		it->message(client, message);
+		message = ":localhost " + RPL_ENDOFNAMES + " " + client.get_nickname() + " " + input_channel_name + " :End of NAMES list\r\n";
+		it->message(client, message);
 		return (0);
 	}
 	in_channel = it->get_clients_in_channel();
@@ -1089,12 +1091,10 @@ int Server::cmd_join(Client &client, std::string input)
 	sendSuccessMessage(fd, message);
 	message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " :" + it->get_topic() + "\r\n";
 	sendSuccessMessage(fd, message);
-	// MAKE A WHO FUNCTION
-	// send message to all clients in channel loop through clients in channel and send message
-	// message = ":localhost " + RPL_NAMREPLY + " : " + get_users_string(*it.base()) + "\r\n";
-	// sendSuccessMessage(fd, message);
-	// message = ":localhost " + RPL_ENDOFNAMES + "\r\n";
-	// sendSuccessMessage(fd, message);
+	message = ":localhost " + RPL_NAMREPLY + " " + client.get_nickname() + " = " + input_channel_name + " :" + get_users_string(*it) + "\r\n";
+	it->message(client, message);
+	message = ":localhost " + RPL_ENDOFNAMES + " " + client.get_nickname() + " " + input_channel_name + " :End of NAMES list\r\n";
+	it->message(client, message);
 	return (0);
 }
 
