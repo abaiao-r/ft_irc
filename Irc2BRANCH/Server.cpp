@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/22 17:08:30 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/23 09:23:57 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -455,10 +455,16 @@ int	Server::client_cmds(Client &client)
 		login(client, buffer);
 		return (0);
 	}
-	
-	std::stringstream	s(buffer);
+	return choose_cmd(client, static_cast<std::string>(buffer));
+}
+
+int	Server::choose_cmd(Client &client, std::string in)
+{
+	int					fd = client.get_client_fd();
+	std::stringstream	s(in);
 	std::string			cmd;
 	std::string			input;
+	std::string			remaining;
 
 	s >> cmd;
 	std::getline(s, input);
@@ -491,6 +497,11 @@ int	Server::client_cmds(Client &client)
 	{
 		sendErrorMessage(fd, "Error. Command not found\r\n");
 		return (-1);
+	}
+	if (!s.eof())
+	{
+		std::getline(s, remaining);
+		choose_cmd(client, remaining);
 	}
 	return(0);
 }
@@ -1032,7 +1043,7 @@ int Server::cmd_join(Client &client, std::string input)
 		it->add_client(client);
 		//set client as operator
 		it->add_client_to_clients_operator_vector(client);
-		message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN :" + input_channel_name + "\r\n";
+		message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN " + input_channel_name + "\r\n";
 		sendSuccessMessage(fd, message);
 		message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " :" + it->get_topic() + "\r\n";
 		sendSuccessMessage(fd, message);
@@ -1525,9 +1536,11 @@ std::string	Server::get_users_string(Channel &channel)
 	for (; it != list.end(); it++)
 	{
 		if (channel.find_clients_operator_channel(*it.base()) == NULL)
-			ret += "%" + it->get_nickname() + " ";
+			ret += "%" + it->get_nickname();
 		else
-			ret += "@" + it->get_nickname() + " ";
+			ret += "@" + it->get_nickname();
+		if (it + 1 != list.end())
+			ret += " ";
 	}
 	if (ret.empty())
 		ret = " ";
