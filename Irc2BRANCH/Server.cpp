@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/23 11:23:27 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/23 12:16:23 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1062,9 +1062,9 @@ int Server::cmd_join(Client &client, std::string input)
 		message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " :" + it->get_topic() + "\r\n";
 		sendSuccessMessage(fd, message);
 		message = ":localhost " + RPL_NAMREPLY + " " + client.get_nickname() + " = " + input_channel_name + " :" + get_users_string(*it) + "\r\n";
-		it->message(client, message);
+		it->info_message(message);
 		message = ":localhost " + RPL_ENDOFNAMES + " " + client.get_nickname() + " " + input_channel_name + " :End of NAMES list\r\n";
-		it->message(client, message);
+		it->info_message(message);
 		return (0);
 	}
 	in_channel = it->get_clients_in_channel();
@@ -1117,9 +1117,9 @@ int Server::cmd_join(Client &client, std::string input)
 	message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " :" + it->get_topic() + "\r\n";
 	sendSuccessMessage(fd, message);
 	message = ":localhost " + RPL_NAMREPLY + " " + client.get_nickname() + " = " + input_channel_name + " :" + get_users_string(*it) + "\r\n";
-	it->message(client, message);
+	it->info_message(message);
 	message = ":localhost " + RPL_ENDOFNAMES + " " + client.get_nickname() + " " + input_channel_name + " :End of NAMES list\r\n";
-	it->message(client, message);
+	it->info_message(message);
 	return (0);
 }
 

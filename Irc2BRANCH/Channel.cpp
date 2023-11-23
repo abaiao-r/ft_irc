@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/23 10:51:58 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/23 12:15:53 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,6 +320,28 @@ void	Channel::message(Client &client, std::string msg)
 		fd = it->get_client_fd();
 		send(fd, final_msg.c_str(), final_msg.length(), MSG_NOSIGNAL);
 	}
+}
+
+void	Channel::info_message(std::string msg)
+{
+	C_IT		it = _clients_in_channel.begin();
+	int			fd;
+
+	for (; it < _clients_in_channel.end(); it++)
+	{
+		fd = it->get_client_fd();
+		sendSuccessMessage(fd, msg);
+	}
+}
+
+int Channel::sendSuccessMessage(int client_fd, const std::string &successMessage)
+{
+	if (send(client_fd, successMessage.c_str(), successMessage.size(), MSG_NOSIGNAL) == -1)
+	{
+		std::cerr << RED << "Error: " << RESET << "send() failed" << std::endl;
+		return (-1);
+	}
+	return (0);
 }
 
 Client	*Channel::find_banned_client(const std::string &client_banned)
