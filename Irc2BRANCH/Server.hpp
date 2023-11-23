@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/23 10:24:35 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/23 16:27:27 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,6 +229,7 @@ class Server
 		/*end join*/
 		void		cmd_privmsg(Client &client, std::string input);
 		
+		int cmd_list(Client &client, std::string input);
 		// KICK COMMAND FUNCTIONS
 		int			is_client_admin(Client &client);
 		int			sendErrorMessage(int client_fd, const std::string& errorMessage);
@@ -236,7 +237,7 @@ class Server
 		Channel		*findChannel(Client &client, const std::string& channelName);
 		Client		*findClientInChannel(Client &client, Channel* channel, const std::string& nickname);
 		Client		*find_client(Client &client, const std::string& nickname);
-		int 		kickClientFromChannel(Channel* channel, Client* client, const std::string& reason);
+		int 		kickClientFromChannel(Channel* channel, Client* client, Client *client_to_kick, const std::string& reason);
 		int 		cmd_kick(Client &client, std::string input);
 		// END KICK COMMAND FUNCTIONS
 

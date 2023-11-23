@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/23 11:23:27 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/23 16:54:07 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -453,6 +453,18 @@ int	Server::client_cmds(Client &client)
 	if (!client.get_authenticated() || !client.get_registered())
 	{
 		login(client, buffer);
+		if (client.get_registered() && client.get_authenticated())
+		{
+			std::string success = ":localhost " + RPL_WELCOME + " " + client.get_nickname() 
+				+ " :Welcome to the Internet Relay Network\r\n";
+			sendSuccessMessage(client.get_client_fd(), success);
+			std::string success2 = ":localhost " + RPL_ISUPPORT + " " + client.get_nickname() 
+				+ " :CHANTYPES=#\r\n";
+			sendSuccessMessage(client.get_client_fd(), success2);
+			std::string success3 = ":localhost " + RPL_ISUPPORT + " " + client.get_nickname() 
+				+ " :CHANMODES=i,t,k,o,l\r\n";
+			sendSuccessMessage(client.get_client_fd(), success3);
+		}
 		return (0);
 	}
 	return choose_cmd(client, static_cast<std::string>(buffer));
@@ -489,6 +501,8 @@ int	Server::choose_cmd(Client &client, std::string in)
 		cmd_mode(client, input);
 	else if (cmd == "WHO")
 		cmd_who(client, input);
+	else if (cmd == "LIST")
+		cmd_list(client, input);
 	// else if (cmd == "PART")
 	// 	cmd_part(client, input);
 	else if (cmd == "EXIT")
@@ -504,6 +518,71 @@ int	Server::choose_cmd(Client &client, std::string in)
 		choose_cmd(client, remaining);
 	}
 	return(0);
+}
+
+int Server::cmd_list(Client &client, std::string input)
+{
+	// if input is empty, list all channels
+	if (input.empty())
+	{
+		std::string msg = ":localhost " + RPL_LISTSTART + " " 
+			+ client.get_nickname() + " :Channel list\r\n";
+		sendSuccessMessage(client.get_client_fd(), msg);
+		if (_channels.size() > 0)
+		{
+			for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
+			{
+				// convert int o clients in channel size to string
+				int num_clients_in_channel = it->get_clients_in_channel().size();
+				// convert int to string
+				std::string num_clients_in_channel_str = static_cast<std::ostringstream*>(&(std::ostringstream() << num_clients_in_channel))->str();
+				std::string msg2 = ":localhost " + RPL_LIST + " " 
+					+ client.get_nickname() + " " + it->get_name() 
+						+ " " +	num_clients_in_channel_str + " :"
+							+ it->get_topic() + "\r\n";
+				sendSuccessMessage(client.get_client_fd(), msg2);
+			}
+		}
+		std::string msg3 = ":localhost " + RPL_LISTEND + " " + client.get_nickname() + " :End of /LIST\r\n";
+		sendSuccessMessage(client.get_client_fd(), msg3);
+		return (0);
+	}
+	// else, list channels that match input
+	else if (!input.empty())
+	{
+		// split input into vector of strings by comma. To be a channel it must start with a # otherwise it is a target
+
+		std::vector<std::string> channels_to_list;
+		std::stringstream ss(input);
+		std::string token;
+		while (std::getline(ss, token, ','))
+		{
+			if (token[0] == '#')
+			{
+				channels_to_list.push_back(token);
+			}
+		}
+		std::string msg = ":localhost " + RPL_LISTSTART + " " 
+			+ client.get_nickname() + " :Channel list\r\n";
+		sendSuccessMessage(client.get_client_fd(), msg);
+		if (_channels.size() > 0)
+		{
+			for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
+			{
+				if (it->get_name() == input)
+				{
+					std::string msg2 = ":localhost " + RPL_LIST + " " 
+						+ client.get_nickname() + " " + it->get_name() 
+							+ " " + it->get_topic() + "\r\n";
+					sendSuccessMessage(client.get_client_fd(), msg2);
+				}
+			}
+		}
+		std::string msg3 = ":localhost " + RPL_LISTEND + " " + client.get_nickname() + " :End of /LIST\r\n";
+		sendSuccessMessage(client.get_client_fd(), msg3);
+		return (0);
+	}
+	return (0);
 }
 
 int	Server::cmd_who(Client &client, std::string input)
@@ -1244,7 +1323,7 @@ int Server::cmd_kick(Client &client, std::string input)
 		return (1);
 	}
     // Kick the user
-    if (kickClientFromChannel(channel, client_to_kick, reason) == -1)
+    if (kickClientFromChannel(channel, &client, client_to_kick, reason) == -1)
         return (1);
     return (0);
 }
@@ -1343,27 +1422,28 @@ Client	*Server::find_client(Client &client, const std::string& nickname)
  * 1. Remove client from channel->get_clients_in_channel()
  * 2. Send message to client
  */
-int Server::kickClientFromChannel(Channel *channel, Client *client, const std::string &reason)
+int Server::kickClientFromChannel(Channel *channel, Client *client, Client *client_to_kick, const std::string &reason)
 {
 	std::string message;
 	
 	// Remove client from channel
-	channel->remove_client(*(client));
-	// add client to banned list
-	channel->add_client_to_banned_vector(*(client));
+	channel->remove_client(*(client_to_kick));
+	// add client_to_kick to banned list
+	channel->add_client_to_banned_vector(*(client_to_kick));
 	// if client is in operator_channel, remove from operator_channel
-	if (channel->find_clients_operator_channel(*client))
-		channel->remove_client_from_clients_operator_vector(*client);
+	if (channel->find_clients_operator_channel(*client_to_kick))
+		channel->remove_client_from_clients_operator_vector(*client_to_kick);
 	// Send message to client
     if (reason.empty())
     {
-        message = client->get_nickname() 
-			+ " has been kicked from the channel. Reason: This is Sparta!\r\n";
-    }
+		// Sending message: :qwe KICK #asdf asd :bye bye 
+		message = ":" + client->get_nickname() + "KICK " + channel->get_name()
+			+ " " + client_to_kick->get_nickname() + " :This is Sparta!\r\n";
+	}
 	else
 	{
-		message = client->get_nickname() 
-			+ " has been kicked from the channel. Reason: " + reason + "\r\n";
+		message = ":" + client->get_nickname() + "KICK " + channel->get_name()
+			+ " " + client_to_kick->get_nickname() + " :" + reason + "\r\n";
 	}
 	// Send message to client send success message to client
 	if (sendSuccessMessage(client->get_client_fd(), message) == -1)
