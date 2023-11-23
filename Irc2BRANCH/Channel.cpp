@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/23 12:15:53 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/23 19:57:10 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,6 @@ Channel::Channel()
 {
 	std::cout << CYAN << "Channel: Default constructor called" << RESET
 		<< std::endl;
-	_mode.push_back("-o");
-	_mode.push_back("-k");
-	_mode.push_back("-i");
-	_mode.push_back("-t");
-	_mode.push_back("-l");
 }
 
 /* Parameter constructor: only name as parameter*/
@@ -36,11 +31,6 @@ Channel::Channel(std::string name)
 	_topic_mode = false;
 	_channel_limit = 0;
 	_channel_invite_only = false;
-	_mode.push_back("-o");
-	_mode.push_back("-k");
-	_mode.push_back("-i");
-	_mode.push_back("-t");
-	_mode.push_back("-l");
 }
 
 /* Parameter constructor: name and pass*/
@@ -50,11 +40,6 @@ Channel::Channel(std::string name, std::string password)
 {
 	std::cout << CYAN << "Channel: Parameter constructor called" << RESET
 		<< std::endl;
-	_mode.push_back("-o");
-	_mode.push_back("-k");
-	_mode.push_back("-i");
-	_mode.push_back("-t");
-	_mode.push_back("-l");
 }
 
 /* Copy constructor */
@@ -80,7 +65,6 @@ Channel	&Channel::operator=(const Channel &copy)
 		_password = copy._password;
 		_topic = copy._topic;
 		_topic_mode = copy._topic_mode;
-		_mode = copy._mode;
 		_channel_invite_only = copy._channel_invite_only;
 		_channel_limit = copy._channel_limit;
 		_clients_in_channel = copy._clients_in_channel;
@@ -148,34 +132,42 @@ void	Channel::set_topic_mode(bool topic_mode)
 	_topic_mode = topic_mode;
 }
 
-/* get_mode() returns the mode of the channel. */
+/* get_mode():
+** 1. checks the modes of the channel by accessing the private variables
+** 2. returns a string with the modes of the channel
+*/
 std::string	Channel::get_mode(void) const
 {
-	std::string				ret;
-	STRING_VEC::const_iterator	it = _mode.begin();
+	std::string	chanel_modes;
 
-	for (; it != _mode.end(); it++)
-	{
-		if ((*it)[0] == '+')
-			ret += *it.base();
-	}
-	return (ret);
+	// check if the channel is invite only
+	if (_topic != "No topic is set")
+		chanel_modes += "+t ";
+	else
+		chanel_modes += "-t ";
+	// check if the channel has a password
+	if (_password != "")
+		chanel_modes += "+k ";
+	else
+		chanel_modes += "-k ";
+	// check if the channel has a operator (need to looj in _clients_operator_channel)
+	if (_clients_operator_channel.size() > 0)
+		chanel_modes += "+o ";
+	else
+		chanel_modes += "-o ";
+	// check if the channel is invite only
+	if (_channel_invite_only)
+		chanel_modes += "+i ";
+	else
+		chanel_modes += "-i ";
+	// check if the channel has a limit
+	if (_channel_limit > 0)
+		chanel_modes += "+l";
+	else
+		chanel_modes += "-l";
+	return (chanel_modes);
 }
 
-/* set_mode() sets the mode of the channel. */
-void	Channel::set_mode(std::string mode)
-{
-	STRING_VEC::iterator	it = _mode.begin();
-
-	for (; it != _mode.end(); it++)
-	{
-		if (mode[1] == (*it)[1])
-		{
-			*it = mode;
-			return;
-		}
-	}
-}
 
 /* get_channel_limit() returns the maximum number of users allowed in the
  * channel. */

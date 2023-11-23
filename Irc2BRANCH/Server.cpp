@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/23 17:21:44 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/23 20:38:39 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -433,7 +433,7 @@ int	Server::client_cmds(Client &client)
 		return 0;
 	}
 	buffer[n] = 0;
-	std::cout << "Received:" << buffer << ".\n";
+	std::cout << MAGENTA << "Received:" << buffer << RESET << ".\n";
 	if (n > 0 && buffer[n - 1] == '\n')
 	{
 		buffer[n - 1] = 0;
@@ -636,6 +636,13 @@ int Server::cmd_mode(Client &client, std::string input)
 
 	// Parse input
 	iss >> channel_to_find >> mode >> argument;
+
+	// debug
+	std::cout << BOLDYELLOW << "cmd_mode" << std::endl;
+	std::cout << "channel_to_find: " << channel_to_find << "|" << std::endl;
+	std::cout << "mode: " << mode << "|" << std::endl;
+	std::cout << "argument: " << argument << "|" << std::endl;
+	std::cout << RESET << std::endl;
 	// Find the channel
 	Channel *channel = findChannel(client, channel_to_find);
 	if (!channel)
@@ -655,6 +662,7 @@ int Server::cmd_mode(Client &client, std::string input)
 	{
 		std::string success = ":localhost " + RPL_CHANNELMODEIS + " " + channel_to_find + " " + channel_to_find + ": " + channel->get_mode() + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
+		return (0);
 	}
 	// Set mode of channel
 	if (mode == "+o")
@@ -684,7 +692,6 @@ int Server::cmd_mode(Client &client, std::string input)
 			return (1);
 		}
 		channel->add_client_to_clients_operator_vector(*client_to_add);
-		channel->set_mode(mode);
 		std::string success = "Success[MODE +o]: " + argument + " is now an admin in channel " + channel_to_find + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		sendSuccessMessage(client_to_add->get_client_fd(), success);
@@ -717,7 +724,6 @@ int Server::cmd_mode(Client &client, std::string input)
 			return (1);
 		}
 		channel->remove_client_from_clients_operator_vector(*client_to_remove);
-		channel->set_mode(mode);
 		std::string success = "Success[MODE -o]: " + argument + " is no longer an operator in channel " + channel_to_find + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		return (0);
@@ -730,7 +736,6 @@ int Server::cmd_mode(Client &client, std::string input)
 			return (1);
 		// change password of channel
 		channel->set_password(argument);
-		channel->set_mode(mode);
 		std::string success = "Success: Password of channel " + channel_to_find + " changed to " + argument + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		return (0);
@@ -747,7 +752,6 @@ int Server::cmd_mode(Client &client, std::string input)
 		}
 		// remove password of channel
 		channel->set_password("");
-		channel->set_mode(mode);
 		std::string success = "Success[MODE -k]: Password of channel " + channel_to_find + " removed\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		return (0);
@@ -764,7 +768,6 @@ int Server::cmd_mode(Client &client, std::string input)
 		}
 		// set channel to invite only
 		channel->set_channel_invite_only(true);
-		channel->set_mode(mode);
 		std::string success = "Success[MODE +i]: Channel " + channel_to_find + " is now invite only\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		return (0);
@@ -781,7 +784,6 @@ int Server::cmd_mode(Client &client, std::string input)
 		}
 		// set channel to invite only
 		channel->set_channel_invite_only(false);
-		channel->set_mode(mode);
 		std::string success = "Success[MODE -i]: Channel " + channel_to_find + " is now not invite only\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		return (0);
@@ -798,7 +800,6 @@ int Server::cmd_mode(Client &client, std::string input)
 		}
 		// set channel topic_mode to true
 		channel->set_topic_mode(true);
-		channel->set_mode(mode);
 		std::string success = "Success[MODE +t]: Channel " + channel_to_find + " now has topic mode set\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		return (0);
@@ -815,7 +816,6 @@ int Server::cmd_mode(Client &client, std::string input)
 		}
 		// set channel topic_mode to false
 		channel->set_topic_mode(false);
-		channel->set_mode(mode);
 		std::string success = "Success[MODE -t]: Channel " + channel_to_find + " now has topic mode not set\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		return (0);
@@ -829,7 +829,6 @@ int Server::cmd_mode(Client &client, std::string input)
 		issz >> limit;
 		// change channel limit
 		channel->set_channel_limit(limit);
-		channel->set_mode(mode);
 		std::string success = "Success[MODE +l]: Channel " + channel_to_find + " now has limit " + argument + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		return (0);
@@ -846,11 +845,15 @@ int Server::cmd_mode(Client &client, std::string input)
 		}
 		// change channel limit
 		channel->set_channel_limit(0);
-		channel->set_mode(mode);
 		std::string success = "Success[MODE -l]: Channel " + channel_to_find + " now has no limit\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		return (0);
 	}
+	// else if (mode[0] == "#")
+	// {
+	// 	// check if channel exists
+
+	// }
 	else
 	{
 		std::string error = "Error[MODE]: Usage: MODE <channel> [+|-][o|k|i|t|l] <argument>\r\n";
@@ -1237,6 +1240,20 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 			sendErrorMessage(fd, error);
 			return;
 		}
+		// check if client is in channel
+		if (find(ch_test->get_clients_in_channel().begin(), ch_test->get_clients_in_channel().end(), client.get_client_fd()) == ch_test->get_clients_in_channel().end())
+		{
+			error = ":localhost " + ERR_CANNOTSENDTOCHAN + " : Error[PRIVMSG]: You (" + client.get_nickname() + ") are not in channel " + dest + "\r\n";
+			sendErrorMessage(fd, error);
+			return;
+		}
+		// check if client is banned
+		if (ch_test->find_banned_client(client))
+		{
+			error = ":localhost " + ERR_CANNOTSENDTOCHAN + " : Error[PRIVMSG]: You (" + client.get_nickname() + ") are banned from channel " + dest + "\r\n";
+			sendErrorMessage(fd, error);
+			return;
+		}
 		ch_test->message(client, msg);
 		return;
 	}
@@ -1276,10 +1293,11 @@ int Server::cmd_kick(Client &client, std::string input)
     iss >> channel_to_find >> nickname;
     std::getline(iss, reason);
 
-	// if nickname is empty
+	// if nickname is empty ERR_NEEDMOREPARAMS
+	// message = ":localhost " + ERR_NEEDMOREPARAMS + " : Error[KICK]: Usage: KICK <channel> <nickname> [<reason>]\r\n";
 	if (nickname.empty())
 	{
-		std::string error = "ERROR[KICK]: Usage: KICK <channel> <nickname> [<reason>]\r\n";
+		std::string error = ":localhost " + ERR_NEEDMOREPARAMS + " : Error[KICK]: Usage: KICK <channel> <nickname> [<reason>]\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
@@ -1436,14 +1454,46 @@ int Server::kickClientFromChannel(Channel *channel, Client *client, Client *clie
 	// Send message to client
     if (reason.empty())
     {
-		// Sending message: :qwe KICK #asdf asd :bye bye 
-		message = ":" + client->get_nickname() + "KICK " + channel->get_name()
+		// Sending message: :asd KICK #tyu andrebaiao :bye
+		message = ":" + client->get_nickname() + " KICK " + channel->get_name()
 			+ " " + client_to_kick->get_nickname() + " :This is Sparta!\r\n";
+		if (sendSuccessMessage(client_to_kick->get_client_fd(), message) == -1)
+			return (1);
+		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
+			return (1);
+		// Sending message: :localhost 353 andrebaiao = #tyu :list of clients_in_channel
+		message = ":localhost " + RPL_NAMREPLY + " " + client_to_kick->get_nickname()
+			+ " = " + channel->get_name() + " :" + get_users_string(*channel) + "\r\n";
+		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
+			return (1);
+		//Sending message: :localhost 366 andrebaiao #tyu :End of NAMES list
+		message = ":localhost " + RPL_ENDOFNAMES + " " + client->get_nickname() 
+			+ " " + channel->get_name() + " :End of NAMES list\r\n";
+		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
+			return (1);
+		return (0);
 	}
 	else
 	{
-		message = ":" + client->get_nickname() + "KICK " + channel->get_name()
+		// Sending message: :asd KICK #tyu andrebaiao :bye
+		message = ":" + client->get_nickname() + " KICK " + channel->get_name()
 			+ " " + client_to_kick->get_nickname() + " :" + reason + "\r\n";
+		if (sendSuccessMessage(client_to_kick->get_client_fd(), message) == -1)
+			return (1);
+		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
+			return (1);
+		// Sending message: :localhost 353 andrebaiao = #tyu :list of clients_in_channel
+		message = ":localhost " + RPL_NAMREPLY + " " + client_to_kick->get_nickname()
+			+ " = " + channel->get_name() + " :" + get_users_string(*channel) + "\r\n";
+		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
+			return (1);
+		//Sending message: :localhost 366 andrebaiao #tyu :End of NAMES list
+		message = ":localhost " + RPL_ENDOFNAMES + " " + client->get_nickname() 
+			+ " " + channel->get_name() + " :End of NAMES list\r\n";
+		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
+			return (1);
+		return (0);
+		
 	}
 	// Send message to client send success message to client
 	if (sendSuccessMessage(client->get_client_fd(), message) == -1)
