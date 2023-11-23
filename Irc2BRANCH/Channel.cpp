@@ -6,18 +6,23 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/16 15:36:58 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/23 10:51:58 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
 
 Channel::Channel()
-	:_name(""), _password(""), _topic("No topic is set"), _topic_mode(false), _mode(-1), 
+	:_name(""), _password(""), _topic("No topic is set"), _topic_mode(false), 
 	_channel_limit(0), _channel_invite_only(false)
 {
 	std::cout << CYAN << "Channel: Default constructor called" << RESET
 		<< std::endl;
+	_mode.push_back("-o");
+	_mode.push_back("-k");
+	_mode.push_back("-i");
+	_mode.push_back("-t");
+	_mode.push_back("-l");
 }
 
 /* Parameter constructor: only name as parameter*/
@@ -29,18 +34,27 @@ Channel::Channel(std::string name)
 	_password = "";
 	_topic = "No topic is set";
 	_topic_mode = false;
-	_mode = -1;
 	_channel_limit = 0;
 	_channel_invite_only = false;
+	_mode.push_back("-o");
+	_mode.push_back("-k");
+	_mode.push_back("-i");
+	_mode.push_back("-t");
+	_mode.push_back("-l");
 }
 
 /* Parameter constructor: name and pass*/
 Channel::Channel(std::string name, std::string password)
-	:_name(name), _password(password), _topic("No topic is set"), _topic_mode(false), _mode(-1), 
+	:_name(name), _password(password), _topic("No topic is set"), _topic_mode(false),
 	_channel_limit(0), _channel_invite_only(false)
 {
 	std::cout << CYAN << "Channel: Parameter constructor called" << RESET
 		<< std::endl;
+	_mode.push_back("-o");
+	_mode.push_back("-k");
+	_mode.push_back("-i");
+	_mode.push_back("-t");
+	_mode.push_back("-l");
 }
 
 /* Copy constructor */
@@ -135,15 +149,32 @@ void	Channel::set_topic_mode(bool topic_mode)
 }
 
 /* get_mode() returns the mode of the channel. */
-int	Channel::get_mode(void) const
+std::string	Channel::get_mode(void) const
 {
-	return (_mode);
+	std::string				ret;
+	STRING_VEC::const_iterator	it = _mode.begin();
+
+	for (; it != _mode.end(); it++)
+	{
+		if ((*it)[0] == '+')
+			ret += *it.base();
+	}
+	return (ret);
 }
 
 /* set_mode() sets the mode of the channel. */
-void	Channel::set_mode(int mode)
+void	Channel::set_mode(std::string mode)
 {
-	_mode = mode;
+	STRING_VEC::iterator	it = _mode.begin();
+
+	for (; it != _mode.end(); it++)
+	{
+		if (mode[1] == (*it)[1])
+		{
+			*it = mode;
+			return;
+		}
+	}
 }
 
 /* get_channel_limit() returns the maximum number of users allowed in the

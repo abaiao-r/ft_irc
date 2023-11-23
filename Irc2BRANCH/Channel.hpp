@@ -3,15 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/10 18:42:59 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/23 10:46:12 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include "Server.hpp"
+
+#define STRING_VEC std::vector<std::string>
 
 class Client;
 class Channel
@@ -21,7 +23,7 @@ class Channel
 		std::string			_password;
 		std::string			_topic;
 		bool 				_topic_mode;
-		int					_mode;
+		STRING_VEC			_mode;
 		unsigned int 		_channel_limit;
 		bool				_channel_invite_only;
 		std::vector<Client>	_clients_in_channel;
@@ -54,8 +56,8 @@ class Channel
 		bool 				get_topic_mode() const;
 		void				set_topic_mode(bool topic_mode);
 
-		int					get_mode() const;
-		void				set_mode(int mode);
+		std::string			get_mode() const;
+		void				set_mode(std::string mode);
 
 		unsigned int 		get_channel_limit(void) const;
 		void				set_channel_limit(unsigned channel_limit);
