@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/23 16:54:07 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/23 17:21:44 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1138,12 +1138,12 @@ int Server::cmd_join(Client &client, std::string input)
 		it->add_client_to_clients_operator_vector(client);
 		message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN " + input_channel_name + "\r\n";
 		sendSuccessMessage(fd, message);
-		message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " :" + it->get_topic() + "\r\n";
+		message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " " + it->get_topic() + "\r\n";
 		sendSuccessMessage(fd, message);
 		message = ":localhost " + RPL_NAMREPLY + " " + client.get_nickname() + " = " + input_channel_name + " :" + get_users_string(*it) + "\r\n";
-		it->message(client, message);
+		it->info_message(message);
 		message = ":localhost " + RPL_ENDOFNAMES + " " + client.get_nickname() + " " + input_channel_name + " :End of NAMES list\r\n";
-		it->message(client, message);
+		it->info_message(message);
 		return (0);
 	}
 	in_channel = it->get_clients_in_channel();
@@ -1193,12 +1193,12 @@ int Server::cmd_join(Client &client, std::string input)
 	it->add_client(client);
 	message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN :" + input_channel_name + "\r\n";
 	sendSuccessMessage(fd, message);
-	message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " :" + it->get_topic() + "\r\n";
+	message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + input_channel_name + " " + it->get_topic() + "\r\n";
 	sendSuccessMessage(fd, message);
 	message = ":localhost " + RPL_NAMREPLY + " " + client.get_nickname() + " = " + input_channel_name + " :" + get_users_string(*it) + "\r\n";
-	it->message(client, message);
+	it->info_message(message);
 	message = ":localhost " + RPL_ENDOFNAMES + " " + client.get_nickname() + " " + input_channel_name + " :End of NAMES list\r\n";
-	it->message(client, message);
+	it->info_message(message);
 	return (0);
 }
 
@@ -1465,6 +1465,10 @@ int Server::cmd_topic(Client &client, std::string input)
 	
 	// Parse input
 	iss >> channel_to_find;
+	// skip all kind of leading whitespaces
+	iss >> std::ws;
+	//skip :
+	iss.ignore(1, ':');
 	std::getline(iss, topic);
 
 	// if no channel name is given

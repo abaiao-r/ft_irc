@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/23 10:46:12 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/23 12:16:04 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,4 +92,6 @@ class Channel
 		Client				*find_client(Client &client);
 		Client				*find_banned_client(Client &client);
 		void				message(Client &client, std::string msg);
+		void				info_message(std::string msg);
+		int 				sendSuccessMessage(int client_fd, const std::string	&successMessage);
 };
