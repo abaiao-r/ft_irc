@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/23 16:27:27 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/24 08:26:45 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,60 +199,52 @@ class Server
 		Server(int port, std::string password);
 		~Server();
 
-		//DELETE?
-		int			get_port(void) const;
-		int			get_server_fd(void) const;
-		sockaddr_in get_address(void) const;
-		//
-
+		//Startup
 		void		init_server(void);
-		// auxiliary functions of init_server
 		int			create_socket(void);
 		int			unblock_socket(int fd);
 		int			set_socket_options(void);
 		int			bind_socket(void);
 		int			start_listening(void);
-
 		void		create_epoll();
+
+		//Connection loop and login
 		void		connection();
 		void		client_connection();
 		int 		client_cmds(Client &client);
 		int			choose_cmd(Client &client, std::string in);
-		void 		parseLoginLine(const std::string &line, std::map<std::string, std::string> &cmds);
 		void 		login(Client &client, const std::string &buffer);
+		void 		parseLoginLine(const std::string &line, std::map<std::string, std::string> &cmds);
+
+		//Commands and messages
 		void		cmd_pass(Client &client, std::string input);
 		void		cmd_user(Client &client, std::string input);
 		void		cmd_nick(Client &client, std::string input);
-		/*join*/
-		int 		channel_name_validation(int client_fd, std::string check);
 		int			cmd_join(Client &client, std::string input);
-		/*end join*/
 		void		cmd_privmsg(Client &client, std::string input);
-		
-		int cmd_list(Client &client, std::string input);
-		// KICK COMMAND FUNCTIONS
-		int			is_client_admin(Client &client);
-		int			sendErrorMessage(int client_fd, const std::string& errorMessage);
-		int 		sendSuccessMessage(int client_fd, const std::string	&successMessage);
-		Channel		*findChannel(Client &client, const std::string& channelName);
-		Client		*findClientInChannel(Client &client, Channel* channel, const std::string& nickname);
-		Client		*find_client(Client &client, const std::string& nickname);
-		int 		kickClientFromChannel(Channel* channel, Client* client, Client *client_to_kick, const std::string& reason);
+		int 		cmd_list(Client &client, std::string input);
 		int 		cmd_kick(Client &client, std::string input);
-		// END KICK COMMAND FUNCTIONS
-
 		int 		cmd_invite(Client &client, std::string input);
 		int			cmd_topic(Client &client, std::string input);
 		int			cmd_mode(Client &client, std::string input);
 		int			cmd_who(Client &client, std::string input);
+		int			sendErrorMessage(int client_fd, const std::string& errorMessage);
+		int 		sendSuccessMessage(int client_fd, const std::string	&successMessage);
+
+		//Utils
+		int			is_client_admin(Client &client);
+		Channel		*findChannel(Client &client, const std::string& channelName);
+		Client		*find_client(Client &client, const std::string& nickname);
+		int 		kickClientFromChannel(Channel* channel, Client* client, Client *client_to_kick, const std::string& reason);
+		int 		channel_name_validation(int client_fd, std::string check);
 		bool		pass_validation(std::string check) const;
 		bool		name_validation(std::string check);
 		int			nick_validation(std::string check);
 		int			name_compare(std::string check, std::string comp);
-		void		disconnect_client(int fd);
-		void		leave_all_rooms(int fd);
-		static void	signal_handler(int sig);
 		int			password_checker(std::string password);
 		int			password_checker(std::string password, int fd);
 		std::string	get_users_string(Channel &channel);
+		void		disconnect_client(int fd);
+		void		leave_all_rooms(int fd);
+		static void	signal_handler(int sig);
 };
