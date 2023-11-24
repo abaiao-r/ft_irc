@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:56 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/24 08:53:30 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/24 09:51:14 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,8 +186,8 @@ int Server::kickClientFromChannel(Channel *channel, Client *client, Client *clie
 	if (channel->find_clients_operator_channel(*client_to_kick))
 		channel->remove_client_from_clients_operator_vector(*client_to_kick);
 	// Send message to client
-    if (reason.empty())
-    {
+	if (reason.empty())
+	{
 		// Sending message: :asd KICK #tyu andrebaiao :bye
 		message = ":" + client->get_nickname() + " KICK " + channel->get_name()
 			+ " " + client_to_kick->get_nickname() + " :This is Sparta!\r\n";
@@ -232,7 +232,7 @@ int Server::kickClientFromChannel(Channel *channel, Client *client, Client *clie
 	// Send message to client send success message to client
 	if (sendSuccessMessage(client->get_client_fd(), message) == -1)
 		return (1);
-    return (0);
+	return (0);
 }
 
 int	Server::password_checker(std::string password)
@@ -300,4 +300,20 @@ std::string	Server::get_users_string(Channel &channel)
 	if (ret.empty())
 		ret = " ";
 	return ret;
+}
+
+void	Server::join_messages(Client &client, Channel &channel)
+{
+	std::string	message;
+	std::string	name = channel.get_name();
+	int			fd = client.get_client_fd();
+
+	message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN " + name + "\r\n";
+	sendSuccessMessage(fd, message);
+	message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + name + " " + channel.get_topic() + "\r\n";
+	sendSuccessMessage(fd, message);
+	message = ":localhost " + RPL_NAMREPLY + " " + client.get_nickname() + " = " + name + " :" + get_users_string(channel) + "\r\n";
+	channel.info_message(message);
+	message = ":localhost " + RPL_ENDOFNAMES + " " + client.get_nickname() + " " + name + " :End of NAMES list\r\n";
+	channel.info_message(message);
 }

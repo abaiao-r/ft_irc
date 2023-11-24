@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:38 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/24 08:33:04 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/24 08:58:31 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,32 +149,32 @@ void	Server::client_connection()
 void Server::parseLoginLine(const std::string &line, std::map<std::string, std::string> &cmds)
 {
 	std::string cmd = line;
-    std::string input;
+	std::string input;
 
-    // Skip empty lines.
-    if (cmd.empty())
+	// Skip empty lines.
+	if (cmd.empty())
 		return;
 
-    // Extract the command and its arguments from the line.
+	// Extract the command and its arguments from the line.
 	std::stringstream s(cmd);
 	s >> cmd;
 	std::getline(s, input);
 	input.erase(0, input.find_first_not_of(" \t\n\r\f\v"));
 
-    // Store the command and its arguments in the map.
-    cmds[cmd] = input;
+	// Store the command and its arguments in the map.
+	cmds[cmd] = input;
 
-    // Remove \r\n from the input.
-    if (cmds[cmd].find("\r") != std::string::npos)
-        cmds[cmd].erase(cmds[cmd].find("\r"), 2);
+	// Remove \r\n from the input.
+	if (cmds[cmd].find("\r") != std::string::npos)
+		cmds[cmd].erase(cmds[cmd].find("\r"), 2);
 
-    // Remove leading and trailing whitespace from the input.
-    cmds[cmd].erase(0, cmds[cmd].find_first_not_of(" \t\n\r\f\v"));
-    cmds[cmd].erase(cmds[cmd].find_last_not_of(" \t\n\r\f\v") + 1);
+	// Remove leading and trailing whitespace from the input.
+	cmds[cmd].erase(0, cmds[cmd].find_first_not_of(" \t\n\r\f\v"));
+	cmds[cmd].erase(cmds[cmd].find_last_not_of(" \t\n\r\f\v") + 1);
 
-    // Debug print: Display the command and its arguments.
+	// Debug print: Display the command and its arguments.
 	std::cout << YELLOW << "cmd:" << cmd << "| input:" << input << "|"<< RESET << std::endl;
-    std::cout << ORANGE << "cmd:" << cmd << " input:" << input << RESET << std::endl;
+	std::cout << ORANGE << "cmd:" << cmd << " input:" << input << RESET << std::endl;
 }
 
 
@@ -186,26 +186,26 @@ void Server::parseLoginLine(const std::string &line, std::map<std::string, std::
 void Server::login(Client &client, const std::string &buffer)
 {
  std::map<std::string, std::string> cmds;
-    std::stringstream s(buffer);
+	std::stringstream s(buffer);
 
-    // Iterate through lines in the buffer (split by \n) and parse each command.
-    std::string line;
-    while (std::getline(s, line, '\n'))
-    {
-        parseLoginLine(line, cmds);
-    }
+	// Iterate through lines in the buffer (split by \n) and parse each command.
+	std::string line;
+	while (std::getline(s, line, '\n'))
+	{
+		parseLoginLine(line, cmds);
+	}
 
-    // Execute the commands in the map (PASS, USER, NICK if they exist). 
+	// Execute the commands in the map (PASS, USER, NICK if they exist). 
 	// First look for PASS, then USER, then NICK.
-    if (cmds.find("PASS") != cmds.end())
-        cmd_pass(client, cmds["PASS"]);
-    if (cmds.find("NICK") != cmds.end())
-        cmd_nick(client, cmds["NICK"]);
-    if (cmds.find("USER") != cmds.end())
-        cmd_user(client, cmds["USER"]);
+	if (cmds.find("PASS") != cmds.end())
+		cmd_pass(client, cmds["PASS"]);
+	if (cmds.find("NICK") != cmds.end())
+		cmd_nick(client, cmds["NICK"]);
+	if (cmds.find("USER") != cmds.end())
+		cmd_user(client, cmds["USER"]);
 
-    // Clear the commands and input from the map.
-    cmds.clear();
+	// Clear the commands and input from the map.
+	cmds.clear();
 }
 
 

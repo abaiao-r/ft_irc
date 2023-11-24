@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/24 08:26:45 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/24 09:42:11 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -247,4 +247,5 @@ class Server
 		void		disconnect_client(int fd);
 		void		leave_all_rooms(int fd);
 		static void	signal_handler(int sig);
+		void		join_messages(Client &client, Channel &channel);
 };
