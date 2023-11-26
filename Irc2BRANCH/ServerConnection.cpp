@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConnection.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:38 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/24 08:58:31 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/26 12:29:26 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,6 +139,7 @@ void	Server::client_connection()
 	}
 	client.set_client_fd(client_fd);
 	_clients.push_back(client);
+	_Clippy.greeting(client);
 }
 
 /* parseLoginLine:
@@ -298,6 +299,8 @@ int	Server::choose_cmd(Client &client, std::string in)
 		cmd_list(client, input);
 	else if (cmd == "EXIT")
 		disconnect_client(client.get_client_fd());
+	else if (cmd == "HALP")
+		_Clippy.cmd_help(client);
 	else
 	{
 		sendErrorMessage(fd, "Error. Command not found\r\n");
@@ -308,5 +311,5 @@ int	Server::choose_cmd(Client &client, std::string in)
 		std::getline(s, remaining);
 		choose_cmd(client, remaining);
 	}
-	return(0);
+	return (0);
 }

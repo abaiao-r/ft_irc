@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/24 13:39:04 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/26 12:38:36 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -554,6 +554,7 @@ int Server::cmd_join(Client &client, std::string input)
 		//set client as operator
 		it->add_client_to_clients_operator_vector(client);
 		join_messages(client, *it);
+		client.set_is_admin(true);
 		return (0);
 	}
 	in_channel = it->get_clients_in_channel();

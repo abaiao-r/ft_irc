@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/24 08:58:26 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/26 12:02:56 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,8 @@
 int	Server::_loop_state = 1;
 
 /* Default constructor */
-Server::Server(): _port(0), _server_fd(-1)
+Server::Server()
+	: _port(0), _server_fd(-1), _Clippy("Clippy")
 {
 	std::cout << CYAN << "Default constructor Server called" << RESET 
 		<< std::endl;
@@ -25,7 +26,8 @@ Server::Server(): _port(0), _server_fd(-1)
 	_address.sin_port = htons(_port); // Port
 }
 /* Parameter constructor */
-Server::Server(int port, std::string password): _port(port), _password(password)
+Server::Server(int port, std::string password)
+	: _port(port), _password(password), _Clippy("Clippy")
 {
 	std::signal(SIGINT, signal_handler);
 	std::cout << CYAN << "Parameter constructor Server called" << RESET 
@@ -45,6 +47,7 @@ Server::Server(int port, std::string password): _port(port), _password(password)
 
 /* Copy constructor */
 Server::Server(const Server &src)
+	:_Clippy("Clippy")
 {
 	std::cout << CYAN << "Copy constructor Server called" << RESET 
 		<< std::endl;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/24 09:42:11 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/26 12:24:45 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,11 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "utils.hpp"
+#include "Bot.hpp"
 
 class Client;
 class Channel;
+// class Bot;
 
 #define C_IT std::vector<Client>::iterator
 #define CH_IT std::vector<Channel>::iterator
@@ -178,16 +180,17 @@ class Channel;
 class Server
 {
 	private:
-		int							_port;
-		const std::string			_password;
-		int							_server_fd;
-		sockaddr_in					_address;
-		int							_epoll_fd;
-		epoll_event					_main_event;
-		epoll_event					_events[MAX_EVENTS];
-		std::vector<Client>			_clients;
-		std::vector<Channel>		_channels;
-		static int					_loop_state;
+		int						_port;
+		const std::string		_password;
+		int						_server_fd;
+		sockaddr_in				_address;
+		int						_epoll_fd;
+		epoll_event				_main_event;
+		epoll_event				_events[MAX_EVENTS];
+		std::vector<Client>		_clients;
+		std::vector<Channel>	_channels;
+		static int				_loop_state;
+		Bot						_Clippy;
 
 		// private because we don't want to allow copies of this class
 		Server(void);

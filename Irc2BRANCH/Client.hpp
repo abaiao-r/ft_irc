@@ -11,7 +11,9 @@
 /* ************************************************************************** */
 
 #pragma once
-#include "Server.hpp"
+#include <iostream>
+#include <netinet/in.h>
+#include "colours.hpp"
 
 class Client
 {
