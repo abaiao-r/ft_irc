@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/27 17:24:42 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/27 18:02:20 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,15 @@ int Server::cmd_list(Client &client, std::string input)
 		sendSuccessMessage(client.get_client_fd(), msg);
 		if (_channels.size() > 0)
 		{
-			for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
+			for (std::vector<Channel>::iterator it = _channels.begin(); 
+				it != _channels.end(); it++)
 			{
 				// convert int o clients in channel size to string
 				int num_clients_in_channel = it->get_clients_in_channel().size();
 				// convert int to string
-				std::string num_clients_in_channel_str = static_cast<std::ostringstream*>(&(std::ostringstream() << num_clients_in_channel))->str();
+				std::string num_clients_in_channel_str 
+					= static_cast<std::ostringstream*>(&(std::ostringstream() 
+					<< num_clients_in_channel))->str();
 				std::string msg2 = ":localhost " + RPL_LIST + " " 
 					+ client.get_nickname() + " " + it->get_name() 
 						+ " " +	num_clients_in_channel_str + " :"
@@ -35,14 +38,16 @@ int Server::cmd_list(Client &client, std::string input)
 				sendSuccessMessage(client.get_client_fd(), msg2);
 			}
 		}
-		std::string msg3 = ":localhost " + RPL_LISTEND + " " + client.get_nickname() + " :End of /LIST\r\n";
+		std::string msg3 = ":localhost " + RPL_LISTEND + " " 
+			+ client.get_nickname() + " :End of /LIST\r\n";
 		sendSuccessMessage(client.get_client_fd(), msg3);
 		return (0);
 	}
 	// else, list channels that match input
 	else if (!input.empty())
 	{
-		// split input into vector of strings by comma. To be a channel it must start with a # otherwise it is a target
+		// split input into vector of strings by comma. 
+		// To be a channel it must start with a # otherwise it is a target
 
 		std::vector<std::string> channels_to_list;
 		std::stringstream ss(input);
@@ -59,7 +64,8 @@ int Server::cmd_list(Client &client, std::string input)
 		sendSuccessMessage(client.get_client_fd(), msg);
 		if (_channels.size() > 0)
 		{
-			for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
+			for (std::vector<Channel>::iterator it = _channels.begin(); 
+				it != _channels.end(); it++)
 			{
 				if (it->get_name() == input)
 				{
@@ -70,7 +76,8 @@ int Server::cmd_list(Client &client, std::string input)
 				}
 			}
 		}
-		std::string msg3 = ":localhost " + RPL_LISTEND + " " + client.get_nickname() + " :End of /LIST\r\n";
+		std::string msg3 = ":localhost " + RPL_LISTEND + " " 
+			+ client.get_nickname() + " :End of /LIST\r\n";
 		sendSuccessMessage(client.get_client_fd(), msg3);
 		return (0);
 	}
@@ -830,7 +837,6 @@ int Server::cmd_topic(Client &client, std::string input)
 		return (0);
 	}
 	// check if topic_mode is true
-	std::string client_nickname = client.get_nickname();
 	if (channel->get_topic_mode() == true && channel->find_clients_operator_channel(client_nickname))
 	{
 		std::string success = "Success[TOPIC]: topic changed to " + topic + "\r\n";
