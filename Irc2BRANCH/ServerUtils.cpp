@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:56 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/27 15:47:22 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/27 17:28:26 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,7 +183,8 @@ int Server::kickClientFromChannel(Channel *channel, Client *client, Client *clie
 	// add client_to_kick to banned list
 	channel->add_client_to_banned_vector(*(client_to_kick));
 	// if client is in operator_channel, remove from operator_channel
-	if (channel->find_clients_operator_channel(*client_to_kick))
+	std::string client_to_kick_nickname = client_to_kick->get_nickname();
+	if (channel->find_clients_operator_channel(client_to_kick_nickname))
 		channel->remove_client_from_clients_operator_vector(*client_to_kick);
 	// Send message to client
 	if (reason.empty())
@@ -290,7 +291,8 @@ std::string	Server::get_users_string(Channel &channel)
 
 	for (; it != list.end(); it++)
 	{
-		if (channel.find_clients_operator_channel(*it.base()) == NULL)
+		std::string	nickname = it->get_nickname();
+		if (!channel.find_clients_operator_channel(nickname))
 			ret += "%" + it->get_nickname();
 		else
 			ret += "@" + it->get_nickname();

@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/27 17:16:01 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/27 17:24:42 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,7 +148,8 @@ int Server::cmd_mode(Client &client, std::string input)
 	}
 
 	// Find if Client is in vector of clients operator_channel
-	if (!channel->find_clients_operator_channel(client))
+	std::string nickname = client.get_nickname();
+	if (!channel->find_clients_operator_channel(nickname))
 	{
 		message = ":localhost " + ERR_CHANOPRIVSNEEDED + " : Error[MODE]: You are not an operator in channel " + channel_to_find + "\r\n";
 		sendErrorMessage(fd, message);
@@ -743,7 +744,8 @@ int Server::cmd_kick(Client &client, std::string input)
 		return (1);
 	}
 	// Find if Client is in vector of clients operator_channel
-	if (!channel->find_clients_operator_channel(client))
+	std::string client_that_kicked = client.get_nickname();
+	if (!channel->find_clients_operator_channel(client_that_kicked))
 	{
 		std::string error = "Error[KICK]: " + client.get_nickname() + " is not an operator in channel " + channel_to_find + "\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
@@ -828,7 +830,8 @@ int Server::cmd_topic(Client &client, std::string input)
 		return (0);
 	}
 	// check if topic_mode is true
-	if (channel->get_topic_mode() == true && channel->find_clients_operator_channel(client))
+	std::string client_nickname = client.get_nickname();
+	if (channel->get_topic_mode() == true && channel->find_clients_operator_channel(client_nickname))
 	{
 		std::string success = "Success[TOPIC]: topic changed to " + topic + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
@@ -840,7 +843,7 @@ int Server::cmd_topic(Client &client, std::string input)
 		sendSuccessMessage(client.get_client_fd(), success);
 		channel->set_topic(topic);
 	}
-	else if (!channel->find_clients_operator_channel(client))
+	else if (!channel->find_clients_operator_channel(client_nickname))
 	{
 		// Check if client is administrator
 		std::string error = "Error[TOPIC]: " + client.get_nickname() + " is not an operator in channel " + channel_to_find + "\r\n";
@@ -885,7 +888,8 @@ int Server::cmd_invite(Client &client, std::string input)
 		return (1);
 	}
 	// Find if Client is in _clients_operator_channel
-	if (!channel->find_clients_operator_channel(client))
+	std::string client_nickname = client.get_nickname();
+	if (!channel->find_clients_operator_channel(client_nickname))
 	{
 		std::string message = "Error[INVITE]: You (" + client.get_nickname() + ") are not an operator in channel " + channel->get_name() + "\r\n";
 		sendErrorMessage(client.get_client_fd(), message);
