@@ -6,13 +6,17 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/27 21:18:17 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/27 22:04:11 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-int Server::cmdListWithArg(Client &client, std::string input)
+/* parseArgsListCommand: /list #channel1,#channel2,#channel3
+** 1. parse input string into vector of strings by comma
+** 2. return vector of strings
+*/
+std::vector<std::string> Server::parseArgsListCommand(std::string input)
 {
 	std::vector<std::string> channels_to_list;
 	std::stringstream ss(input);
@@ -23,44 +27,66 @@ int Server::cmdListWithArg(Client &client, std::string input)
 		if (token[0] == '#')
 			channels_to_list.push_back(token);
 	}
-	if (_channels.size() > 0)
-	{
-		for (std::vector<Channel>::iterator it = _channels.begin(); 
-			it != _channels.end(); it++)
-		{
-			if (it->get_name() == input)
-			{
-				std::string msg2 = ":localhost " + RPL_LIST + " " 
-					+ client.get_nickname() + " " + it->get_name() 
-					+ " " + it->get_topic() + "\r\n";
-				if (sendSuccessMessage(client.get_client_fd(), msg2) == -1)
-					return (1);
-			}
-		}
-	}
-	return (0);
+	return (channels_to_list);
 }
 
-
-int Server::cmdListNoArgs(Client &client)
-{
-	if (_channels.size() > 0)
-	{
-		for (std::vector<Channel>::iterator it = _channels.begin(); 
-			it != _channels.end(); it++)
+/* cmdListWithArg: /list #channel1,#channel2,#channel3
+** 1. parse input string into vector of strings by comma
+** 3. if it exists, send RPL_LIST message
+** 4. if it doesn't exist, send ERR_NOSUCHCHANNEL message
+*/
+int Server::cmdListWithArg(Client &client, std::string input)
+{	
+	std::vector<std::string> channels_to_list = parseArgsListCommand(input);
+	
+	for (std::vector<std::string>::iterator it = channels_to_list.begin(); 
+		it != channels_to_list.end(); it++)
+	{	
+		Channel *channel = findChannel(client, *it);
+		if (channel != NULL)
 		{
-			int num_clients_in_channel = it->get_clients_in_channel().size();
+			int num_clients_in_channel = channel->get_clients_in_channel().size();
 			// convert int to string
 			std::string num_clients_in_channel_str 
 				= static_cast<std::ostringstream*>(&(std::ostringstream() 
 				<< num_clients_in_channel))->str();
 			std::string msg2 = ":localhost " + RPL_LIST + " " 
-				+ client.get_nickname() + " " + it->get_name() 
+				+ client.get_nickname() + " " + channel->get_name() 
 				+ " " +	num_clients_in_channel_str + " :"
-				+ it->get_topic() + "\r\n";
+				+ channel->get_topic() + "\r\n";
 			if (sendSuccessMessage(client.get_client_fd(), msg2) == -1)
 				return (1);
 		}
+		else
+		{
+			std::string msg2 = ":localhost " + ERR_NOSUCHCHANNEL + " " 
+				+ client.get_nickname() + " " + *it + " :No such channel\r\n";
+			if (sendErrorMessage(client.get_client_fd(), msg2) == -1)
+				return (1);
+		}
+	}
+	return (0);
+}
+
+/* cmdListNoArgs: /list
+** 1. send RPL_LIST message for each channel
+*/
+int Server::cmdListNoArgs(Client &client)
+{
+	for (std::vector<Channel>::iterator it = _channels.begin(); 
+		it != _channels.end(); it++)
+	{
+		int num_clients_in_channel = it->get_clients_in_channel().size();
+		// convert int to string
+		std::string num_clients_in_channel_str 
+			= static_cast<std::ostringstream*>(&(std::ostringstream() 
+			<< num_clients_in_channel))->str();
+		std::string msg2 = ":localhost " + RPL_LIST + " " 
+			+ client.get_nickname() + " " + it->get_name() 
+			+ " " +	num_clients_in_channel_str + " :"
+			+ it->get_topic() + "\r\n";
+		if (sendSuccessMessage(client.get_client_fd(), msg2) == -1)
+			return (1);
 	}
 		return (0);
 }
@@ -73,13 +99,13 @@ int Server::cmd_list(Client &client, std::string input)
 	if (sendSuccessMessage(client.get_client_fd(), msg) == -1)
 		return (1);
 	// if input is empty, list all channels
-	if (input.empty())
+	if (input.empty() && _channels.size() > 0)
 	{
 		if (cmdListNoArgs(client) == 1)
 			return (1);
 	}
 	// else, list channels that match input
-	else if (!input.empty())
+	else if (!input.empty() && _channels.size() > 0)
 	{
 		if (cmdListWithArg(client, input) == 1)
 			return (1);

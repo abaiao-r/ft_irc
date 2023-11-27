@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/27 20:48:28 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/27 21:51:27 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,6 +227,7 @@ class Server
 		void		cmd_privmsg(Client &client, std::string input);
 
 		/* list funtions*/
+		std::vector<std::string>		parseArgsListCommand(std::string input);
 		int 		cmdListNoArgs(Client &client);
 		int 		cmdListWithArg(Client &client, std::string input);
 		int 		cmd_list(Client &client, std::string input);
