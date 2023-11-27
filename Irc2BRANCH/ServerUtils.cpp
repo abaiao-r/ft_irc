@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerUtils.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:56 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/24 09:51:14 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/27 15:47:22 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -258,7 +258,7 @@ int	Server::password_checker(std::string password)
 }
 /* password_checker: check if password is valid
  * 1. Check if password is between 3 and 12 characters
- * 2. Check if password contains non-printable characters
+ * 2. Check if password contains only non-printable characters
  */
 int	Server::password_checker(std::string password, int fd)
 {

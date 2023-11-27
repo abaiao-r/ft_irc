@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/26 12:12:22 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/27 16:31:15 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ class Channel
 		Client 				*find_clients_invited_to_channel_by_nickname(std::string &nickname_to_find);
 		Client				*find_client(Client &client);
 		Client				*find_banned_client(Client &client);
+		Client				*find_banned_client_by_nickname(Client &client);
 		void				message(Client &client, std::string msg);
 		void				info_message(std::string msg);
 		int 				sendSuccessMessage(int client_fd, const std::string	&successMessage);

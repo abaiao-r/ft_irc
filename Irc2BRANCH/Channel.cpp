@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/23 19:57:10 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/27 17:01:22 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,9 +65,13 @@ Channel	&Channel::operator=(const Channel &copy)
 		_password = copy._password;
 		_topic = copy._topic;
 		_topic_mode = copy._topic_mode;
-		_channel_invite_only = copy._channel_invite_only;
 		_channel_limit = copy._channel_limit;
+		_channel_invite_only = copy._channel_invite_only;
 		_clients_in_channel = copy._clients_in_channel;
+		_clients_banned = copy._clients_banned;
+		_clients_operator_channel = copy._clients_operator_channel;
+		_clients_invited_to_channel = copy._clients_invited_to_channel;
+
 	}
 	return (*this);
 }
@@ -99,12 +103,6 @@ std::string	Channel::get_password(void) const
 /* set_password() sets the password of the channel. */
 void	Channel::set_password(std::string password)
 {
-	// int	check = password_checker(password);
-
-	// if (check == 1)
-		//Message pass size
-	// else if (check == 2)
-		//Message non printable
 	_password = password;
 }
 
@@ -345,7 +343,9 @@ Client	*Channel::find_banned_client(const std::string &client_banned)
 	return it.base();
 }
 
-/* find_clients_operator_channel: looks for a client in the vector of clients*/
+/* find_clients_operator_channel: returns a pointer to the client if it is
+ * found in the vector of clients that are operators in the channel. Otherwise,
+ * it returns NULL. */
 Client	*Channel::find_clients_operator_channel(Client &client)
 {
 	std::vector<Client>::iterator it = find(_clients_operator_channel.begin(), _clients_operator_channel.end(), client);
@@ -414,6 +414,21 @@ Client	*Channel::find_banned_client_by_nickname(std::string &nickname_to_find)
 Client	*Channel::find_banned_client(Client &client)
 {
 	C_IT	it = find(_clients_banned.begin(), _clients_banned.end(), client);
+	
+		if (it != _clients_banned.end())
+			return (it.base());
+	return (NULL);
+}
+
+/* find_banned_client_by_nickname(Client &client):
+** 1. Looks for a client in the vector of clients that are banned from the channel.
+** 2. Returns a pointer to the client if it is found in the vector.
+** 3. Otherwise, it returns NULL.
+*/
+Client	*Channel::find_banned_client_by_nickname(Client &client)
+{
+	std::string nickname_to_find = client.get_nickname();
+	C_IT	it = find(_clients_banned.begin(), _clients_banned.end(), nickname_to_find);
 	
 		if (it != _clients_banned.end())
 			return (it.base());

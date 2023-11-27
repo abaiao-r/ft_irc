@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/26 12:24:45 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/27 14:44:01 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,7 +229,19 @@ class Server
 		int 		cmd_kick(Client &client, std::string input);
 		int 		cmd_invite(Client &client, std::string input);
 		int			cmd_topic(Client &client, std::string input);
+		/*mode funtions*/
 		int			cmd_mode(Client &client, std::string input);
+		int 		handleModePlusO(Client &client, Channel *channel, std::string argument, int fd);
+		int 		handleModeMinusO(Client &client, Channel *channel, std::string argument, int fd);
+		int 		handleModePlusK(Channel *channel, std::string argument, int fd);
+		int 		handleModeMinusK(Channel *channel, int fd);
+		int 		handleModePlusI(Channel *channel, int fd);
+		int 		handleModeMinusI(Channel *channel, int fd);
+		int 		handleModePlusT(Channel *channel, int fd);
+		int 		handleModeMinusT(Channel *channel, int fd);
+		int 		handleModePlusL(Channel *channel, std::string argument, int fd);
+		int 		handleModeMinusL(Channel *channel, int fd);
+		/*end mode functions*/
 		int			cmd_who(Client &client, std::string input);
 		int			sendErrorMessage(int client_fd, const std::string& errorMessage);
 		int 		sendSuccessMessage(int client_fd, const std::string	&successMessage);
