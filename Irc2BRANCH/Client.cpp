@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/11 21:37:48 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/27 17:16:30 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,7 @@ void	Client::clear_cmd()
 
 bool Client::operator==(const Client &comp)
 {
-	return (_client_fd == comp._client_fd);
+	return (_client_fd == comp._client_fd);// && _nickname == comp._nickname);
 }
 
 bool Client::operator==(const std::string &nick)
