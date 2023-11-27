@@ -6,81 +6,88 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/27 18:02:20 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/27 21:18:17 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
+int Server::cmdListWithArg(Client &client, std::string input)
+{
+	std::vector<std::string> channels_to_list;
+	std::stringstream ss(input);
+	std::string token;
+	
+	while (std::getline(ss, token, ','))
+	{
+		if (token[0] == '#')
+			channels_to_list.push_back(token);
+	}
+	if (_channels.size() > 0)
+	{
+		for (std::vector<Channel>::iterator it = _channels.begin(); 
+			it != _channels.end(); it++)
+		{
+			if (it->get_name() == input)
+			{
+				std::string msg2 = ":localhost " + RPL_LIST + " " 
+					+ client.get_nickname() + " " + it->get_name() 
+					+ " " + it->get_topic() + "\r\n";
+				if (sendSuccessMessage(client.get_client_fd(), msg2) == -1)
+					return (1);
+			}
+		}
+	}
+	return (0);
+}
+
+
+int Server::cmdListNoArgs(Client &client)
+{
+	if (_channels.size() > 0)
+	{
+		for (std::vector<Channel>::iterator it = _channels.begin(); 
+			it != _channels.end(); it++)
+		{
+			int num_clients_in_channel = it->get_clients_in_channel().size();
+			// convert int to string
+			std::string num_clients_in_channel_str 
+				= static_cast<std::ostringstream*>(&(std::ostringstream() 
+				<< num_clients_in_channel))->str();
+			std::string msg2 = ":localhost " + RPL_LIST + " " 
+				+ client.get_nickname() + " " + it->get_name() 
+				+ " " +	num_clients_in_channel_str + " :"
+				+ it->get_topic() + "\r\n";
+			if (sendSuccessMessage(client.get_client_fd(), msg2) == -1)
+				return (1);
+		}
+	}
+		return (0);
+}
+
+
 int Server::cmd_list(Client &client, std::string input)
 {
+	std::string msg = ":localhost " + RPL_LISTSTART + " " 
+		+ client.get_nickname() + " :Channel list\r\n";
+	if (sendSuccessMessage(client.get_client_fd(), msg) == -1)
+		return (1);
 	// if input is empty, list all channels
 	if (input.empty())
 	{
-		std::string msg = ":localhost " + RPL_LISTSTART + " " 
-			+ client.get_nickname() + " :Channel list\r\n";
-		sendSuccessMessage(client.get_client_fd(), msg);
-		if (_channels.size() > 0)
-		{
-			for (std::vector<Channel>::iterator it = _channels.begin(); 
-				it != _channels.end(); it++)
-			{
-				// convert int o clients in channel size to string
-				int num_clients_in_channel = it->get_clients_in_channel().size();
-				// convert int to string
-				std::string num_clients_in_channel_str 
-					= static_cast<std::ostringstream*>(&(std::ostringstream() 
-					<< num_clients_in_channel))->str();
-				std::string msg2 = ":localhost " + RPL_LIST + " " 
-					+ client.get_nickname() + " " + it->get_name() 
-						+ " " +	num_clients_in_channel_str + " :"
-							+ it->get_topic() + "\r\n";
-				sendSuccessMessage(client.get_client_fd(), msg2);
-			}
-		}
-		std::string msg3 = ":localhost " + RPL_LISTEND + " " 
-			+ client.get_nickname() + " :End of /LIST\r\n";
-		sendSuccessMessage(client.get_client_fd(), msg3);
-		return (0);
+		if (cmdListNoArgs(client) == 1)
+			return (1);
 	}
 	// else, list channels that match input
 	else if (!input.empty())
 	{
-		// split input into vector of strings by comma. 
-		// To be a channel it must start with a # otherwise it is a target
-
-		std::vector<std::string> channels_to_list;
-		std::stringstream ss(input);
-		std::string token;
-		while (std::getline(ss, token, ','))
-		{
-			if (token[0] == '#')
-			{
-				channels_to_list.push_back(token);
-			}
-		}
-		std::string msg = ":localhost " + RPL_LISTSTART + " " 
-			+ client.get_nickname() + " :Channel list\r\n";
-		sendSuccessMessage(client.get_client_fd(), msg);
-		if (_channels.size() > 0)
-		{
-			for (std::vector<Channel>::iterator it = _channels.begin(); 
-				it != _channels.end(); it++)
-			{
-				if (it->get_name() == input)
-				{
-					std::string msg2 = ":localhost " + RPL_LIST + " " 
-						+ client.get_nickname() + " " + it->get_name() 
-							+ " " + it->get_topic() + "\r\n";
-					sendSuccessMessage(client.get_client_fd(), msg2);
-				}
-			}
-		}
-		std::string msg3 = ":localhost " + RPL_LISTEND + " " 
-			+ client.get_nickname() + " :End of /LIST\r\n";
-		sendSuccessMessage(client.get_client_fd(), msg3);
-		return (0);
+		if (cmdListWithArg(client, input) == 1)
+			return (1);
 	}
+	std::string msg2 = ":localhost " + RPL_LISTEND + " " 
+		+ client.get_nickname() + " :End of /LIST\r\n";
+	if (sendSuccessMessage(client.get_client_fd(), msg2) == -1)
+		return (1);
 	return (0);
 }
 
@@ -153,7 +160,12 @@ int Server::cmd_mode(Client &client, std::string input)
 		sendErrorMessage(fd, message);
 		return (1);
 	}
-
+	if (mode.empty())
+	{
+		message = ":localhost " + RPL_CHANNELMODEIS + " " + channel_to_find + " " + channel_to_find + ": " + channel->get_mode() + "\r\n";
+		sendSuccessMessage(fd, message);
+		return (0);
+	}
 	// Find if Client is in vector of clients operator_channel
 	std::string nickname = client.get_nickname();
 	if (!channel->find_clients_operator_channel(nickname))
@@ -163,13 +175,7 @@ int Server::cmd_mode(Client &client, std::string input)
 		return (1);
 	}
 
-	if (mode.empty())
-	{
-		message = ":localhost " + RPL_CHANNELMODEIS + " " + channel_to_find + " " + channel_to_find + ": " + channel->get_mode() + "\r\n";
-		sendSuccessMessage(fd, message);
-		return (0);
-	}
-	else if (mode == "+o")
+	if (mode == "+o")
 		return (handleModePlusO(client, channel, argument, fd));
 	else if (mode == "-o")
 		return (handleModeMinusO(client, channel, argument, fd));

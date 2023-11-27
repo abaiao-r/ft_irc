@@ -1,9 +1,10 @@
 #!/bin/bash
 
-# Script to run Andre.sh in a new xterm window
-xterm -e "./Andre.sh" &
+# Script to run Andre.sh and Gabriel.sh in new xterm windows
 
-xterm -e "./Gabriel.sh"
+# Run Andre.sh in a new xterm window
+terminator -e "./list/Andre.sh" &
 
 
-
+# Run Gabriel.sh in a new xterm window
+terminator --new-tab -e "./list/Gabriel.sh" &

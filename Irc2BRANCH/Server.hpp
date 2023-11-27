@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/27 14:44:01 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/27 20:48:28 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,7 +225,12 @@ class Server
 		void		cmd_nick(Client &client, std::string input);
 		int			cmd_join(Client &client, std::string input);
 		void		cmd_privmsg(Client &client, std::string input);
+
+		/* list funtions*/
+		int 		cmdListNoArgs(Client &client);
+		int 		cmdListWithArg(Client &client, std::string input);
 		int 		cmd_list(Client &client, std::string input);
+		/*end list funtions*/
 		int 		cmd_kick(Client &client, std::string input);
 		int 		cmd_invite(Client &client, std::string input);
 		int			cmd_topic(Client &client, std::string input);

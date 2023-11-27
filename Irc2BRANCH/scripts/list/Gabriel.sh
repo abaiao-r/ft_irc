@@ -10,29 +10,26 @@
 # JOIN #channel_y
 # LIST #channel_x
 # LIST #channel_z
+# LIST
 
 {
-    # Define blue and reset colors
-    blue="\e[34m"
-    reset="\e[0m"
 
     sleep 5  # Adjust as needed to ensure Andre.sh has completed its actions
     # all output of echo commands are blue and send to a terminal
-    echo -e "$blue" 'PASS pass' "$reset"
-    for ((i=1; i<=1; i++)); do
-        echo -e "$blue" 'NICK gabriel_$i' "$reset"
-        sleep 0.5
-        echo -e "$blue" 'USER Gabriel_$i' "$reset"
-        sleep 0.5
-        echo -e "$blue" 'JOIN #channel_x' "$reset"
-        sleep 0.5
-        echo -e "$blue" 'JOIN #channel_y' "$reset"
-        sleep 0.5
-        echo -e "$blue" 'LIST #channel_x' "$reset" # Channel exists
-        sleep 0.5
-        echo -e "$blue" 'LIST #channel_z' "$reset" # Channel does not exist
-        sleep 0.5
-        echo -e "$blue" 'LIST' "$reset" # List all channels
-        sleep 0.5
-    done
+    echo 'PASS pass'
+    sleep 0.5
+    echo 'NICK gabriel_'
+    sleep 0.5
+    echo 'USER Gabriel_'
+    sleep 0.5
+    echo 'JOIN #channel_x'
+    sleep 0.5
+    echo 'JOIN #channel_y'
+    sleep 0.5
+    echo 'LIST #channel_x' # Channel exists
+    sleep 0.5
+    echo 'LIST #channel_z' # Channel does not exist
+    sleep 0.5
+    echo 'LIST' # List all channels
+    #print all output of echo commands to xterm
 } | nc localhost 6697
