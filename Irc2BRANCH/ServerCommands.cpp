@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/28 12:59:58 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/28 14:25:09 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,13 +193,15 @@ int Server::cmd_mode(Client &client, std::string input)
 	Channel *channel = findChannel(client, channel_to_find);
 	if (!channel)
 	{
-		message = ":localhost " + ERR_NOSUCHCHANNEL + " : Error[MODE]: Channel " + channel_to_find + " does not exist\r\n";
+		message = ":localhost " + ERR_NOSUCHCHANNEL + " : Error[MODE]: Channel " 
+			+ channel_to_find + " does not exist\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
 	if (mode.empty())
 	{
-		message = ":localhost " + RPL_CHANNELMODEIS + " " + channel_to_find + " " + channel_to_find + ": " + channel->get_mode() + "\r\n";
+		message = ":localhost " + RPL_CHANNELMODEIS + " " + channel_to_find 
+			+ " " + channel_to_find + ": " + channel->get_mode() + "\r\n";
 		sendSuccessMessage(fd, message);
 		return (0);
 	}
@@ -207,7 +209,9 @@ int Server::cmd_mode(Client &client, std::string input)
 	std::string nickname = client.get_nickname();
 	if (!channel->find_clients_operator_channel(nickname))
 	{
-		message = ":localhost " + ERR_CHANOPRIVSNEEDED + " : Error[MODE]: You are not an operator in channel " + channel_to_find + "\r\n";
+		message = ":localhost " + ERR_CHANOPRIVSNEEDED 
+			+ " : Error[MODE]: You are not an operator in channel " 
+			+ channel_to_find + "\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
@@ -240,20 +244,24 @@ int Server::cmd_mode(Client &client, std::string input)
 	}
 }
 
-int Server::handleModePlusO(Client &client, Channel *channel, std::string argument, int fd)
+int Server::handleModePlusO(Client &client, Channel *channel, 
+	std::string argument, int fd)
 {
 	// Expecting format: MODE <channel> +o <nickname>
 	// look if argument(client to become operator) is in the channel
 	if (!channel->find_client_in_channel_by_nickname(argument))
 	{
-		std::string message = ":localhost " + ERR_NOSUCHNICK + " : Error[MODE +o]: " + argument + " is not in the channel " + channel->get_name() + "\r\n";
+		std::string message = ":localhost " + ERR_NOSUCHNICK 
+			+ " : Error[MODE +o]: " + argument + " is not in the channel " 
+			+ channel->get_name() + "\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
 	// look for nickname in clients operator_channel
 	if (channel->find_clients_operator_channel(argument))
 	{
-		std::string message = "Error[MODE +o]: " + argument + " is already an admin in channel " + channel->get_name() + "\r\n";
+		std::string message = "Error[MODE +o]: " + argument 
+			+ " is already an admin in channel " + channel->get_name() + "\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
@@ -262,14 +270,25 @@ int Server::handleModePlusO(Client &client, Channel *channel, std::string argume
 	Client *client_to_add = find_client(client, argument);
 	if (!client_to_add)
 	{
-		std::string message = ":localhost " + ERR_NOSUCHNICK + " : Error[MODE +o]: Client " + argument + " does not exist\r\n";
+		std::string message = ":localhost " + ERR_NOSUCHNICK 
+			+ " : Error[MODE +o]: Client " + argument + " does not exist\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
 	channel->add_client_to_clients_operator_vector(*client_to_add);
-	std::string message = "Success[MODE +o]: " + argument + " is now an admin in channel " + channel->get_name() + "\r\n";
+	// send success message to client and channel with reply 381
+	std::string message =  ":localhost " + RPL_YOUREOPER + " " + argument 
+		+ " : [MODE +o]" + argument + " is now an operator in channel " + channel->get_name() + "\r\n";
 	sendSuccessMessage(fd, message);
 	sendSuccessMessage(client_to_add->get_client_fd(), message);
+	// Sending message: :localhost 353 andrebaiao = #tyu :list of clients_in_channel
+	message = ":localhost " + RPL_NAMREPLY + " " + argument
+		+ " = " + channel->get_name() + " :" + get_users_string(*channel) + "\r\n";
+	channel->info_message(message);
+	//Sending message: :localhost 366 andrebaiao #tyu :End of NAMES list
+	message = ":localhost " + RPL_ENDOFNAMES + " " + argument
+		+ " " + channel->get_name() + " :End of NAMES list\r\n";
+	channel->info_message(message);
 	return (0);
 }
 
