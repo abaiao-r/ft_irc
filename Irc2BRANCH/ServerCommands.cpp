@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/28 13:58:11 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/28 15:01:05 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,15 +54,13 @@ int Server::cmdListWithArg(Client &client, std::string input)
 				+ client.get_nickname() + " " + channel->get_name() 
 				+ " " +	num_clients_in_channel_str + " :"
 				+ channel->get_topic() + "\r\n";
-			if (sendSuccessMessage(client.get_client_fd(), msg2) == -1)
-				return (1);
+			sendSuccessMessage(client.get_client_fd(), msg2);
 		}
 		else
 		{
 			std::string msg2 = ":localhost " + ERR_NOSUCHCHANNEL + " " 
 				+ client.get_nickname() + " " + *it + " :No such channel\r\n";
-			if (sendErrorMessage(client.get_client_fd(), msg2) == -1)
-				return (1);
+			sendErrorMessage(client.get_client_fd(), msg2);
 		}
 	}
 	return (0);
@@ -85,19 +83,22 @@ int Server::cmdListNoArgs(Client &client)
 			+ client.get_nickname() + " " + it->get_name() 
 			+ " " +	num_clients_in_channel_str + " :"
 			+ it->get_topic() + "\r\n";
-		if (sendSuccessMessage(client.get_client_fd(), msg2) == -1)
-			return (1);
+		sendSuccessMessage(client.get_client_fd(), msg2);
 	}
 		return (0);
 }
 
-
+/*cmd_list: /list #channel1,#channel2,#channel3 or /list
+** 1. message RPL_LISTSTART
+** 2. if input is empty, list all channels
+** 3. else, list channels that match input
+** 4. message RPL_LISTEND
+*/
 int Server::cmd_list(Client &client, std::string input)
 {
 	std::string msg = ":localhost " + RPL_LISTSTART + " " 
 		+ client.get_nickname() + " :Channel list\r\n";
-	if (sendSuccessMessage(client.get_client_fd(), msg) == -1)
-		return (1);
+	sendSuccessMessage(client.get_client_fd(), msg);
 	// if input is empty, list all channels
 	if (input.empty() && _channels.size() > 0)
 	{
@@ -112,11 +113,17 @@ int Server::cmd_list(Client &client, std::string input)
 	}
 	std::string msg2 = ":localhost " + RPL_LISTEND + " " 
 		+ client.get_nickname() + " :End of /LIST\r\n";
-	if (sendSuccessMessage(client.get_client_fd(), msg2) == -1)
-		return (1);
+	sendSuccessMessage(client.get_client_fd(), msg2);
 	return (0);
 }
 
+/* cmd_who: /who #channel1
+** 1. if input is empty,send error message
+** 2. if channel doesn't exist, send ERR_NOSUCHCHANNEL message
+** 3. else, send RPL_WHOREPLY message for each client in channel explicitly
+** saying what clients are in channel and wich ones are operators
+** 4. send RPL_ENDOFWHO message
+*/
 int	Server::cmd_who(Client &client, std::string input)
 {
 	if (input.empty())
@@ -130,7 +137,8 @@ int	Server::cmd_who(Client &client, std::string input)
 
 	if (!channel)
 	{
-		std::string error = ":localhost " + ERR_NOSUCHCHANNEL + " : Error[MODE]: Channel " + input + " does not exist\r\n";
+		std::string error = ":localhost " + ERR_NOSUCHCHANNEL 
+			+ " : Error[MODE]: Channel " + input + " does not exist\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
@@ -145,19 +153,22 @@ int	Server::cmd_who(Client &client, std::string input)
 		Client		*curr = channel->find_client(nick, "operators");
 		std::string	opr = curr ? " H" : " G";
 		std::string	status = curr ? "@" : "+";
-		msg = ":localhost " + RPL_WHOREPLY + " " + it->get_nickname() + " " + channel->get_name() + " ft_irc " + client.get_nickname() + opr + status + " :1 " + it->get_username() + "\r\n";
+		msg = ":localhost " + RPL_WHOREPLY + " " + it->get_nickname() + " " 
+			+ channel->get_name() + " ft_irc " + client.get_nickname() + opr 
+			+ status + " :1 " + it->get_username() + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), msg);
 	}
-	msg = ":localhost " + RPL_ENDOFWHO + " " + client.get_nickname() + " " + channel->get_name() + " :End of WHO list\r\n";
+	msg = ":localhost " + RPL_ENDOFWHO + " " + client.get_nickname() + " " 
+		+ channel->get_name() + " :End of WHO list\r\n";
 	sendSuccessMessage(client.get_client_fd(), msg);
 	return 0;
 }
 
 /* cmd_mode: set mode of channel
- * 1. Parse input into channel name and mode
- * 2. Check if client is administrator
- * 3. Find the channel
- * 4. Set mode of channel
+ * 1. parse input to get channel name, mode, and argument
+ * 2. find channel
+ * 3. if channel does not exist, send ERR_NOSUCHCHANNEL
+ * 4. if channel exists, set mode of channel
  */
 int Server::cmd_mode(Client &client, std::string input)
 {
@@ -239,7 +250,6 @@ int Server::handleModePlusO(Client &client, Channel *channel, std::string argume
 		sendErrorMessage(fd, message);
 		return (1);
 	}
-
 	// look for nickname in clients operator_channel
 	if (channel->find_client(argument, "operators"))
 	{
@@ -247,7 +257,6 @@ int Server::handleModePlusO(Client &client, Channel *channel, std::string argume
 		sendErrorMessage(fd, message);
 		return (1);
 	}
-
 	// add nickname to clients operator_channel
 	// find client by nickname
 	Client *client_to_add = find_client(client, argument);
@@ -257,7 +266,6 @@ int Server::handleModePlusO(Client &client, Channel *channel, std::string argume
 		sendErrorMessage(fd, message);
 		return (1);
 	}
-
 	channel->add_client_to_clients_operator_vector(*client_to_add);
 	std::string message = "Success[MODE +o]: " + argument + " is now an admin in channel " + channel->get_name() + "\r\n";
 	sendSuccessMessage(fd, message);
