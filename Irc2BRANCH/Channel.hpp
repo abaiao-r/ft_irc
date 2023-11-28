@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/27 17:26:03 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/28 14:59:13 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class Channel
 		std::vector<Client> _clients_operator_channel;
 		// clients on the invite vector
 		std::vector<Client> _clients_invited_to_channel;
+		std::string	_vectors[4];
 
 	public:
 		Channel();
@@ -82,16 +83,7 @@ class Channel
 		void 				add_client_to_clients_invited_vector(Client &client);
 		void 				remove_client_from_clients_invited_vector(Client &client);
 
-		Client				*find_client_in_channel_by_nickname(std::string &nickname_to_find);
-		Client				*find_banned_client(const std::string &client_banned);
-		Client				*find_banned_client_by_nickname(std::string &nickname_to_find);
-		Client				*find_clients_operator_channel(Client &client);
-		Client				*find_clients_operator_channel(std::string &nickname_to_find);
-		Client 				*find_clients_invited_to_channel(const std::string &clients_invited_to_channel);
-		Client 				*find_clients_invited_to_channel_by_nickname(std::string &nickname_to_find);
-		Client				*find_client(Client &client);
-		Client				*find_banned_client(Client &client);
-		Client				*find_banned_client_by_nickname(Client &client);
+		Client				*find_client(std::string nickname, std::string vector);
 		void				message(Client &client, std::string msg);
 		void				info_message(std::string msg);
 		int 				sendSuccessMessage(int client_fd, const std::string	&successMessage);

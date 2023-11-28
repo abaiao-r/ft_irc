@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommands.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/27 22:04:11 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/28 13:58:11 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,7 @@ int	Server::cmd_who(Client &client, std::string input)
 	for (; it != end; it++)
 	{
 		std::string	nick = it->get_nickname();
-		Client		*curr = channel->find_clients_operator_channel(nick);
+		Client		*curr = channel->find_client(nick, "operators");
 		std::string	opr = curr ? " H" : " G";
 		std::string	status = curr ? "@" : "+";
 		msg = ":localhost " + RPL_WHOREPLY + " " + it->get_nickname() + " " + channel->get_name() + " ft_irc " + client.get_nickname() + opr + status + " :1 " + it->get_username() + "\r\n";
@@ -194,7 +194,7 @@ int Server::cmd_mode(Client &client, std::string input)
 	}
 	// Find if Client is in vector of clients operator_channel
 	std::string nickname = client.get_nickname();
-	if (!channel->find_clients_operator_channel(nickname))
+	if (!channel->find_client(nickname, "operators"))
 	{
 		message = ":localhost " + ERR_CHANOPRIVSNEEDED + " : Error[MODE]: You are not an operator in channel " + channel_to_find + "\r\n";
 		sendErrorMessage(fd, message);
@@ -233,7 +233,7 @@ int Server::handleModePlusO(Client &client, Channel *channel, std::string argume
 {
 	// Expecting format: MODE <channel> +o <nickname>
 	// look if argument(client to become operator) is in the channel
-	if (!channel->find_client_in_channel_by_nickname(argument))
+	if (!channel->find_client(argument, "clients"))
 	{
 		std::string message = ":localhost " + ERR_NOSUCHNICK + " : Error[MODE +o]: " + argument + " is not in the channel " + channel->get_name() + "\r\n";
 		sendErrorMessage(fd, message);
@@ -241,7 +241,7 @@ int Server::handleModePlusO(Client &client, Channel *channel, std::string argume
 	}
 
 	// look for nickname in clients operator_channel
-	if (channel->find_clients_operator_channel(argument))
+	if (channel->find_client(argument, "operators"))
 	{
 		std::string message = "Error[MODE +o]: " + argument + " is already an admin in channel " + channel->get_name() + "\r\n";
 		sendErrorMessage(fd, message);
@@ -270,7 +270,7 @@ int Server::handleModeMinusO(Client &client, Channel *channel, std::string argum
 {
 	// Expecting format: MODE <channel> -o <nickname>
 	// look if argument(client to become operator) is in the channel
-	if (!channel->find_client_in_channel_by_nickname(argument))
+	if (!channel->find_client(argument, "clients"))
 	{
 		std::string message = ":localhost " + ERR_NOSUCHNICK + " : Error[MODE -o]: " + argument + " is not in the channel " + channel->get_name() + "\r\n";
 		sendErrorMessage(fd, message);
@@ -278,7 +278,7 @@ int Server::handleModeMinusO(Client &client, Channel *channel, std::string argum
 	}
 
 	// look for nickname in clients operator_channel
-	if (!channel->find_clients_operator_channel(argument))
+	if (!channel->find_client(argument, "operators"))
 	{
 		std::string message = "Error[MODE -o]: " + argument + " is not an admin in channel " + channel->get_name() + "\r\n";
 		sendErrorMessage(fd, message);
@@ -658,7 +658,7 @@ int Server::cmd_join(Client &client, std::string input)
 		}
 	}
 	// check if client is banned use find_banned_client
-	if (it->find_banned_client_by_nickname(client))
+	if (it->find_client(client.get_nickname(), "banned"))
 	{
 		message = ":localhost " + ERR_BANNEDFROMCHAN + " : Error[JOIN]: You (" + client.get_nickname() + ") are banned from channel " + input_channel_name + "\r\n";
 		sendErrorMessage(fd, message);
@@ -713,7 +713,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 			return;
 		}
 		// check if client is banned
-		if (ch_test->find_banned_client(client))
+		if (ch_test->find_client(client.get_nickname(), "banned"))
 		{
 			error = ":localhost " + ERR_CANNOTSENDTOCHAN + " : Error[PRIVMSG]: You (" + client.get_nickname() + ") are banned from channel " + dest + "\r\n";
 			sendErrorMessage(fd, error);
@@ -784,21 +784,21 @@ int Server::cmd_kick(Client &client, std::string input)
 	}
 	// Find if Client is in vector of clients operator_channel
 	std::string client_that_kicked = client.get_nickname();
-	if (!channel->find_clients_operator_channel(client_that_kicked))
+	if (!channel->find_client(client_that_kicked, "operators"))
 	{
 		std::string error = "Error[KICK]: " + client.get_nickname() + " is not an operator in channel " + channel_to_find + "\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// find if nickname is in operator_channel
-	if (channel->find_clients_operator_channel(nickname))
+	if (channel->find_client(nickname, "operators"))
 	{
 		std::string error = "Error[KICK]: " + nickname + " is an operator in channel " + channel_to_find + "\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// Find the client to kick in the channel
-	Client *client_to_kick = channel->find_client_in_channel_by_nickname(nickname);
+	Client *client_to_kick = channel->find_client(nickname, "clients");
 	if(!client_to_kick)
 	{
 		std::string error = "Error[KICK]: " + nickname + " is not in channel " + channel_to_find + "\r\n";
@@ -850,7 +850,7 @@ int Server::cmd_topic(Client &client, std::string input)
 	}
 	// if client does not belong to channel
 	std::string client_nickname = client.get_nickname();
-	if (!channel->find_client_in_channel_by_nickname(client_nickname))
+	if (!channel->find_client(client_nickname, "clients"))
 	{
 		std::string error = "Error[TOPIC]: You (" + client.get_nickname() + ") are not in channel " + channel_to_find + "\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
@@ -869,19 +869,19 @@ int Server::cmd_topic(Client &client, std::string input)
 		return (0);
 	}
 	// check if topic_mode is true
-	if (channel->get_topic_mode() == true && channel->find_clients_operator_channel(client_nickname))
+	if (channel->get_topic_mode() == true && channel->find_client(client_nickname, "operators"))
 	{
 		std::string success = "Success[TOPIC]: topic changed to " + topic + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		channel->set_topic(topic);
 	}// add else if for when client is operator but topic_mode is false
-	else if (channel->get_topic_mode() == false && channel->find_client_in_channel_by_nickname(client_nickname))
+	else if (channel->get_topic_mode() == false && channel->find_client(client_nickname, "clients"))
 	{
 		std::string success = "Success[TOPIC]: topic changed to " + topic + "\r\n";
 		sendSuccessMessage(client.get_client_fd(), success);
 		channel->set_topic(topic);
 	}
-	else if (!channel->find_clients_operator_channel(client_nickname))
+	else if (!channel->find_client(client_nickname, "operators"))
 	{
 		// Check if client is administrator
 		std::string error = "Error[TOPIC]: " + client.get_nickname() + " is not an operator in channel " + channel_to_find + "\r\n";
@@ -927,14 +927,14 @@ int Server::cmd_invite(Client &client, std::string input)
 	}
 	// Find if Client is in _clients_operator_channel
 	std::string client_nickname = client.get_nickname();
-	if (!channel->find_clients_operator_channel(client_nickname))
+	if (!channel->find_client(client_nickname, "operators"))
 	{
 		std::string message = "Error[INVITE]: You (" + client.get_nickname() + ") are not an operator in channel " + channel->get_name() + "\r\n";
 		sendErrorMessage(client.get_client_fd(), message);
 		return (1);
 	}
 	// find if nickname is belongs to client that is already on _clients_invited_to_channel
-	if(channel->find_clients_invited_to_channel_by_nickname(nickname))
+	if(channel->find_client(nickname, "invited"))
 	{
 		std::string message = "Error[INVITE]: " + nickname + " is already invited to the channel" + channel->get_name() + "\r\n";
 		sendErrorMessage(client.get_client_fd(), message);

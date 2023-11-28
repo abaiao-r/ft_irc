@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/27 17:01:22 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/28 14:59:33 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,19 +18,23 @@ Channel::Channel()
 {
 	std::cout << CYAN << "Channel: Default constructor called" << RESET
 		<< std::endl;
+	_vectors[0] = "clients";
+	_vectors[1] = "operators";
+	_vectors[2] = "banned";
+	_vectors[3] = "invited";
 }
 
 /* Parameter constructor: only name as parameter*/
 Channel::Channel(std::string name)
+	:_name(name), _password(""), _topic("No topic is set"), _topic_mode(false), 
+		_channel_limit(0), _channel_invite_only(false)
 {
 	std::cout << CYAN << "Channel: Parameter constructor called" << RESET
 		<< std::endl;
-	_name = name;
-	_password = "";
-	_topic = "No topic is set";
-	_topic_mode = false;
-	_channel_limit = 0;
-	_channel_invite_only = false;
+	_vectors[0] = "clients";
+	_vectors[1] = "operators";
+	_vectors[2] = "banned";
+	_vectors[3] = "invited";
 }
 
 /* Parameter constructor: name and pass*/
@@ -40,6 +44,10 @@ Channel::Channel(std::string name, std::string password)
 {
 	std::cout << CYAN << "Channel: Parameter constructor called" << RESET
 		<< std::endl;
+	_vectors[0] = "clients";
+	_vectors[1] = "operators";
+	_vectors[2] = "banned";
+	_vectors[3] = "invited";
 }
 
 /* Copy constructor */
@@ -71,7 +79,10 @@ Channel	&Channel::operator=(const Channel &copy)
 		_clients_banned = copy._clients_banned;
 		_clients_operator_channel = copy._clients_operator_channel;
 		_clients_invited_to_channel = copy._clients_invited_to_channel;
-
+		_vectors[0] = copy._vectors[0];
+		_vectors[1] = copy._vectors[1];
+		_vectors[2] = copy._vectors[2];
+		_vectors[3] = copy._vectors[3];
 	}
 	return (*this);
 }
@@ -286,11 +297,39 @@ void	Channel::remove_client_from_clients_invited_vector(Client &client)
 
 /* find_client() returns a pointer to the client if it is found in the channel.
  * Otherwise, it returns NULL. */
-Client	*Channel::find_client(Client &client)
+Client	*Channel::find_client(std::string nickname, std::string vector)
 {
-	std::vector<Client>::iterator it = find(_clients_in_channel.begin(), _clients_in_channel.end(), client);
+	unsigned int					i = 0;
+	std::vector<Client>::iterator	it;
+	std::vector<Client>::iterator	end;
 
-	if (it == _clients_in_channel.end())
+	for (; i < vector.size(); i++)
+	{
+		if (_vectors[i] == vector)
+			break;
+	}
+	switch (i)
+	{
+		case 0:
+			end = _clients_in_channel.end();
+			it = find(_clients_in_channel.begin(), end, nickname);
+			break;
+		case 1:
+			end = _clients_operator_channel.end();
+			it = find(_clients_operator_channel.begin(), end, nickname);
+			break;
+		case 2:
+			end = _clients_banned.end();
+			it = find(_clients_banned.begin(), end, nickname);
+			break;
+		case 3:
+			end = _clients_invited_to_channel.end();
+			it = find(_clients_invited_to_channel.begin(), end, nickname);
+			break;
+		default:
+			return NULL;
+	}
+	if (it == end)
 		return (NULL);
 	return (it.base());
 }
@@ -332,119 +371,4 @@ int Channel::sendSuccessMessage(int client_fd, const std::string &successMessage
 		return (-1);
 	}
 	return (0);
-}
-
-Client	*Channel::find_banned_client(const std::string &client_banned)
-{
-	std::vector<Client>::iterator it = find(_clients_banned.begin(), _clients_banned.end(), client_banned);
-
-	if (it == _clients_banned.end())
-		return (NULL);
-	return it.base();
-}
-
-/* find_clients_operator_channel: returns a pointer to the client if it is
- * found in the vector of clients that are operators in the channel. Otherwise,
- * it returns NULL. */
-Client	*Channel::find_clients_operator_channel(Client &client)
-{
-	std::vector<Client>::iterator it = find(_clients_operator_channel.begin(), _clients_operator_channel.end(), client);
-
-	if (it == _clients_operator_channel.end())
-		return (NULL);
-	return it.base();
-}
-
-Client	*Channel::find_clients_invited_to_channel(const std::string &clients_invited_to_channel)
-{
-	std::vector<Client>::iterator it = find(_clients_invited_to_channel.begin(), _clients_invited_to_channel.end(), clients_invited_to_channel);
-
-	if (it == _clients_invited_to_channel.end())
-		return (NULL);
-	return it.base();
-}
-
-/* find_clients_operator_channel(std::string &nickname_to_find):
-** 1. Looks for a client in the vector of clients that are operator of the channel.
-** 2. Returns a pointer to the client if it is found in the vector.
-** 3. Otherwise, it returns NULL.
-*/
-Client	*Channel::find_clients_operator_channel(std::string &nickname_to_find)
-{
-	C_IT	it = find(_clients_operator_channel.begin(), _clients_operator_channel.end(), nickname_to_find);
-	
-		if (it != _clients_operator_channel.end())
-			return (it.base());
-	return (NULL);
-}
-
-/* find_clients_in_channel_by_nickname(std::string &nickname_to_find):
-** 1. Looks for a client in the vector of clients that are in the channel.
-** 2. Returns a pointer to the client if it is found in the vector.
-** 3. Otherwise, it returns NULL.
-*/
-Client	*Channel::find_client_in_channel_by_nickname(std::string &nickname_to_find)
-{
-	C_IT	it = find(_clients_in_channel.begin(), _clients_in_channel.end(), nickname_to_find);
-	
-		if (it != _clients_in_channel.end())
-			return (it.base());
-	return (NULL);
-}
-
-/* find_banned_client_by_nickname(std::string &nickname_to_find):
-** 1. Looks for a client in the vector of clients that are banned from the channel.
-** 2. Returns a pointer to the client if it is found in the vector.
-** 3. Otherwise, it returns NULL.
-*/
-Client	*Channel::find_banned_client_by_nickname(std::string &nickname_to_find)
-{
-	C_IT	it = find(_clients_banned.begin(), _clients_banned.end(), nickname_to_find);
-	
-		if (it != _clients_banned.end())
-			return (it.base());
-	return (NULL);
-}
-
-/* find_banned_client(Client &client):
-** 1. Looks for a client in the vector of clients that are banned from the channel.
-** 2. Returns a pointer to the client if it is found in the vector.
-** 3. Otherwise, it returns NULL.
-*/
-Client	*Channel::find_banned_client(Client &client)
-{
-	C_IT	it = find(_clients_banned.begin(), _clients_banned.end(), client);
-	
-		if (it != _clients_banned.end())
-			return (it.base());
-	return (NULL);
-}
-
-/* find_banned_client_by_nickname(Client &client):
-** 1. Looks for a client in the vector of clients that are banned from the channel.
-** 2. Returns a pointer to the client if it is found in the vector.
-** 3. Otherwise, it returns NULL.
-*/
-Client	*Channel::find_banned_client_by_nickname(Client &client)
-{
-	std::string nickname_to_find = client.get_nickname();
-	C_IT	it = find(_clients_banned.begin(), _clients_banned.end(), nickname_to_find);
-	
-		if (it != _clients_banned.end())
-			return (it.base());
-	return (NULL);
-}
-
-/* find_clients_invited_to_channel_by_nickname(std::string &nickname_to_find):
-** 1. Looks for a client in the vector of clients that are invited to the channel.
-** 2. Returns a pointer to the client if it is found in the vector.
-** 3. Otherwise, it returns NULL.
-*/
-Client	*Channel::find_clients_invited_to_channel_by_nickname(std::string &nickname_to_find)
-{
-	C_IT	it = find(_clients_invited_to_channel.begin(), _clients_invited_to_channel.end(), nickname_to_find);
-	
-		if (it != _clients_invited_to_channel.end())
-			return (it.base());
-	return (NULL);
 }
