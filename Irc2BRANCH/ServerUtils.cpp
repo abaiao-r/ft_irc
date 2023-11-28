@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerUtils.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:56 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/27 17:28:26 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/28 13:55:56 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,7 +184,7 @@ int Server::kickClientFromChannel(Channel *channel, Client *client, Client *clie
 	channel->add_client_to_banned_vector(*(client_to_kick));
 	// if client is in operator_channel, remove from operator_channel
 	std::string client_to_kick_nickname = client_to_kick->get_nickname();
-	if (channel->find_clients_operator_channel(client_to_kick_nickname))
+	if (channel->find_client(client_to_kick_nickname, "operators"))
 		channel->remove_client_from_clients_operator_vector(*client_to_kick);
 	// Send message to client
 	if (reason.empty())
@@ -292,7 +292,7 @@ std::string	Server::get_users_string(Channel &channel)
 	for (; it != list.end(); it++)
 	{
 		std::string	nickname = it->get_nickname();
-		if (!channel.find_clients_operator_channel(nickname))
+		if (!channel.find_client(nickname, "operators"))
 			ret += "%" + it->get_nickname();
 		else
 			ret += "@" + it->get_nickname();
