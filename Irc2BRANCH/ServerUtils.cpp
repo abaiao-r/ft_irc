@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerUtils.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:56 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/28 13:55:56 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/28 15:30:33 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -318,4 +318,17 @@ void	Server::join_messages(Client &client, Channel &channel)
 	channel.info_message(message);
 	message = ":localhost " + RPL_ENDOFNAMES + " " + client.get_nickname() + " " + name + " :End of NAMES list\r\n";
 	channel.info_message(message);
+}
+
+void Server::sendChannelUserListMessage(Channel *channel, const std::string &argument)
+{
+    // Sending message: :localhost 353 andrebaiao = #tyu :list of clients_in_channel
+    std::string userListMessage = ":localhost " + RPL_NAMREPLY + " " + argument +
+                                  " = " + channel->get_name() + " :" + get_users_string(*channel) + "\r\n";
+    channel->info_message(userListMessage);
+
+    // Sending message: :localhost 366 andrebaiao #tyu :End of NAMES list
+    std::string endOfNamesMessage = ":localhost " + RPL_ENDOFNAMES + " " + argument +
+                                     " " + channel->get_name() + " :End of NAMES list\r\n";
+    channel->info_message(endOfNamesMessage);
 }

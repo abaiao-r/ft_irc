@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/28 12:50:05 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/28 15:26:13 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,6 +253,7 @@ class Server
 		int 		sendSuccessMessage(int client_fd, const std::string	&successMessage);
 
 		//Utils
+		void sendChannelUserListMessage(Channel *channel, const std::string &argument);
 		int			is_client_admin(Client &client);
 		Channel		*findChannel(Client &client, const std::string& channelName);
 		Client		*find_client(Client &client, const std::string& nickname);

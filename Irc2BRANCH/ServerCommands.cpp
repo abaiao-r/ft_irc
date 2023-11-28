@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/28 15:08:01 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/28 17:11:39 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -278,17 +278,12 @@ int Server::handleModePlusO(Client &client, Channel *channel,
 	channel->add_client_to_clients_operator_vector(*client_to_add);
 	// send success message to client and channel with reply 381
 	std::string message =  ":localhost " + RPL_YOUREOPER + " " + argument 
-		+ " : [MODE +o]" + argument + " is now an operator in channel " + channel->get_name() + "\r\n";
+		+ " : [MODE +o]" + argument + " is now an operator in channel " 
+		+ channel->get_name() + "\r\n";
 	sendSuccessMessage(fd, message);
 	sendSuccessMessage(client_to_add->get_client_fd(), message);
-	// Sending message: :localhost 353 andrebaiao = #tyu :list of clients_in_channel
-	message = ":localhost " + RPL_NAMREPLY + " " + argument
-		+ " = " + channel->get_name() + " :" + get_users_string(*channel) + "\r\n";
-	channel->info_message(message);
-	//Sending message: :localhost 366 andrebaiao #tyu :End of NAMES list
-	message = ":localhost " + RPL_ENDOFNAMES + " " + argument
-		+ " " + channel->get_name() + " :End of NAMES list\r\n";
-	channel->info_message(message);
+	// send channel user list to all clients in channel
+	sendChannelUserListMessage(channel, argument);
 	return (0);
 }
 
@@ -303,15 +298,20 @@ int Server::handleModeMinusO(Client &client, Channel *channel, std::string argum
 		sendErrorMessage(fd, message);
 		return (1);
 	}
-
 	// look for nickname in clients operator_channel
 	if (!channel->find_client(argument, "operators"))
 	{
-		std::string message = "Error[MODE -o]: " + argument + " is not an admin in channel " + channel->get_name() + "\r\n";
+		std::string message = "Error[MODE -o]: " + argument + " is not an operator in channel " + channel->get_name() + "\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
-
+	// if client is the last operator in the channel, send error message
+	if (channel->get_clients_operator_channel().size() == 1)
+	{
+		std::string message = "Error[MODE -o]: " + argument + " is the last operator in channel " + channel->get_name() + "\r\n";
+		sendErrorMessage(fd, message);
+		return (1);
+	}
 	// remove nickname from clients operator_channel
 	// find client by nickname
 	Client *client_to_remove = find_client(client, argument);
@@ -323,9 +323,10 @@ int Server::handleModeMinusO(Client &client, Channel *channel, std::string argum
 	}
 
 	channel->remove_client_from_clients_operator_vector(*client_to_remove);
-	std::string message = "Success[MODE -o]: " + argument + " is no longer an admin in channel " + channel->get_name() + "\r\n";
+	std::string message = "Success[MODE -o]: " + argument + " is no longer an operator in channel " + channel->get_name() + "\r\n";
 	sendSuccessMessage(fd, message);
 	sendSuccessMessage(client_to_remove->get_client_fd(), message);
+	sendChannelUserListMessage(channel, argument);
 	return (0);
 }
 
@@ -335,7 +336,8 @@ int Server::handleModePlusK(Channel *channel, std::string argument, int fd)
 	// check if channel is already password protected
 	if (!channel->get_password().empty())
 	{
-		std::string message = "Error[MODE +k]: Channel " + channel->get_name() + " is already password protected\r\n";
+		std::string message = "Error[MODE +k]: Channel " + channel->get_name() 
+			+ " is already password protected\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
@@ -344,7 +346,9 @@ int Server::handleModePlusK(Channel *channel, std::string argument, int fd)
 		return (1);
 	// change password of channel
 	channel->set_password(argument);
-	std::string message = "Success[MODE +k]: Channel " + channel->get_name() + " is now password protected\r\n";
+	// use numeric reply 324 to send channel mode to client
+	std::string message = ":localhost " + RPL_CHANNELMODEIS + " " 
+		+ channel->get_name() + " +k is now password protected\r\n";
 	sendSuccessMessage(fd, message);
 	return (0);
 }
@@ -355,14 +359,15 @@ int Server::handleModeMinusK(Channel *channel, int fd)
 	// check if channel is already password protected
 	if (channel->get_password().empty())
 	{
-		std::string message = "Error[MODE -k]: Channel " + channel->get_name() + " is not password protected\r\n";
+		std::string message = "Error[MODE -k]: Channel " + channel->get_name() 
+			+ " is not password protected\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
-
 	// remove password of channel
 	channel->set_password("");
-	std::string message = "Success[MODE -k]: Channel " + channel->get_name() + " is no longer password protected\r\n";
+	std::string message = "Success[MODE -k]: Channel " + channel->get_name() 
+		+ " is no longer password protected\r\n";
 	sendSuccessMessage(fd, message);
 	return (0);
 }
@@ -373,14 +378,16 @@ int Server::handleModePlusI(Channel *channel, int fd)
 	// check if channel is already invite only
 	if (channel->get_channel_invite_only() == true)
 	{
-		std::string message = "Error[MODE +i]: Channel " + channel->get_name() + " is already invite only\r\n";
+		std::string message = "Error[MODE +i]: Channel " + channel->get_name() 
+			+ " is already invite only\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
 
 	// set channel to invite only
 	channel->set_channel_invite_only(true);
-	std::string message = "Success[MODE +i]: Channel " + channel->get_name() + " is now invite only\r\n";
+	std::string message = "Success[MODE +i]: Channel " + channel->get_name() 
+		+ " is now invite only\r\n";
 	sendSuccessMessage(fd, message);
 	return (0);
 }
@@ -391,13 +398,15 @@ int Server::handleModeMinusI(Channel *channel, int fd)
 	// check if channel is already invite only
 	if (channel->get_channel_invite_only() == false)
 	{
-		std::string message = "Error[MODE -i]: Channel " + channel->get_name() + " is not invite only\r\n";
+		std::string message = "Error[MODE -i]: Channel " + channel->get_name() 
+			+ " is not invite only\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
 	// set channel to invite only
 	channel->set_channel_invite_only(false);
-	std::string message = "Success[MODE -i]: Channel " + channel->get_name() + " is no longer invite only\r\n";
+	std::string message = "Success[MODE -i]: Channel " + channel->get_name() 
+		+ " is no longer invite only\r\n";
 	sendSuccessMessage(fd, message);
 	return (0);
 }
@@ -408,14 +417,16 @@ int Server::handleModePlusT(Channel *channel, int fd)
 	// check if channel is already topic protected
 	if (channel->get_topic_mode() == true)
 	{
-		std::string message = "Error[MODE +t]: Channel " + channel->get_name() + " is already topic protected\r\n";
+		std::string message = "Error[MODE +t]: Channel " + channel->get_name() 
+			+ " is already topic protected\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
 
 	// set channel to topic protected
 	channel->set_topic_mode(true);
-	std::string message = "Success[MODE +t]: Channel " + channel->get_name() + " is now topic protected\r\n";
+	std::string message = "Success[MODE +t]: Channel " + channel->get_name() 
+		+ " is now topic protected\r\n";
 	sendSuccessMessage(fd, message);
 	return (0);
 }
@@ -426,13 +437,15 @@ int Server::handleModeMinusT(Channel *channel, int fd)
 	// check if channel is already topic protected
 	if (channel->get_topic_mode() == false)
 	{
-		std::string message = "Error[MODE -t]: Channel " + channel->get_name() + " is not topic protected\r\n";
+		std::string message = "Error[MODE -t]: Channel " + channel->get_name() 
+			+ " is not topic protected\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
 	// set channel to topic protected
 	channel->set_topic_mode(false);
-	std::string message = "Success[MODE -t]: Channel " + channel->get_name() + " is no longer topic protected\r\n";
+	std::string message = "Success[MODE -t]: Channel " + channel->get_name() 
+		+ " is no longer topic protected\r\n";
 	sendSuccessMessage(fd, message);
 	return (0);
 }
@@ -443,11 +456,24 @@ int Server::handleModePlusL(Channel *channel, std::string argument, int fd)
 	// check if channel is already limited
 	if (channel->get_channel_limit() != 0)
 	{
-		std::string message = "Error[MODE +l]: Channel " + channel->get_name() + " is already limited\r\n";
+		std::string message = "Error[MODE +l]: Channel " + channel->get_name() 
+			+ " is already limited\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
-
+	if (argument.empty())
+	{
+		std::string message = "Error[MODE +l]: No limit specified\r\n";
+		sendErrorMessage(fd, message);
+		return (1);
+	}
+	if (isStrOnlyDigits(argument) == false)
+	{
+		std::string message = "Error[MODE +l]: " + argument 
+			+ " is not a valid number\r\n";
+		sendErrorMessage(fd, message);
+		return (1);
+	}
 	// set channel limit argument converted to int
 	try
 	{
@@ -455,12 +481,22 @@ int Server::handleModePlusL(Channel *channel, std::string argument, int fd)
 	}
 	catch (std::exception &e)
 	{
-		std::string message = "Error[MODE +l]: " + argument + " is a value out of integer range\r\n";
+		std::string message = "Error[MODE +l]: " + argument 
+			+ " is a value out of integer range\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
-	channel->set_channel_limit(safe_atoi(argument.c_str()));
-	std::string message = "Success[MODE +l]: Channel " + channel->get_name() + " is now limited to " + argument + " users\r\n";
+	try
+	{
+		channel->set_channel_limit(safe_atoi(argument.c_str()));
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	
+	std::string message = "Success[MODE +l]: Channel " 
+		+ channel->get_name() + " is now limited to " + argument + " users\r\n";
 	sendSuccessMessage(fd, message);
 	return (0);
 }
@@ -471,14 +507,16 @@ int Server::handleModeMinusL(Channel *channel, int fd)
 	// check if channel limit is already 0
 	if (channel->get_channel_limit() == 0)
 	{
-		std::string message = "Error[MODE -l]: Channel " + channel->get_name() + " is not limited\r\n";
+		std::string message = "Error[MODE -l]: Channel " + channel->get_name() 
+			+ " is not limited\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
 
 	// set channel limit
 	channel->set_channel_limit(0);
-	std::string message = "Success[MODE -l]: Channel " + channel->get_name() + " is no longer limited\r\n";
+	std::string message = "Success[MODE -l]: Channel " + channel->get_name() 
+		+ " is no longer limited\r\n";
 	sendSuccessMessage(fd, message);
 	return (0);
 }
@@ -489,7 +527,8 @@ void	Server::cmd_pass(Client &client, std::string input)
 
 	if (client.get_authenticated())
 	{
-		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[PASS]: You are already authenticated\r\n";
+		std::string error = ":localhost " + ERR_ALREADYREGISTERED 
+			+ " : Error[PASS]: You are already authenticated\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
@@ -502,11 +541,13 @@ void	Server::cmd_pass(Client &client, std::string input)
 	}
 	if (client.pass_counter(0, 0) == 2)
 	{
-		std::string error = ":localhost " + ERR_PASSWDMISMATCH + " : Error[PASS]: Too many wrong attempts, disconnecting\r\n";
+		std::string error = ":localhost " + ERR_PASSWDMISMATCH 
+			+ " : Error[PASS]: Too many wrong attempts, disconnecting\r\n";
 		sendErrorMessage(fd, error);
 		disconnect_client(fd);
 	}
-	std::string error = ":localhost " + ERR_PASSWDMISMATCH + " : Error[PASS]: Wrong password\r\n";
+	std::string error = ":localhost " + ERR_PASSWDMISMATCH 
+		+ " : Error[PASS]: Wrong password\r\n";
 	sendErrorMessage(fd, error);
 	client.pass_counter(1, 0);
 }
@@ -520,7 +561,8 @@ void	Server::cmd_user(Client &client, std::string input)
 	ss >> username;
 	if (client.get_registered())
 	{
-		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[USER]: You are already registered\r\n";
+		std::string error = ":localhost " + ERR_ALREADYREGISTERED 
+			+ " : Error[USER]: You are already registered\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
@@ -532,14 +574,16 @@ void	Server::cmd_user(Client &client, std::string input)
 	}
 	if (!client.get_username().empty())
 	{
-		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[USER]: You already have a username\r\n";
+		std::string error = ":localhost " + ERR_ALREADYREGISTERED 
+			+ " : Error[USER]: You already have a username\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
 	if (name_validation(username))
 	{
 		client.set_username(username);
-		std::string success = "Success[USER]: Username set to " + username + "\r\n";
+		std::string success = "Success[USER]: Username set to " 
+			+ username + "\r\n";
 		sendSuccessMessage(fd, success);
 		if (!client.get_nickname().empty())
 		{
@@ -551,7 +595,8 @@ void	Server::cmd_user(Client &client, std::string input)
 	}
 	else
 	{
-		std::string error = ":localhost " + ERR_NEEDMOREPARAMS + " : Error[USER]: Username can't have spaces or symbols (except [-_[]{}\\|]), can't start with '#' or ':' and must be between 3 and 10 characters long\r\n";
+		std::string error = ":localhost " + ERR_NEEDMOREPARAMS 
+			+ " : Error[USER]: Username can't have spaces or symbols (except [-_[]{}\\|]), can't start with '#' or ':' and must be between 3 and 10 characters long\r\n";
 		sendErrorMessage(fd, error);
 	}
 }
@@ -563,7 +608,8 @@ void	Server::cmd_nick(Client &client, std::string input)
 
 	if (client.get_registered())
 	{
-		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[NICK]: You are already registered\r\n";
+		std::string error = ":localhost " + ERR_ALREADYREGISTERED 
+			+ " : Error[NICK]: You are already registered\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
@@ -575,7 +621,8 @@ void	Server::cmd_nick(Client &client, std::string input)
 	}
 	if (!client.get_nickname().empty())
 	{
-		std::string error = ":localhost " + ERR_ALREADYREGISTERED + " : Error[NICK]: You already have a nickname\r\n";
+		std::string error = ":localhost " + ERR_ALREADYREGISTERED 
+			+ " : Error[NICK]: You already have a nickname\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
@@ -595,12 +642,14 @@ void	Server::cmd_nick(Client &client, std::string input)
 	}
 	else if (test == 1)
 	{
-		std::string error = ":localhost " + ERR_ERRONEUSNICKNAME + " : Error[NICK]: Nickname can't have spaces or symbols (except [-_[]{}\\|]), can't start with '#' or ':' and must be between 3 and 10 characters long\r\n";
+		std::string error = ":localhost " + ERR_ERRONEUSNICKNAME 
+			+ " : Error[NICK]: Nickname can't have spaces or symbols (except [-_[]{}\\|]), can't start with '#' or ':' and must be between 3 and 10 characters long\r\n";
 		sendErrorMessage(fd, error);
 	}
 	else
 	{
-		std::string error = ":localhost " + ERR_NICKNAMEINUSE + " : Error[NICK]: Nickname already in use, choose another\r\n";
+		std::string error = ":localhost " + ERR_NICKNAMEINUSE 
+			+ " : Error[NICK]: Nickname already in use, choose another\r\n";
 		sendErrorMessage(fd, error);
 	}
 }
@@ -651,9 +700,11 @@ int Server::cmd_join(Client &client, std::string input)
 	}
 	in_channel = it->get_clients_in_channel();
 	// check if client is already in channel
-	if (find(in_channel.begin(), in_channel.end(), client.get_client_fd()) != in_channel.end())
+	if (find(in_channel.begin(), in_channel.end(), 
+		client.get_client_fd()) != in_channel.end())
 	{
-		message = "Error[JOIN]: " +	client.get_nickname() + " is already in channel " + input_channel_name + "\r\n";
+		message = "Error[JOIN]: " +	client.get_nickname() 
+			+ " is already in channel " + input_channel_name + "\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
@@ -661,16 +712,20 @@ int Server::cmd_join(Client &client, std::string input)
 	// checks if it needs a password and if the password is correct
 	if (it->get_clients_in_channel().size() >= it->get_channel_limit() && it->get_channel_limit() != 0)
 	{
-		message = ":localhost " + ERR_CHANNELISFULL + " : Error[JOIN]: Channel " + input_channel_name + " is full\r\n";
+		message = ":localhost " + ERR_CHANNELISFULL 
+			+ " : Error[JOIN]: Channel " + input_channel_name + " is full\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}
 	if (it->get_channel_invite_only() == true)
 	{
 		// check if not client is on invite list
-		if (find(it->get_clients_invited_to_channel().begin(), it->get_clients_invited_to_channel().end(), client.get_client_fd()) == it->get_clients_invited_to_channel().end())
+		if (find(it->get_clients_invited_to_channel().begin(),
+			 it->get_clients_invited_to_channel().end(), 
+			client.get_client_fd()) == it->get_clients_invited_to_channel().end())
 		{
-			message = ":localhost " + ERR_INVITEONLYCHAN + " : Error[JOIN]: Channel " + input_channel_name + " is invite only\r\n";
+			message = ":localhost " + ERR_INVITEONLYCHAN 
+				+ " : Error[JOIN]: Channel " + input_channel_name + " is invite only\r\n";
 			sendErrorMessage(fd, message);
 			return (1);
 		}
@@ -679,7 +734,8 @@ int Server::cmd_join(Client &client, std::string input)
 	{
 		if (it->get_password() != input_password)
 		{
-			message = "Error[JOIN]: Wrong password for channel " + input_channel_name + "\r\n";
+			message = "Error[JOIN]: Wrong password for channel " 
+				+ input_channel_name + "\r\n";
 			sendErrorMessage(fd, message);
 			return (1);
 		}
@@ -687,7 +743,9 @@ int Server::cmd_join(Client &client, std::string input)
 	// check if client is banned use find_banned_client
 	if (it->find_client(client.get_nickname(), "banned"))
 	{
-		message = ":localhost " + ERR_BANNEDFROMCHAN + " : Error[JOIN]: You (" + client.get_nickname() + ") are banned from channel " + input_channel_name + "\r\n";
+		message = ":localhost " + ERR_BANNEDFROMCHAN 
+			+ " : Error[JOIN]: You (" + client.get_nickname() 
+			+ ") are banned from channel " + input_channel_name + "\r\n";
 		sendErrorMessage(fd, message);
 		return (1);
 	}

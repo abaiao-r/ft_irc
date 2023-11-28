@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/21 23:24:43 by andrefranci       #+#    #+#             */
-/*   Updated: 2023/11/09 13:45:21 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/28 16:47:29 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,21 @@ std::string find_and_store_the_rest(std::string &str, std::string word_to_find)
 		throw std::invalid_argument("Word not found in string.");
 	}
 	return (rest);
+}
+
+/*isStrOnlyDigits:
+** 1. Check if str is only digits.
+** 2. If yes, return true.
+** 3. If not, return false.
+*/
+bool isStrOnlyDigits(const std::string& str)
+{
+	for (std::string::const_iterator it = str.begin(); it != str.end(); ++it)
+	{
+		if (!std::isdigit(*it))
+			return (false);
+	}
+	return (true);
 }
 
 //test find_and_store_the_rest
