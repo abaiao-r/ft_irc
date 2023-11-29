@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/28 17:39:35 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/29 13:29:14 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,7 +224,14 @@ class Server
 		void		cmd_user(Client &client, std::string input);
 		void		cmd_nick(Client &client, std::string input);
 		/* JOIN funtions*/
+		bool checkBanned(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
+		bool checkPassword(const std::string &input_channel_name, const std::string &input_password, CH_IT &it, int fd);
+		bool checkInviteOnly(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
+		bool checkChannelFull(const std::string &input_channel_name, CH_IT &it, int fd);
 		bool validateJoinConditions(Client &client, int fd, const std::string &input_channel_name, const std::string &input_password, CH_IT &it);
+		bool checkIfClientAlreadyInChannel(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
+		bool createAndJoinChannel(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
+		bool checkClientRegistration(Client &client, int fd);
 		bool validateJoinPreconditions(Client &client, int fd, const std::string &input_channel_name, CH_IT &it);
 		int			cmd_join(Client &client, std::string input);
 		/*end JOIN funtions*/

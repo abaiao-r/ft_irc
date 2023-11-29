@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/28 17:39:22 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/29 14:04:48 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -654,122 +654,234 @@ void	Server::cmd_nick(Client &client, std::string input)
 	}
 }
 
-bool Server::validateJoinConditions(Client &client, int fd, 
-	const std::string &input_channel_name, const std::string &input_password, 
-	CH_IT &it)
+/* checkBanned
+ * 1. Checks if the client is banned from the channel
+ * 2. If it is, sends an error message and returns true
+ * 3. If it isn't, returns false
+ */
+bool Server::checkBanned(Client &client, const std::string &input_channel_name, 
+	CH_IT &it, int fd)
 {
-    if (it->get_clients_in_channel().size() >= it->get_channel_limit() 
-		&& it->get_channel_limit() != 0)
-    {
-        std::string message = ":localhost " + ERR_CHANNELISFULL 
-		+ " : Error[JOIN]: Channel " + input_channel_name + " is full\r\n";
-        sendErrorMessage(fd, message);
-        return (false);
-    }
-    if (it->get_channel_invite_only())
-    {
-        if (find(it->get_clients_invited_to_channel().begin(),
-                 it->get_clients_invited_to_channel().end(),
-                 client.get_client_fd()) == it->get_clients_invited_to_channel().end())
-        {
-            std::string message = ":localhost " + ERR_INVITEONLYCHAN 
-				+ " : Error[JOIN]: Channel " + input_channel_name 
-				+ " is invite only\r\n";
-            sendErrorMessage(fd, message);
-            return (false);
-        }
-    }
-    if (!it->get_password().empty())
-    {
-        if (it->get_password() != input_password)
-        {
-            std::string message = "Error[JOIN]: Wrong password for channel " 
-				+ input_channel_name + "\r\n";
-            sendErrorMessage(fd, message);
-            return (false);
-        }
-    }
-    if (it->find_client(client.get_nickname(), "banned"))
-    {
-        std::string message = ":localhost " + ERR_BANNEDFROMCHAN 
-			+ " : Error[JOIN]: You (" + client.get_nickname() 
+	if (it->find_client(client.get_nickname(), "banned"))
+	{
+		std::string message = ":localhost " + ERR_BANNEDFROMCHAN +
+			" : Error[JOIN]: You (" + client.get_nickname()
 			+ ") are banned from channel " + input_channel_name + "\r\n";
-        sendErrorMessage(fd, message);
-        return (false);
-    }
-
-    return (true);
+		sendErrorMessage(fd, message);
+		return (true);
+	}
+	return false;
 }
 
+/* checkPassword
+ * 1. Checks if the channel has a password
+ * 2. if it does, checks if the password is correct
+ * Returns true if password is correct or if there is no password, 
+ * false otherwise
+ */
+bool Server::checkPassword(const std::string &input_channel_name,
+	const std::string &input_password, CH_IT &it, int fd)
+{
+	if (!it->get_password().empty())
+	{
+		if (it->get_password() != input_password)
+		{
+			std::string message = "Error[JOIN]: Wrong password for channel " +
+								  input_channel_name + "\r\n";
+			sendErrorMessage(fd, message);
+			return (false);
+		}
+	}
+	return (true);
+}
 
+/* checkInviteOnly
+ * 1. Checks if the channel is invite only
+ * 2. If it is, checks if the client is invited to the channel
+ * 3. If it isn't, sends an error message and returns false
+ * 4. If it is, returns true
+ */
+bool Server::checkInviteOnly(Client &client, 
+	const std::string &input_channel_name, CH_IT &it, int fd)
+{
+	if (it->get_channel_invite_only())
+	{
+		if (find(it->get_clients_invited_to_channel().begin(),
+			it->get_clients_invited_to_channel().end(),
+			client.get_client_fd()) == it->get_clients_invited_to_channel().end())
+		{
+			std::string message = ":localhost " + ERR_INVITEONLYCHAN +
+				" : Error[JOIN]: Channel " + input_channel_name 
+				+ " is invite only\r\n";
+			sendErrorMessage(fd, message);
+			return (false);
+		}
+	}
+	return (true);
+}
+
+/* checkChannelFull
+ * 1. Checks if the channel is full
+ * 2. If it is, sends an error message and returns false
+ * 3. If it isn't, returns true
+ */
+bool Server::checkChannelFull(const std::string &input_channel_name, CH_IT &it, 
+	int fd)
+{
+	if (it->get_clients_in_channel().size() >= it->get_channel_limit() 
+		&& it->get_channel_limit() != 0)
+	{
+		std::string message = ":localhost " + ERR_CHANNELISFULL +
+			" : Error[JOIN]: Channel " + input_channel_name + " is full\r\n";
+		sendErrorMessage(fd, message);
+		return (false);
+	}
+	return (true);
+}
+
+/* validateJoinConditions
+** 1. Checks if the channel is full
+** 2. Checks if the channel is invite only and if the client is invited
+** 3. Checks if the channel has a password and if the password is correct
+** 4. Checks if the client is banned from the channel
+*/
+bool Server::validateJoinConditions(Client &client, int fd,
+	const std::string &input_channel_name, const std::string &input_password,
+	CH_IT &it)
+{
+	if (!checkChannelFull(input_channel_name, it, fd))
+		return (false);
+	if (!checkInviteOnly(client, input_channel_name, it, fd))
+		return (false);
+	if (!checkPassword(input_channel_name, input_password, it, fd))
+		return (false);
+	if (checkBanned(client, input_channel_name, it, fd))
+		return (false);
+	return (true);
+}
+
+/* checkIfClientAlreadyInChannel
+** 1. Checks if the client is already in the channel
+** 2. If it is, sends an error message and returns false
+** 3. If it isn't, returns true
+*/
+bool Server::checkIfClientAlreadyInChannel(Client &client, 
+	const std::string &input_channel_name, CH_IT &it, int fd)
+{
+	std::vector<Client> in_channel = it->get_clients_in_channel();
+
+	if (find(in_channel.begin(), in_channel.end(), 
+		client.get_client_fd()) != in_channel.end())
+	{
+		std::string message = "Error[JOIN]: " + client.get_nickname() 
+			+ " is already in channel " + input_channel_name + "\r\n";
+		sendErrorMessage(fd, message);
+		return (false);
+	}
+	return (true);
+}
+/* createAndJoinChannel
+** 1. Checks if the channel exists
+** 2. If it doesn't, creates the channel and adds the client to it
+** 3. If it does, adds the client to the channel
+*/
+bool Server::createAndJoinChannel(Client &client, 
+	const std::string &input_channel_name, CH_IT &it, int fd)
+{
+	if (it == _channels.end())
+	{
+		if (channel_name_validation(fd, input_channel_name) == 1)
+			return (false);
+
+		// Create channel
+		Channel new_channel(input_channel_name);
+		_channels.push_back(new_channel);
+		it = find(_channels.begin(), _channels.end(), input_channel_name);
+		it->add_client(client);
+		it->add_client_to_clients_operator_vector(client);
+		join_messages(client, *it);
+		client.set_is_admin(true);
+		return (false);
+	}
+	return (true);
+}
+
+/* checkClientRegistration
+** 1. Checks if the client is registered
+** 2. If it isn't, sends an error message and returns false
+** 3. If it is, returns true
+*/
+bool Server::checkClientRegistration(Client &client, int fd)
+{
+	if (!client.get_registered())
+	{
+		std::string message = "Error[JOIN]: You must be registered to join a channel\r\n";
+		sendErrorMessage(fd, message);
+		return (false);
+	}
+	return (true);
+}
+
+/* validateJoinPreconditions
+** 1. Checks if the client is registered
+** 2. Checks if the channel exists
+** 3. If it doesn't, creates the channel and adds the client to it
+** 4. If it does, adds the client to the channel
+** 5. Checks if the client is already in the channel
+** 6. If it is, sends an error message and returns false
+** 7. If it isn't, returns true
+*/
 bool Server::validateJoinPreconditions(Client &client, int fd, 
 	const std::string &input_channel_name, CH_IT &it)
 {
-    // Check if client is registered
-    if (!client.get_registered())
-    {
-        std::string message = "Error[JOIN]: You must be registered to join a channel\r\n";
-        sendErrorMessage(fd, message);
-        return (false);
-    }
-    // If channel does not exist, create it
-    if (it == _channels.end())
-    {
-        if (channel_name_validation(fd, input_channel_name) == 1)
-            return (false);
-
-        // Create channel
-        Channel new_channel(input_channel_name);
-        _channels.push_back(new_channel);
-        it = find(_channels.begin(), _channels.end(), input_channel_name);
-        it->add_client(client);
-        it->add_client_to_clients_operator_vector(client);
-        join_messages(client, *it);
-        client.set_is_admin(true);
-        return (false);
-    }
-
-    std::vector<Client> in_channel = it->get_clients_in_channel();
-
-    // Check if client is already in channel
-    if (find(in_channel.begin(), in_channel.end(), 
-		client.get_client_fd()) != in_channel.end())
-    {
-        std::string message = "Error[JOIN]: " + client.get_nickname() 
-			+ " is already in channel " + input_channel_name + "\r\n";
-        sendErrorMessage(fd, message);
-        return (false);
-    }
-
-    return (true);
+	if (!checkClientRegistration(client, fd))
+		return (false);
+	if (!createAndJoinChannel(client, input_channel_name, it, fd))
+		return (false);
+	if (!checkIfClientAlreadyInChannel(client, input_channel_name, it, fd))
+		return (false);
+	return (true);
 }
 
+/* cmd_join
+** 1. Parses the input
+** 2. Looks for the channel in the channels vector
+** 3. Validates the preconditions for joining a channel:
+**		- Client must be registered
+**		- Channel must exist, if it doesn't, creates it
+**		- Client must not already be in the channel
+** 4. Validates the conditions for joining a channel:
+**		- Channel must not be full
+**		- If channel is invite only, client must be invited
+**		- If channel has a password, client must provide the correct password
+**		- Client must not be banned from the channel
+** 5. Adds the client to the channel
+** 6. Sends the JOIN message to the client
+*/
 int Server::cmd_join(Client &client, std::string input)
 {
-    int fd = client.get_client_fd();
-    std::string message;
-    std::string input_channel_name;
-    std::string input_password;
-    std::vector<Client> in_channel;
+	int fd = client.get_client_fd();
+	std::string message;
+	std::string input_channel_name;
+	std::string input_password;
+	std::vector<Client> in_channel;
 
-    // Parsing input
-    std::stringstream ss(input);
-    ss >> input_channel_name;
-    ss >> input_password;
+	// Parsing input
+	std::stringstream ss(input);
+	ss >> input_channel_name;
+	ss >> input_password;
 
-    CH_IT it = find(_channels.begin(), _channels.end(), input_channel_name);
+	CH_IT it = find(_channels.begin(), _channels.end(), input_channel_name);
 
-    if (!validateJoinPreconditions(client, fd, input_channel_name, it))
-        return (1);
-
-    if (!validateJoinConditions(client, fd, input_channel_name, input_password, it))
-        return (1);
-
-    // Add client to channel
-    it->add_client(client);
-    join_messages(client, *it);
-
-    return (0);
+	if (!validateJoinPreconditions(client, fd, input_channel_name, it))
+		return (1);
+	if (!validateJoinConditions(client, fd, input_channel_name, input_password, 
+		it))
+		return (1);
+	// Add client to channel
+	it->add_client(client);
+	join_messages(client, *it);
+	return (0);
 }
 
 
