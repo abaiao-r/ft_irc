@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommands.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/28 17:39:22 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/29 12:48:47 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -822,6 +822,8 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 			return;
 		}
 		ch_test->message(client, msg);
+		if (_Clippy.big_brother(ch_test, client, msg))
+			kickClientFromChannel(ch_test, &ch_test->get_operator(), &client, "Profanity");
 		return;
 	}
 	c_test = find_client(client, dest);
@@ -836,6 +838,8 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	+ client.get_username() + "@" + "localhost" + " PRIVMSG "
 	+ c_test->get_nickname() + " :" + msg + "\r\n";
 	sendSuccessMessage(fd, final_msg);
+	if (_Clippy.big_brother(NULL, client, msg))
+		kickClientFromChannel(ch_test, &ch_test->get_operator(), &client, "Profanity");
 }
 
 /* cmd_kick: kick a user from a channel (KICK <channel> <nickname> [<reason>])

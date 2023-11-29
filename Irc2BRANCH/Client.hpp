@@ -22,6 +22,7 @@ class Client
 		bool		_authenticated;
 		bool		_registered;
 		int			_tries;
+		int			_strikes;
 		std::string _nickname; // can not be repeated
 		std::string _username; // can be repeated
 		bool		_is_admin;
@@ -42,6 +43,9 @@ class Client
 		
 		const bool &get_registered(void) const;
 		void set_registered(const bool &value);
+
+		const int &get_strikes(void) const;
+		void set_strikes(const int &value);
 		
 		const bool &get_authenticated(void) const;
 		void set_authenticated(const bool &value);

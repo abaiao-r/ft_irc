@@ -6,12 +6,16 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/28 14:59:13 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/29 12:56:58 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-#include "Server.hpp"
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include "Client.hpp"
+#include "colours.hpp"
 
 #define STRING_VEC std::vector<std::string>
 
@@ -75,6 +79,7 @@ class Channel
 		void 				remove_client_from_banned_vector(Client &client);
 
 		std::vector<Client> &get_clients_operator_channel(void);
+		Client				&get_operator();
 		void 				add_client_to_clients_operator_vector(Client &client);
 		void 				remove_client_from_clients_operator_vector(Client &client);
 
