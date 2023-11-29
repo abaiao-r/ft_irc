@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/29 17:13:44 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/29 21:52:39 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1044,39 +1044,69 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	}
 	fd = c_test->get_client_fd();
 	std::string	final_msg = ":" + client.get_nickname() + "!"
-	+ client.get_username() + "@" + "localhost" + " PRIVMSG "
-	+ c_test->get_nickname() + " :" + msg + "\r\n";
+		+ client.get_username() + "@" + "localhost" + " PRIVMSG "
+		+ c_test->get_nickname() + " :" + msg + "\r\n";
 	sendSuccessMessage(fd, final_msg);
 	if (_Clippy.big_brother(NULL, client, msg))
 		kickClientFromChannel(ch_test, &ch_test->get_operator(), &client, "Profanity");
 }
 
-/* cmd_kick: kick a user from a channel (KICK <channel> <nickname> [<reason>])
- * 1. Parse input into channel name and nickname and reason
- * 2. Check if client is administrator
- * 3. Find the channel
- * 4. Find the nickname in the channel
- * 5. Kick the user
- */
-int Server::cmd_kick(Client &client, std::string input)
+/* kickClientFromChannel: KICK <channel> <nickname> [<reason>]
+** 1. remove client from channel
+** 2. add client to banned list
+** 3. if client is in operator_channel, remove from operator_channel
+** 4. send message to client
+*/
+int Server::kickClientFromChannel(Channel *channel, Client *client, 
+	Client *client_to_kick, const std::string &reason)
 {
-	std::istringstream iss(input);
-	std::string channel_to_find;
-	std::string nickname;
-	std::string reason;
+	std::string message;
 	
-	// Parse input
-	// skip till find '#'
-	while (iss.peek() != '#')
-		iss.ignore();
-	iss >> channel_to_find >> nickname;
-	std::getline(iss, reason);
+	// Remove client from channel
+	channel->remove_client(*(client_to_kick));
+	// add client_to_kick to banned list
+	channel->add_client_to_banned_vector(*(client_to_kick));
+	// if client is in operator_channel, remove from operator_channel
+	std::string client_to_kick_nickname = client_to_kick->get_nickname();
+	if (channel->find_client(client_to_kick_nickname, "operators"))
+		channel->remove_client_from_clients_operator_vector(*client_to_kick);
+	// Send message to client
+	if (reason.empty())
+	{
+		message = ":" + client->get_nickname() + " KICK " + channel->get_name()
+			+ " " + client_to_kick->get_nickname() + " :This is Sparta!\r\n";
+		sendSuccessMessage(client_to_kick->get_client_fd(), message);
+		sendSuccessMessage(client->get_client_fd(), message);
+		sendChannelUserListMessage(channel, client->get_nickname());
+		return (0);
+	}
+	else
+	{
+		message = ":" + client->get_nickname() + " KICK " + channel->get_name()
+			+ " " + client_to_kick->get_nickname() + " :" + reason + "\r\n";
+		sendSuccessMessage(client_to_kick->get_client_fd(), message);
+		sendSuccessMessage(client->get_client_fd(), message);
+		sendChannelUserListMessage(channel, client->get_nickname());
+		return (0);
+	}
+}
 
-	// if nickname is empty ERR_NEEDMOREPARAMS
-	// message = ":localhost " + ERR_NEEDMOREPARAMS + " : Error[KICK]: Usage: KICK <channel> <nickname> [<reason>]\r\n";
+/* performChecks: KICK <channel> <nickname> [<reason>]
+** 1. if nickname is empty, send error message
+** 2. if nickname is equal to client nickname, send error message
+** 3. Find the channel
+** 4. if client is not in vector of clients operator_channel, send error message
+** 5. if nickname is in operator_channel, send error message
+** 6. Find the client to kick in the channel
+** 7. if client is not in vector of clients operator_channel, send error message
+*/
+int Server::performChecks(Client &client, const std::string &channel_to_find, 
+	std::string &nickname, Channel *&channel, Client *&client_to_kick)
+{
 	if (nickname.empty())
 	{
-		std::string error = ":localhost " + ERR_NEEDMOREPARAMS + " : Error[KICK]: Usage: KICK <channel> <nickname> [<reason>]\r\n";
+		std::string error = ":localhost " + ERR_NEEDMOREPARAMS 
+			+ " : Error[KICK]: Usage: KICK <channel> <nickname> [<reason>]\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
@@ -1085,15 +1115,18 @@ int Server::cmd_kick(Client &client, std::string input)
 	// if nickname is equal to client nickname
 	if (nickname == client.get_nickname())
 	{
-		std::string error = "ERROR[KICK]: You can't kick yourself\r\n";
+		std::string error = ":localhost " + ERR_CANNOTSENDTOCHAN 
+			+ " : Error[KICK]: You can't kick yourself\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// Find the channel
-	Channel *channel = findChannel(client, channel_to_find);
+	channel = findChannel(client, channel_to_find);
 	if (!channel)
 	{
-		std::string error = "Error[KICK]: Channel " + channel_to_find + " does not exist\r\n";
+		std::string error = ":localhost " + ERR_NOSUCHCHANNEL 
+			+ " : Error[KICK]: Channel " + channel_to_find 
+			+ " does not exist\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
@@ -1101,29 +1134,72 @@ int Server::cmd_kick(Client &client, std::string input)
 	std::string client_that_kicked = client.get_nickname();
 	if (!channel->find_client(client_that_kicked, "operators"))
 	{
-		std::string error = "Error[KICK]: " + client.get_nickname() + " is not an operator in channel " + channel_to_find + "\r\n";
+		std::string error = ":localhost " + ERR_CHANOPRIVSNEEDED 
+			+ " : Error[KICK]: You are not an operator in channel " 
+			+ channel_to_find + "\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// find if nickname is in operator_channel
 	if (channel->find_client(nickname, "operators"))
 	{
-		std::string error = "Error[KICK]: " + nickname + " is an operator in channel " + channel_to_find + "\r\n";
+		std::string error = "Error[KICK]: " + nickname 
+			+ " is an operator in channel " + channel_to_find + "\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// Find the client to kick in the channel
-	Client *client_to_kick = channel->find_client(nickname, "clients");
+	client_to_kick = channel->find_client(nickname, "clients");
 	if(!client_to_kick)
 	{
-		std::string error = "Error[KICK]: " + nickname + " is not in channel " + channel_to_find + "\r\n";
+		std::string error = ":localhost " + ERR_USERNOTINCHANNEL 
+			+ " : Error[KICK]: " + nickname + " is not in channel " 
+			+ channel_to_find + "\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
 	}
-	// Kick the user
-	if (kickClientFromChannel(channel, &client, client_to_kick, reason) == -1)
-		return (1);
-	return (0);
+    return (0);
+}
+
+/* parseKickCommand: KICK <channel> <nickname> [<reason>]
+** 1. Skip until finding '#'
+** 2. Parse channel name
+** 3. Parse nickname
+** 4. Parse reason
+*/
+void Server::parseKickCommand(std::istringstream &iss, 
+	std::string &channel_to_find, std::string &nickname, std::string &reason)
+{
+    // Parse input
+    // Skip until finding '#'
+    while (iss.peek() != '#')
+        iss.ignore();
+    iss >> channel_to_find >> nickname;
+    std::getline(iss, reason);
+}
+
+/* cmd_kick: kick client from channel (KICK <channel> <nickname> [<reason>])
+ * 1. Parse input into channel name and nickname
+ * 2. Perform checks, if any of the checks fails, return else continue
+ * 3. Kick client from channel
+ */
+int Server::cmd_kick(Client &client, std::string input)
+{
+    std::istringstream iss(input);
+    std::string channel_to_find;
+	std::string nickname;
+	std::string reason;
+
+	// Parse input
+    parseKickCommand(iss, channel_to_find, nickname, reason);
+
+	Channel *channel = NULL;
+	Client *client_to_kick = NULL;
+    if (performChecks(client, channel_to_find, nickname, channel, client_to_kick))
+        return (1);
+    if (kickClientFromChannel(channel, &client, client_to_kick, reason) == -1)
+        return (1);
+    return (0);
 }
 
 /* cmd_topic: set topic of channel

@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:56 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/28 15:30:33 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/29 20:55:58 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,71 +170,6 @@ Client	*Server::find_client(Client &client, const std::string& nickname)
 	return &(*it);
 }
 
-/* kickClientFromChannel: kick client from channel
- * 1. Remove client from channel->get_clients_in_channel()
- * 2. Send message to client
- */
-int Server::kickClientFromChannel(Channel *channel, Client *client, Client *client_to_kick, const std::string &reason)
-{
-	std::string message;
-	
-	// Remove client from channel
-	channel->remove_client(*(client_to_kick));
-	// add client_to_kick to banned list
-	channel->add_client_to_banned_vector(*(client_to_kick));
-	// if client is in operator_channel, remove from operator_channel
-	std::string client_to_kick_nickname = client_to_kick->get_nickname();
-	if (channel->find_client(client_to_kick_nickname, "operators"))
-		channel->remove_client_from_clients_operator_vector(*client_to_kick);
-	// Send message to client
-	if (reason.empty())
-	{
-		// Sending message: :asd KICK #tyu andrebaiao :bye
-		message = ":" + client->get_nickname() + " KICK " + channel->get_name()
-			+ " " + client_to_kick->get_nickname() + " :This is Sparta!\r\n";
-		if (sendSuccessMessage(client_to_kick->get_client_fd(), message) == -1)
-			return (1);
-		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
-			return (1);
-		// Sending message: :localhost 353 andrebaiao = #tyu :list of clients_in_channel
-		message = ":localhost " + RPL_NAMREPLY + " " + client_to_kick->get_nickname()
-			+ " = " + channel->get_name() + " :" + get_users_string(*channel) + "\r\n";
-		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
-			return (1);
-		//Sending message: :localhost 366 andrebaiao #tyu :End of NAMES list
-		message = ":localhost " + RPL_ENDOFNAMES + " " + client->get_nickname() 
-			+ " " + channel->get_name() + " :End of NAMES list\r\n";
-		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
-			return (1);
-		return (0);
-	}
-	else
-	{
-		// Sending message: :asd KICK #tyu andrebaiao :bye
-		message = ":" + client->get_nickname() + " KICK " + channel->get_name()
-			+ " " + client_to_kick->get_nickname() + " :" + reason + "\r\n";
-		if (sendSuccessMessage(client_to_kick->get_client_fd(), message) == -1)
-			return (1);
-		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
-			return (1);
-		// Sending message: :localhost 353 andrebaiao = #tyu :list of clients_in_channel
-		message = ":localhost " + RPL_NAMREPLY + " " + client_to_kick->get_nickname()
-			+ " = " + channel->get_name() + " :" + get_users_string(*channel) + "\r\n";
-		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
-			return (1);
-		//Sending message: :localhost 366 andrebaiao #tyu :End of NAMES list
-		message = ":localhost " + RPL_ENDOFNAMES + " " + client->get_nickname() 
-			+ " " + channel->get_name() + " :End of NAMES list\r\n";
-		if (sendSuccessMessage(client->get_client_fd(), message) == -1)
-			return (1);
-		return (0);
-		
-	}
-	// Send message to client send success message to client
-	if (sendSuccessMessage(client->get_client_fd(), message) == -1)
-		return (1);
-	return (0);
-}
 
 int	Server::password_checker(std::string password)
 {
@@ -323,12 +258,13 @@ void	Server::join_messages(Client &client, Channel &channel)
 void Server::sendChannelUserListMessage(Channel *channel, const std::string &argument)
 {
     // Sending message: :localhost 353 andrebaiao = #tyu :list of clients_in_channel
-    std::string userListMessage = ":localhost " + RPL_NAMREPLY + " " + argument +
-                                  " = " + channel->get_name() + " :" + get_users_string(*channel) + "\r\n";
+    std::string userListMessage = ":localhost " + RPL_NAMREPLY + " " + argument
+		+ " = " + channel->get_name() + " :" + get_users_string(*channel) 
+		+ "\r\n";
     channel->info_message(userListMessage);
 
     // Sending message: :localhost 366 andrebaiao #tyu :End of NAMES list
-    std::string endOfNamesMessage = ":localhost " + RPL_ENDOFNAMES + " " + argument +
-                                     " " + channel->get_name() + " :End of NAMES list\r\n";
+    std::string endOfNamesMessage = ":localhost " + RPL_ENDOFNAMES + " " 
+		+ argument + " " + channel->get_name() + " :End of NAMES list\r\n";
     channel->info_message(endOfNamesMessage);
 }

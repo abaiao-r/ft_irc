@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/29 16:33:06 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/29 21:52:45 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,10 +244,14 @@ class Server
 		int 		cmd_list(Client &client, std::string input);
 		/*end list funtions*/
 		/* WHO funtions*/
-		void sendWhoReplyMessages(Client &client, Channel &channel);
+		void 		sendWhoReplyMessages(Client &client, Channel &channel);
 		int			cmd_who(Client &client, std::string input);
 		/*end WHO funtions*/
+		/*KICK funtions*/
+		void 		parseKickCommand(std::istringstream &iss, std::string &channel_to_find, std::string &nickname, std::string &reason);
+		int 		performChecks(Client &client, const std::string &channel_to_find, std::string &nickname, Channel *&channel, Client *&client_to_kick);
 		int 		cmd_kick(Client &client, std::string input);
+		/*end KICK funtions*/
 		int 		cmd_invite(Client &client, std::string input);
 		int			cmd_topic(Client &client, std::string input);
 		/*mode funtions*/
