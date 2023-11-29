@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/28 14:59:33 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/29 12:56:38 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,7 +218,7 @@ void	Channel::add_client(Client &client)
 /* remove_client() removes a client from the channel. */
 void	Channel::remove_client(Client &client)
 {
-	C_IT	it = find(_clients_in_channel.begin(), _clients_in_channel.end(), client);
+	std::vector<Client>::iterator	it = find(_clients_in_channel.begin(), _clients_in_channel.end(), client);
 
 	if (it != _clients_in_channel.end())
 		_clients_in_channel.erase(it);
@@ -241,7 +241,7 @@ void	Channel::add_client_to_banned_vector(Client &client)
  * clients. */
 void	Channel::remove_client_from_banned_vector(Client &client)
 {
-	C_IT	it = find(_clients_banned.begin(), _clients_banned.end(), client);
+	std::vector<Client>::iterator	it = find(_clients_banned.begin(), _clients_banned.end(), client);
 
 	if (it != _clients_banned.end())
 		_clients_banned.erase(it);
@@ -261,11 +261,16 @@ void	Channel::add_client_to_clients_operator_vector(Client &client)
 	_clients_operator_channel.push_back(client);
 }
 
+Client	&Channel::get_operator()
+{
+	return (_clients_operator_channel[0]);
+}
+
 /* remove_client_from_clients_operator_vector() removes a client from the list
  * of operators in the channel. */
 void	Channel::remove_client_from_clients_operator_vector(Client &client)
 {
-	C_IT	it = find(_clients_operator_channel.begin(), _clients_operator_channel.end(), client);
+	std::vector<Client>::iterator	it = find(_clients_operator_channel.begin(), _clients_operator_channel.end(), client);
 
 	if (it != _clients_operator_channel.end())
 		_clients_operator_channel.erase(it);
@@ -289,7 +294,7 @@ void	Channel::add_client_to_clients_invited_vector(Client &client)
  * that have voice in the channel. */
 void	Channel::remove_client_from_clients_invited_vector(Client &client)
 {
-	C_IT	it = find(_clients_invited_to_channel.begin(), _clients_invited_to_channel.end(), client);
+	std::vector<Client>::iterator	it = find(_clients_invited_to_channel.begin(), _clients_invited_to_channel.end(), client);
 
 	if (it != _clients_invited_to_channel.end())
 		_clients_invited_to_channel.erase(it);
@@ -336,8 +341,8 @@ Client	*Channel::find_client(std::string nickname, std::string vector)
 
 void	Channel::message(Client &client, std::string msg)
 {
-	C_IT		it = _clients_in_channel.begin();
-	int			fd;
+	std::vector<Client>::iterator		it = _clients_in_channel.begin();
+	int									fd;
 	std::string	final_msg = ":" + client.get_nickname() + "!"
 	+ client.get_username() + "@" + "localhost" + " PRIVMSG "
 	+ _name + " :" + msg + "\r\n";
@@ -353,8 +358,8 @@ void	Channel::message(Client &client, std::string msg)
 
 void	Channel::info_message(std::string msg)
 {
-	C_IT		it = _clients_in_channel.begin();
-	int			fd;
+	std::vector<Client>::iterator	it = _clients_in_channel.begin();
+	int								fd;
 
 	for (; it < _clients_in_channel.end(); it++)
 	{

@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/11/28 10:39:41 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/29 10:45:22 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 /* Default constructor */
 Client::Client(void)
-	: _client_fd(-1), _authenticated(false), _registered(false), _tries(0)
-	, _nickname(""), _username(""), _is_admin(false)
+	: _client_fd(-1), _authenticated(false), _registered(false), _tries(0),
+	_strikes(0), _nickname(""), _username(""), _is_admin(false)
 {
 	std::cout << CYAN << "Client: Default constructor called" << RESET 
 		<< std::endl;
@@ -48,6 +48,7 @@ Client &Client::operator=(const Client &copy)
 		_authenticated = copy._authenticated;
 		_registered = copy._registered;
 		_tries = copy._tries;
+		_strikes = copy._strikes;
 		_nickname = copy._nickname;
 		_username = copy._username;
 		_is_admin = copy._is_admin;
@@ -78,6 +79,17 @@ void	Client::set_registered(const bool &value)
 {
 	_registered = value;
 }
+
+const int &Client::get_strikes(void) const
+{
+	return (_strikes);
+}
+
+void Client::set_strikes(const int &value)
+{
+	_strikes = value;
+}
+
 
 /*get_authenticated: return the authenticated */
 const bool &Client::get_authenticated(void) const
