@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/29 13:29:14 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/29 16:33:06 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,23 +243,31 @@ class Server
 		int 		cmdListWithArg(Client &client, std::string input);
 		int 		cmd_list(Client &client, std::string input);
 		/*end list funtions*/
+		/* WHO funtions*/
+		void sendWhoReplyMessages(Client &client, Channel &channel);
+		int			cmd_who(Client &client, std::string input);
+		/*end WHO funtions*/
 		int 		cmd_kick(Client &client, std::string input);
 		int 		cmd_invite(Client &client, std::string input);
 		int			cmd_topic(Client &client, std::string input);
 		/*mode funtions*/
-		int			cmd_mode(Client &client, std::string input);
-		int 		handleModePlusO(Client &client, Channel *channel, std::string argument, int fd);
-		int 		handleModeMinusO(Client &client, Channel *channel, std::string argument, int fd);
-		int 		handleModePlusK(Channel *channel, std::string argument, int fd);
-		int 		handleModeMinusK(Channel *channel, int fd);
-		int 		handleModePlusI(Channel *channel, int fd);
-		int 		handleModeMinusI(Channel *channel, int fd);
-		int 		handleModePlusT(Channel *channel, int fd);
-		int 		handleModeMinusT(Channel *channel, int fd);
-		int 		handleModePlusL(Channel *channel, std::string argument, int fd);
 		int 		handleModeMinusL(Channel *channel, int fd);
+		int 		handleModePlusL(Channel *channel, std::string argument, int fd);
+		int 		handleModeMinusT(Channel *channel, int fd);
+		int 		handleModePlusT(Channel *channel, int fd);
+		int 		handleModeMinusI(Channel *channel, int fd);
+		int 		handleModePlusI(Channel *channel, int fd);
+		int 		handleModeMinusK(Channel *channel, int fd);
+		int 		handleModePlusK(Channel *channel, std::string argument, int fd);
+		int 		handleModeMinusO(Client &client, Channel *channel, std::string argument, int fd);
+		int 		handleModePlusO(Client &client, Channel *channel, std::string argument, int fd);
+		int 		handleMode(Client &client, Channel *channel, const std::string &mode, const std::string &argument, int fd);
+		int 		sendOperatorPrivilegeError(int fd, const std::string &channel);
+		int 		sendChannelModeInfo(int fd, Channel *channel, const std::string &channelName);
+		int 		sendChannelNotFoundError(int fd, const std::string &channel);
+		void 		printDebugInfo(const std::string &channel, const std::string &mode, const std::string &argument);
+		int			cmd_mode(Client &client, std::string input);
 		/*end mode functions*/
-		int			cmd_who(Client &client, std::string input);
 		int			sendErrorMessage(int client_fd, const std::string& errorMessage);
 		int 		sendSuccessMessage(int client_fd, const std::string	&successMessage);
 
