@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/26 09:32:48 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 23:08:56 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/30 23:45:45 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,8 @@ void Bot::readNaughtyWordsFromFile(const std::string &filename)
 			//store all the line in word, use getline to get the whitespaces
 			while (std::getline(iss, word))
 			{
+				// lowercase all the line
+				 std::transform(word.begin(), word.end(), word.begin(), tolower);
 				//remove the whitespaces after the last printable character
 				word.erase(word.find_last_not_of(" \t\n\r\f\v") + 1);
 				_naughty_words.push_back(word);
@@ -146,10 +148,10 @@ bool	Bot::big_brother(Channel &channel, Client &client, std::string msg)
 
 	std::transform(msg.begin(), msg.end(), msg.begin(), tolower);
 	// print the vector of naughty words DEBUG
-	// for (std::vector<std::string>::iterator it1 = _naughty_words.begin(); it1 != _naughty_words.end(); it1++)
-	// {
-	// 	std::cout << ORANGE << "|" << *it1 << "|" << RESET <<  std::endl;
-	// }
+	for (std::vector<std::string>::iterator it1 = _naughty_words.begin(); it1 != _naughty_words.end(); it1++)
+	{
+		std::cout << ORANGE << "|" << *it1 << "|" << RESET <<  std::endl;
+	}
 
 	// iterate through the vector of naughty words
 	for (std::vector<std::string>::iterator it = _naughty_words.begin(); it != _naughty_words.end(); it++)
