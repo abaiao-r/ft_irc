@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 13:57:41 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 12:56:09 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,7 +271,7 @@ void	Channel::check_operator()
 	if (_clients_operator_channel.size() == 0)
 	{
 		_clients_operator_channel.push_back(_clients_in_channel[0]);
-		_clients_in_channel[0].set_is_admin(true);
+		_clients_in_channel[0].set_is_admin(true);		
 	}
 }
 
