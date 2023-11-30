@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommands.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 13:53:56 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 19:37:18 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -508,7 +508,8 @@ int Server::handleModePlusO(Client &client, Channel *channel,
 ** 1. call the appropriate function based on the mode
 ** 2. return 2 if mode is invalid
 */
-int  Server::handleMode(Client &client, Channel *channel, const std::string &mode, const std::string &argument, int fd)
+int  Server::handleMode(Client &client, Channel *channel, 
+	const std::string &mode, const std::string &argument, int fd)
 {
     // Implement the logic for each mode
 	if (mode == "+o")
@@ -1012,21 +1013,28 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 		ch_test = findChannel(client, dest);
 		if (!ch_test)
 		{
-			error = ":localhost " + ERR_NOSUCHSERVER + " : Error. Could not find destination\r\n";
+			error = ":localhost " + ERR_NOSUCHSERVER 
+				+ " : Error. Could not find destination\r\n";
 			sendErrorMessage(fd, error);
 			return;
 		}
 		// check if client is in channel
-		if (find(ch_test->get_clients_in_channel().begin(), ch_test->get_clients_in_channel().end(), client.get_client_fd()) == ch_test->get_clients_in_channel().end())
+		if (find(ch_test->get_clients_in_channel().begin(), 
+			ch_test->get_clients_in_channel().end(), 
+				client.get_client_fd()) == ch_test->get_clients_in_channel().end())
 		{
-			error = ":localhost " + ERR_CANNOTSENDTOCHAN + " : Error[PRIVMSG]: You (" + client.get_nickname() + ") are not in channel " + dest + "\r\n";
+			error = ":localhost " + ERR_CANNOTSENDTOCHAN 
+			+ " : Error[PRIVMSG]: You (" + client.get_nickname() 
+			+ ") are not in channel " + dest + "\r\n";
 			sendErrorMessage(fd, error);
 			return;
 		}
 		// check if client is banned
 		if (ch_test->find_client(client.get_nickname(), "banned"))
 		{
-			error = ":localhost " + ERR_CANNOTSENDTOCHAN + " : Error[PRIVMSG]: You (" + client.get_nickname() + ") are banned from channel " + dest + "\r\n";
+			error = ":localhost " + ERR_CANNOTSENDTOCHAN 
+				+ " : Error[PRIVMSG]: You (" + client.get_nickname() 
+					+ ") are banned from channel " + dest + "\r\n";
 			sendErrorMessage(fd, error);
 			return;
 		}
@@ -1038,7 +1046,8 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	c_test = find_client(client, dest);
 	if (!c_test)
 	{
-		error = ":localhost " + ERR_NOSUCHSERVER + " : Error. Could not find destination\r\n";
+		error = ":localhost " + ERR_NOSUCHSERVER 
+			+ " : Error. Could not find destination\r\n";
 		sendErrorMessage(fd, error);
 		return;
 	}
@@ -1146,6 +1155,8 @@ int Server::kickClientFromChannel(Channel *channel, Client *client,
 	// Send message to client
 	if (reason.empty())
 	{
+		// numeric reply for hexchat
+	
 		message = ":" + client->get_nickname() + " KICK " + channel->get_name()
 			+ " " + client_to_kick->get_nickname() + " :This is Sparta!\r\n";
 		sendSuccessMessage(client_to_kick->get_client_fd(), message);
@@ -1240,7 +1251,9 @@ int Server::performChecks(Client &client, const std::string &channel_to_find,
 	// find if nickname is in operator_channel
 	if (channel->find_client(nickname, "operators"))
 	{
-		std::string error = "Error[KICK]: " + nickname 
+		// numeric reply for hexchat
+		std::string error = ":localhost " + ERR_CHANOPRIVSNEEDED 
+			+ " : Error[KICK]: " + nickname 
 			+ " is an operator in channel " + channel_to_find + "\r\n";
 		sendErrorMessage(client.get_client_fd(), error);
 		return (1);
@@ -1299,6 +1312,100 @@ int Server::cmd_kick(Client &client, std::string input)
     return (0);
 }
 
+int Server::handleTopicCommand(Client &client, Channel *&channel, 
+	const std::string &topic)
+{
+	std::string message;
+	std::string client_nickname = client.get_nickname();
+	std::string channel_name = channel->get_name();
+
+	if(topic.empty() || strIsWhitespace(topic))
+	{
+		if (channel->get_topic().empty())
+			message = ":localhost " + RPL_NOTOPIC 
+				+ " " + client_nickname + " " + channel_name 
+				+ " :No topic is set\r\n";
+		else
+			message = ":localhost " + RPL_TOPIC 
+				+ " " + client_nickname + " " + channel_name 
+				+ " :" + channel->get_topic() + "\r\n";
+		sendSuccessMessage(client.get_client_fd(), message);
+		return (0);
+	}
+	if (channel->get_topic_mode() == true 
+		&& channel->find_client(client_nickname, "operators"))
+	{
+		// RPL numeric for hexchat
+		std::string success = ":localhost " + RPL_TOPIC 
+			+ " " + client_nickname + " " + channel_name 
+			+ " :" + topic + "\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		channel->set_topic(topic);
+	}
+	else if (channel->get_topic_mode() == false 
+		&& channel->find_client(client_nickname, "clients"))
+	{
+		std::string success = ":localhost " + RPL_TOPIC 
+			+ " " + client_nickname + " " + channel_name 
+			+ " :" + topic + "\r\n";
+		sendSuccessMessage(client.get_client_fd(), success);
+		channel->set_topic(topic);
+	}
+	else if (!channel->find_client(client_nickname, "operators"))
+	{
+		std::string error = ":localhost " + ERR_CHANOPRIVSNEEDED 
+			+ " : Error[TOPIC]: " + client_nickname 
+			+ " is not an operator in channel " + channel_name + "\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (-1);
+	}
+	return (0);
+}
+
+int Server::handleTopicErrors(Client &client, const std::string &channel_to_find, 
+	Channel *&channel)
+{
+	if (channel_to_find.empty() || strIsWhitespace(channel_to_find))
+	{
+		std::string error = ":localhost " + ERR_NEEDMOREPARAMS 
+			+ " : Error[TOPIC]: Usage: TOPIC <channel> [<topic>]\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	// Find the channel
+	channel = findChannel(client, channel_to_find);
+	if (!channel)
+	{
+		std::string error = ":localhost " + ERR_NOSUCHCHANNEL 
+			+ " : Error[TOPIC]: Channel " + channel_to_find 
+			+ " does not exist\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	return (0);
+}
+
+/* cmd_topic: set topic of channel
+ * 1. Parse input into channel name and topic
+ ** first skip until finding '#' then parse channel name
+ ** then skip all kind of leading whitespaces then parse topic(rest of input)
+ */
+void Server::parseTopicCommand(std::istringstream &iss, 
+	std::string &channel_to_find, std::string &topic)
+{
+	// Parse input
+	// Skip until finding '#'
+	while (iss.peek() != '#')
+		iss.ignore();
+	iss >> channel_to_find;
+	// skip all kind of leading whitespaces
+	iss >> std::ws;
+	//skip : skip only the first ':'
+	if (iss.peek() == ':')
+		iss.ignore();
+	std::getline(iss, topic);
+}
+
 /* cmd_topic: set topic of channel
  * 1. Parse input into channel name and topic
  * 2. Check if client is administrator
@@ -1312,134 +1419,107 @@ int Server::cmd_topic(Client &client, std::string input)
 	std::string topic;
 	
 	// Parse input
-	iss >> channel_to_find;
-	// skip all kind of leading whitespaces
-	iss >> std::ws;
-	//skip : skip only the first ':'
-	
-	if (iss.peek() == ':')
-		iss.ignore();
-	//iss.ignore(1, ':'); //different from the above, this will ignore all ':' 
-	std::getline(iss, topic);
+	parseTopicCommand(iss, channel_to_find, topic);
 
-	// if no channel name is given
-	if (channel_to_find.empty() || strIsWhitespace(channel_to_find))
-	{
-		std::string error = "Error[TOPIC]: Usage: topic <channel> [topic]\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+	Channel *channel = NULL;
+	if (handleTopicErrors(client, channel_to_find, channel) == 1)
+		return (1);
+	if (handleTopicCommand(client, channel, topic) == -1)
 		return (-1);
-	}
-	Channel *channel = findChannel(client, channel_to_find);
-	if (!channel)
-	{
-		std::string error = "Error[TOPIC]: " + channel_to_find + " does not exist\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
-		return (-1);
-	}
-	// if client does not belong to channel
-	std::string client_nickname = client.get_nickname();
-	if (!channel->find_client(client_nickname, "clients"))
-	{
-		std::string error = "Error[TOPIC]: You (" + client.get_nickname() + ") are not in channel " + channel_to_find + "\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
-		return (-1);
-	}
-	// Set topic of channel
-	if (topic.empty() || strIsWhitespace(topic))
-	{
-		std::string message;
-		// send the topic to client
-		if (channel->get_topic().empty())
-			message = "Topic of " + channel->get_name() + " is not set\r\n";
-		else
-			message = "Topic of " + channel->get_name() + " is: " + channel->get_topic() + "\r\n";
-		sendSuccessMessage(client.get_client_fd(), message);
-		return (0);
-	}
-	// check if topic_mode is true
-	if (channel->get_topic_mode() == true && channel->find_client(client_nickname, "operators"))
-	{
-		std::string success = "Success[TOPIC]: topic changed to " + topic + "\r\n";
-		sendSuccessMessage(client.get_client_fd(), success);
-		channel->set_topic(topic);
-	}// add else if for when client is operator but topic_mode is false
-	else if (channel->get_topic_mode() == false && channel->find_client(client_nickname, "clients"))
-	{
-		std::string success = "Success[TOPIC]: topic changed to " + topic + "\r\n";
-		sendSuccessMessage(client.get_client_fd(), success);
-		channel->set_topic(topic);
-	}
-	else if (!channel->find_client(client_nickname, "operators"))
-	{
-		// Check if client is administrator
-		std::string error = "Error[TOPIC]: " + client.get_nickname() + " is not an operator in channel " + channel_to_find + "\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
-		return (-1);
-	}	
 	return (0);
 }
 
+/* handleInviteErrors: check if input is valid
+ * 1. Check if input is empty
+ * 2. Check if channel exists
+ * 3. Check if client is in operator in channel
+ * 4. Check if client is already invited
+ * 5. Check if client is already in channel
+ */
+int Server::handleInviteErrors(Client &client, const std::string &nickname, 
+	const std::string &channel_to_find, Channel *&channel)
+{
+	if (nickname.empty() || strIsWhitespace(nickname) 
+		|| channel_to_find.empty() || strIsWhitespace(channel_to_find))
+	{
+		std::string error = ":localhost " + ERR_NEEDMOREPARAMS 
+			+ " : Error[INVITE]: Usage: INVITE <nickname> <channel>\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	// Find the channel
+	channel = findChannel(client, channel_to_find);
+	if (!channel)
+	{
+		std::string error = ":localhost " + ERR_NOSUCHCHANNEL 
+			+ " : Error[INVITE]: Channel " + channel_to_find 
+			+ " does not exist\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	// if client is not operator in channel
+	if (!channel->find_client(client.get_nickname(), "operators"))
+	{
+		std::string error = ":localhost " + ERR_CHANOPRIVSNEEDED 
+			+ " : Error[INVITE]: You (" + client.get_nickname()
+			+ ") are not an operator in channel " + channel_to_find + "\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	// find if client is already invited
+	if (channel->find_client(nickname, "invited"))
+	{
+		std::string error = ":localhost " + ERR_USERONCHANNEL 
+			+ " : Error[INVITE]: Client " + nickname 
+			+ " is already invited to channel " + channel_to_find + "\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	// find if client is already in channel
+	if (channel->find_client(nickname, "clients"))
+	{
+		std::string error = ":localhost " + ERR_USERONCHANNEL 
+			+ " : Error[INVITE]: Client " + nickname 
+			+ " is already in channel " + channel_to_find + "\r\n";
+		sendErrorMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	return (0);
+}
+
+
 /* cmd_invite: invite client to channel (INVITE <nickname> <channel>)
- * 1. Parse input into channel name and nickname
- * 2. Check if client is administrator
+ * 1. Parse input into nickname and channel name
+ * 2. Check if client is operator in channel
  * 3. Find the channel
- * 4. Find the nickname in the channel
- * 5. Invite the user
+ * 4. Find the client
+ * 5. Invite client to channel
  */
 int Server::cmd_invite(Client &client, std::string input)
 {
 	std::istringstream iss(input);
 	std::string channel_to_find;
 	std::string nickname;
-	
+	Channel *channel = NULL;
+
 	// Parse input
 	iss >> nickname;
 	iss >> channel_to_find;
-
-	std::cout << "nickname: " << nickname << std::endl; // debug
-	std::cout << "channel_to_find: " << channel_to_find << std::endl; // debug
-	// if nickname is empty or channel is empty
-	if (nickname.empty() || channel_to_find.empty())
-	{
-		std::string message = "Error[INVITE]: INVITE <nickname> <channel>\r\n";
-		sendErrorMessage(client.get_client_fd(), message);
+	if (handleInviteErrors(client, nickname, channel_to_find, channel) == 1)
 		return (1);
-	}
-	// Find the channel
-	Channel *channel = findChannel(client, channel_to_find);
-	if (!channel)
-	{
-		std::string message = "Error[INVITE]: channel " + channel_to_find + " does not exist\r\n";
-		sendErrorMessage(client.get_client_fd(), message);
-		return (1);
-	}
-	// Find if Client is in _clients_operator_channel
-	std::string client_nickname = client.get_nickname();
-	if (!channel->find_client(client_nickname, "operators"))
-	{
-		std::string message = "Error[INVITE]: You (" + client.get_nickname() + ") are not an operator in channel " + channel->get_name() + "\r\n";
-		sendErrorMessage(client.get_client_fd(), message);
-		return (1);
-	}
-	// find if nickname is belongs to client that is already on _clients_invited_to_channel
-	if(channel->find_client(nickname, "invited"))
-	{
-		std::string message = "Error[INVITE]: " + nickname + " is already invited to the channel" + channel->get_name() + "\r\n";
-		sendErrorMessage(client.get_client_fd(), message);
-		return (1);
-	}
 	// Find the client to invite
 	Client *client_to_invite = find_client(client, nickname);
 	if (!client_to_invite)
 	{
-		std::string message = "Error[INVITE]: user with nickname " + nickname + " does not exist\r\n";
+		std::string message = "Error[INVITE]: user with nickname " + nickname 
+			+ " does not exist\r\n";
 		sendErrorMessage(client.get_client_fd(), message);
 		return (1);
 	}
-	// Invite the user
+	// Invite the client
 	channel->add_client_to_clients_invited_vector(*client_to_invite);
-	// Send message to client
-	std::string message = "[INVITE] " + client.get_nickname() + " has invited you to join " + channel->get_name() + "\r\n";
+	std::string message = "[INVITE] " + client.get_nickname() 
+		+ " has invited you to join " + channel->get_name() + "\r\n";
 	sendSuccessMessage(client_to_invite->get_client_fd(), message);
 	return (0);
 }
