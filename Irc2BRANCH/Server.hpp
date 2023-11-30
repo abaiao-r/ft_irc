@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/29 21:52:45 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/30 18:28:01 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,12 +248,21 @@ class Server
 		int			cmd_who(Client &client, std::string input);
 		/*end WHO funtions*/
 		/*KICK funtions*/
+		int 		kickClientFromChannel(Channel* channel, Client* client, Client *client_to_kick, const std::string& reason);
 		void 		parseKickCommand(std::istringstream &iss, std::string &channel_to_find, std::string &nickname, std::string &reason);
 		int 		performChecks(Client &client, const std::string &channel_to_find, std::string &nickname, Channel *&channel, Client *&client_to_kick);
 		int 		cmd_kick(Client &client, std::string input);
 		/*end KICK funtions*/
+		/* INVITE funtions*/
+		int handleInviteErrors(Client &client, const std::string &channel_to_find, const std::string &nickname, Channel *&channel);
 		int 		cmd_invite(Client &client, std::string input);
+		/*end INVITE funtions*/
+		/*TOPIC funtions*/
+		int handleTopicCommand(Client &client, Channel *&channel, const std::string &topic);
+		int handleTopicErrors(Client &client, const std::string &channel_to_find, Channel *&channel);
+		void 		parseTopicCommand(std::istringstream &iss, std::string &channel_to_find, std::string &topic);
 		int			cmd_topic(Client &client, std::string input);
+		/*end TOPIC funtions*/
 		/*mode funtions*/
 		int 		handleModeMinusL(Channel *channel, int fd);
 		int 		handleModePlusL(Channel *channel, std::string argument, int fd);
@@ -276,11 +285,10 @@ class Server
 		int 		sendSuccessMessage(int client_fd, const std::string	&successMessage);
 
 		//Utils
-		void sendChannelUserListMessage(Channel *channel, const std::string &argument);
+		void		sendChannelUserListMessage(Channel *channel, const std::string &argument);
 		int			is_client_admin(Client &client);
 		Channel		*findChannel(Client &client, const std::string& channelName);
 		Client		*find_client(Client &client, const std::string& nickname);
-		int 		kickClientFromChannel(Channel* channel, Client* client, Client *client_to_kick, const std::string& reason);
 		int 		channel_name_validation(int client_fd, std::string check);
 		bool		pass_validation(std::string check) const;
 		bool		name_validation(std::string check);
@@ -294,3 +302,4 @@ class Server
 		static void	signal_handler(int sig);
 		void		join_messages(Client &client, Channel &channel);
 };
+

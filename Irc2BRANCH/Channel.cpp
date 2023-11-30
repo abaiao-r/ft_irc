@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/29 12:56:38 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 15:24:09 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,7 @@ std::string	Channel::get_mode(void) const
 	std::string	chanel_modes;
 
 	// check if the channel is invite only
-	if (_topic != "No topic is set")
+	if (_topic_mode == true)
 		chanel_modes += "+t ";
 	else
 		chanel_modes += "-t ";

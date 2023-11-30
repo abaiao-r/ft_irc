@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+         #
+#    By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/01 11:14:25 by gacorrei          #+#    #+#              #
-#    Updated: 2023/11/26 11:58:37 by gacorrei         ###   ########.fr        #
+#    Updated: 2023/11/30 16:30:30 by abaiao-r         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME	= ircserv
 SRC		= main.cpp Server.cpp ServerConnection.cpp ServerCommands.cpp ServerUtils.cpp \
 		Client.cpp Channel.cpp utils.cpp Bot.cpp
 CC		= @c++
-CFLAGS	= -Wall -Wextra -Werror -pedantic -Wshadow -g -std=c++98
+CFLAGS	= -Wall -Wextra -Werror -pedantic -Wshadow -g -std=c++98 -fsanitize=address,undefined
 # FOR DEBUGGER TO SHOW STD::STRING
 CFLAGSD	= -Wall -Wextra -Werror -pedantic -Wshadow -g -fno-limit-debug-info -std=c++98 -fsanitize=address,undefined
 
