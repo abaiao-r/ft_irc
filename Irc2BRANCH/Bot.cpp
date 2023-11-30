@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Bot.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/26 09:32:48 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 13:12:55 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 23:08:56 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,43 +14,88 @@
 
 Bot::Bot()
 {
-	_naughty_words[0] = "shit";
-	_naughty_words[1] = "kys";
-	_naughty_words[2] = "fuck";
-	_naughty_words[3] = "nazi";
-	_naughty_words[4] = "semprini";
+	_loadNaughtyWordsFromFile = false;
+	readNaughtyWordsFromFile("naughty_words.txt");
 }
 
 Bot::Bot(std::string name): _name(name)
 {
-	_naughty_words[0] = "shit";
-	_naughty_words[1] = "kys";
-	_naughty_words[2] = "fuck";
-	_naughty_words[3] = "nazi";
-	_naughty_words[4] = "semprini";
+	_loadNaughtyWordsFromFile = false;
+	readNaughtyWordsFromFile("naughty_words.txt");
 }
 
 Bot::Bot(const Bot &copy)
 {
-	*this = copy;
+	_name = copy._name;
+	_loadNaughtyWordsFromFile = copy._loadNaughtyWordsFromFile;
+	_naughty_words = copy._naughty_words;
 }
 
 Bot &Bot::operator=(const Bot &copy)
 {
-	_name = copy._name;
-	_naughty_words[0] = copy._naughty_words[0];
-	_naughty_words[1] = copy._naughty_words[1];
-	_naughty_words[2] = copy._naughty_words[2];
-	_naughty_words[3] = copy._naughty_words[3];
-	_naughty_words[4] = copy._naughty_words[4];
-	return *this;
+	
+	if (this != &copy)
+	{
+		_name = copy._name;
+		_loadNaughtyWordsFromFile = copy._loadNaughtyWordsFromFile;
+		_naughty_words = copy._naughty_words;
+	}
+	return (*this);
 }
 
-Bot::~Bot() {}
+Bot::~Bot()
+{
+	std::cout << RED << "BOT destructor called" << RESET << std::endl;
+}
 
 std::string	Bot::get_name() const
 {
 	return _name;
+}
+
+void Bot::setLoadNaughtyWordsFromFile()
+{
+	_loadNaughtyWordsFromFile = true;
+}
+
+bool Bot::getLoadNaughtyWordsFromFile() const
+{
+	return (_loadNaughtyWordsFromFile);
+}
+
+void Bot::readNaughtyWordsFromFile(const std::string &filename)
+{
+	std::ifstream file(filename.c_str());
+
+	if (file.is_open())
+	{
+		// use streams to store all the line in the vector but the
+		// skip leading whitespaces and and skip the whitespaces after the last printable character
+		std::string line;
+		while (std::getline(file, line))
+		{
+			std::istringstream iss(line);
+			std::string word;
+
+			// skip leading whitespaces
+			iss >> std::ws;
+			//store all the line in word, use getline to get the whitespaces
+			while (std::getline(iss, word))
+			{
+				//remove the whitespaces after the last printable character
+				word.erase(word.find_last_not_of(" \t\n\r\f\v") + 1);
+				_naughty_words.push_back(word);
+			}
+			// clear the stream
+			iss.clear();
+		}
+		file.close();
+		setLoadNaughtyWordsFromFile();
+	}
+	else
+	{
+		std::cerr << RED << "Unable to open file: " << filename << RESET << std::endl;
+	}
 }
 
 void	Bot::greeting(Client &client)
@@ -90,14 +135,34 @@ int Bot::sendBotMessage(int client_fd, const std::string &msg)
 
 bool	Bot::big_brother(Channel &channel, Client &client, std::string msg)
 {
-	std::string	chan_msg = ":" + _name + "!" + _name + "@" + "localhost" + " PRIVMSG "
-							+ channel.get_name() + " :" + client.get_nickname();
+	if (getLoadNaughtyWordsFromFile() == false)
+	{
+		std::cerr << RED << "Error: " << RESET << "Naughty words not loaded" 
+			<< std::endl;
+		return (false);
+	}
+	std::string	chan_msg = ":" + _name + "!" + _name + "@" + "localhost" 
+	+ " PRIVMSG " + channel.get_name() + " :" + client.get_nickname();
 
 	std::transform(msg.begin(), msg.end(), msg.begin(), tolower);
-	for (unsigned int i = 0; i <= _naughty_words->size(); i++)
+	// print the vector of naughty words DEBUG
+	// for (std::vector<std::string>::iterator it1 = _naughty_words.begin(); it1 != _naughty_words.end(); it1++)
+	// {
+	// 	std::cout << ORANGE << "|" << *it1 << "|" << RESET <<  std::endl;
+	// }
+
+	// iterate through the vector of naughty words
+	for (std::vector<std::string>::iterator it = _naughty_words.begin(); it != _naughty_words.end(); it++)
 	{
-		if (msg.find(_naughty_words[i]) != std::string::npos)
+		std::string word;
+		//word equals to all the word in *it
+		word = *it;
+		// check if the message contains a naughty word
+		if (msg.find(word) != std::string::npos)
 		{
+			//debug
+			std::cout << RED << "Naughty word found: " << word << RESET << std::endl;
+			// if the client has 2 strikes, ban him
 			if (client.get_strikes() == 1)
 			{
 				sendBotMessage(client.get_client_fd(), "Strike two for bad language. You are now banned.\r\n");
@@ -105,6 +170,7 @@ bool	Bot::big_brother(Channel &channel, Client &client, std::string msg)
 				channel.info_message(chan_msg);
 				return true;
 			}
+			// if the client has 1 strike, warn him
 			sendBotMessage(client.get_client_fd(), "Strike one for bad language. Next time you will be banned.\r\n");
 			chan_msg += ": Strike one for bad language. Next time there will be a ban.\r\n";
 			channel.info_message(chan_msg);
