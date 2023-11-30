@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 19:37:18 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/30 20:31:25 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,13 +54,13 @@ int Server::cmdListWithArg(Client &client, std::string input)
 				+ client.get_nickname() + " " + channel->get_name() 
 				+ " " +	num_clients_in_channel_str + " :"
 				+ channel->get_topic() + "\r\n";
-			sendSuccessMessage(client.get_client_fd(), msg2);
+			sendMessage(client.get_client_fd(), msg2);
 		}
 		else
 		{
 			std::string msg2 = ":localhost " + ERR_NOSUCHCHANNEL + " " 
 				+ client.get_nickname() + " " + *it + " :No such channel\r\n";
-			sendErrorMessage(client.get_client_fd(), msg2);
+			sendMessage(client.get_client_fd(), msg2);
 		}
 	}
 	return (0);
@@ -83,7 +83,7 @@ int Server::cmdListNoArgs(Client &client)
 			+ client.get_nickname() + " " + it->get_name() 
 			+ " " +	num_clients_in_channel_str + " :"
 			+ it->get_topic() + "\r\n";
-		sendSuccessMessage(client.get_client_fd(), msg2);
+		sendMessage(client.get_client_fd(), msg2);
 	}
 		return (0);
 }
@@ -98,7 +98,7 @@ int Server::cmd_list(Client &client, std::string input)
 {
 	std::string msg = ":localhost " + RPL_LISTSTART + " " 
 		+ client.get_nickname() + " :Channel list\r\n";
-	sendSuccessMessage(client.get_client_fd(), msg);
+	sendMessage(client.get_client_fd(), msg);
 	// if input is empty, list all channels
 	if (input.empty() && _channels.size() > 0)
 	{
@@ -113,7 +113,7 @@ int Server::cmd_list(Client &client, std::string input)
 	}
 	std::string msg2 = ":localhost " + RPL_LISTEND + " " 
 		+ client.get_nickname() + " :End of /LIST\r\n";
-	sendSuccessMessage(client.get_client_fd(), msg2);
+	sendMessage(client.get_client_fd(), msg2);
 	return (0);
 }
 
@@ -137,12 +137,12 @@ void Server::sendWhoReplyMessages(Client &client, Channel &channel)
         msg = ":localhost " + RPL_WHOREPLY + " " + it->get_nickname() + " " +
               channel.get_name() + " ft_irc " + client.get_nickname() + opr +
               status + " :1 " + it->get_username() + "\r\n";
-        sendSuccessMessage(client.get_client_fd(), msg);
+        sendMessage(client.get_client_fd(), msg);
     }
 
     msg = ":localhost " + RPL_ENDOFWHO + " " + client.get_nickname() + " " +
           channel.get_name() + " :End of WHO list\r\n";
-    sendSuccessMessage(client.get_client_fd(), msg);
+    sendMessage(client.get_client_fd(), msg);
 }
 
 /* cmd_who: /who #channel1
@@ -156,7 +156,7 @@ int Server::cmd_who(Client &client, std::string input)
     if (input.empty())
     {
         std::string error = "Error[MODE]: No argument provided\r\n";
-        sendErrorMessage(client.get_client_fd(), error);
+        sendMessage(client.get_client_fd(), error);
         return (1);
     }
 
@@ -166,7 +166,7 @@ int Server::cmd_who(Client &client, std::string input)
     {
         std::string error = ":localhost " + ERR_NOSUCHCHANNEL +
             " : Error[MODE]: Channel " + input + " does not exist\r\n";
-        sendErrorMessage(client.get_client_fd(), error);
+        sendMessage(client.get_client_fd(), error);
         return (1);
     }
     sendWhoReplyMessages(client, *channel);
@@ -186,14 +186,14 @@ int Server::handleModeMinusL(Channel *channel, int fd)
 	{
 		message = "Error[MODE -l]: Channel " + channel->get_name() 
 			+ " is not limited\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// set channel limit
 	channel->set_channel_limit(0);
 	message = "Success[MODE -l]: Channel " + channel->get_name() 
 		+ " is no longer limited\r\n";
-	sendSuccessMessage(fd, message);
+	sendMessage(fd, message);
 	return (0);
 }
 
@@ -211,20 +211,20 @@ int Server::handleModePlusL(Channel *channel, std::string argument, int fd)
 	{
 		std::string message = "Error[MODE +l]: Channel " + channel->get_name() 
 			+ " is already limited\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	if (argument.empty())
 	{
 		std::string message = "Error[MODE +l]: No limit specified\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	if (isStrOnlyDigits(argument) == false)
 	{
 		std::string message = "Error[MODE +l]: " + argument 
 			+ " is not a valid number\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// set channel limit argument converted to int
@@ -236,12 +236,12 @@ int Server::handleModePlusL(Channel *channel, std::string argument, int fd)
 	{
 		std::string message = "Error[MODE +l]: " + argument 
 			+ " is a value out of integer range\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	std::string message = "Success[MODE +l]: Channel " 
 		+ channel->get_name() + " is now limited to " + argument + " users\r\n";
-	sendSuccessMessage(fd, message);
+	sendMessage(fd, message);
 	return (0);
 }
 
@@ -259,14 +259,14 @@ int Server::handleModeMinusT(Channel *channel, int fd)
 	{
 		message = "Error[MODE -t]: Channel " + channel->get_name() 
 			+ " is not topic protected\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// set channel to topic protected
 	channel->set_topic_mode(false);
 	message = "Success[MODE -t]: Channel " + channel->get_name() 
 		+ " is no longer topic protected\r\n";
-	sendSuccessMessage(fd, message);
+	sendMessage(fd, message);
 	return (0);
 }
 
@@ -284,14 +284,14 @@ int Server::handleModePlusT(Channel *channel, int fd)
 	{
 		message = "Error[MODE +t]: Channel " + channel->get_name() 
 			+ " is already topic protected\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// set channel to topic protected
 	channel->set_topic_mode(true);
 	message = "Success[MODE +t]: Channel " + channel->get_name() 
 		+ " is now topic protected\r\n";
-	sendSuccessMessage(fd, message);
+	sendMessage(fd, message);
 	return (0);
 }
 
@@ -309,14 +309,14 @@ int Server::handleModeMinusI(Channel *channel, int fd)
 	{
 		message = "Error[MODE -i]: Channel " + channel->get_name() 
 			+ " is not invite only\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// set channel to invite only
 	channel->set_channel_invite_only(false);
 	message = "Success[MODE -i]: Channel " + channel->get_name() 
 		+ " is no longer invite only\r\n";
-	sendSuccessMessage(fd, message);
+	sendMessage(fd, message);
 	return (0);
 }
 
@@ -334,7 +334,7 @@ int Server::handleModePlusI(Channel *channel, int fd)
 	{
 		message = "Error[MODE +i]: Channel " + channel->get_name() 
 			+ " is already invite only\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 
@@ -342,7 +342,7 @@ int Server::handleModePlusI(Channel *channel, int fd)
 	channel->set_channel_invite_only(true);
 	message = "Success[MODE +i]: Channel " + channel->get_name() 
 		+ " is now invite only\r\n";
-	sendSuccessMessage(fd, message);
+	sendMessage(fd, message);
 	return (0);
 }
 
@@ -360,14 +360,14 @@ int Server::handleModeMinusK(Channel *channel, int fd)
 	{
 		message = "Error[MODE -k]: Channel " + channel->get_name() 
 			+ " is not password protected\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// remove password of channel
 	channel->set_password("");
 	message = "Success[MODE -k]: Channel " + channel->get_name() 
 		+ " is no longer password protected\r\n";
-	sendSuccessMessage(fd, message);
+	sendMessage(fd, message);
 	return (0);
 }
 
@@ -386,7 +386,7 @@ int Server::handleModePlusK(Channel *channel, std::string argument, int fd)
 	{
 		message = "Error[MODE +k]: Channel " + channel->get_name() 
 			+ " is already password protected\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// check if password is valid
@@ -396,7 +396,7 @@ int Server::handleModePlusK(Channel *channel, std::string argument, int fd)
 	channel->set_password(argument);
 	message = ":localhost " + RPL_CHANNELMODEIS + " " 
 		+ channel->get_name() + " +k is now password protected\r\n";
-	sendSuccessMessage(fd, message);
+	sendMessage(fd, message);
 	return (0);
 }
 
@@ -416,7 +416,7 @@ int Server::handleModeMinusO(Client &client, Channel *channel, std::string argum
 	{
 		message = ":localhost " + ERR_NOSUCHNICK + " : Error[MODE -o]: " 
 			+ argument + " is not in the channel " + channel->get_name() + "\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// look for nickname in clients operator_channel
@@ -424,7 +424,7 @@ int Server::handleModeMinusO(Client &client, Channel *channel, std::string argum
 	{
 		message = "Error[MODE -o]: " + argument 
 			+ " is not an operator in channel " + channel->get_name() + "\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// if client is the last operator in the channel, send error message
@@ -432,7 +432,7 @@ int Server::handleModeMinusO(Client &client, Channel *channel, std::string argum
 	{
 		message = "Error[MODE -o]: " + argument 
 			+ " is the last operator in channel " + channel->get_name() + "\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// remove nickname from clients operator_channel
@@ -442,14 +442,14 @@ int Server::handleModeMinusO(Client &client, Channel *channel, std::string argum
 	{
 		message = ":localhost " + ERR_NOSUCHNICK + " : Error[MODE -o]: Client " 
 			+ argument + " does not exist\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	channel->remove_client_from_clients_operator_vector(*client_to_remove);
 	message = "Success[MODE -o]: " + argument 
 		+ " is no longer an operator in channel " + channel->get_name() + "\r\n";
-	sendSuccessMessage(fd, message);
-	sendSuccessMessage(client_to_remove->get_client_fd(), message);
+	sendMessage(fd, message);
+	sendMessage(client_to_remove->get_client_fd(), message);
 	sendChannelUserListMessage(channel, argument);
 	return (0);
 }
@@ -471,7 +471,7 @@ int Server::handleModePlusO(Client &client, Channel *channel,
 		message = ":localhost " + ERR_NOSUCHNICK 
 			+ " : Error[MODE +o]: " + argument + " is not in the channel " 
 			+ channel->get_name() + "\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// look for nickname in clients operator_channel
@@ -479,7 +479,7 @@ int Server::handleModePlusO(Client &client, Channel *channel,
 	{
 		message = "Error[MODE +o]: " + argument 
 			+ " is already an admin in channel " + channel->get_name() + "\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	// add nickname to clients operator_channel
@@ -489,7 +489,7 @@ int Server::handleModePlusO(Client &client, Channel *channel,
 	{
 		message = ":localhost " + ERR_NOSUCHNICK + " : Error[MODE +o]: Client " 
 			+ argument + " does not exist\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (1);
 	}
 	channel->add_client_to_clients_operator_vector(*client_to_add);
@@ -497,8 +497,8 @@ int Server::handleModePlusO(Client &client, Channel *channel,
 	message =  ":localhost " + RPL_YOUREOPER + " " + argument + " : [MODE +o]" 
 		+ argument + " is now an operator in channel " + channel->get_name() 
 		+ "\r\n";
-	sendSuccessMessage(fd, message);
-	sendSuccessMessage(client_to_add->get_client_fd(), message);
+	sendMessage(fd, message);
+	sendMessage(client_to_add->get_client_fd(), message);
 	// send channel user list to all clients in channel
 	sendChannelUserListMessage(channel, argument);
 	return (0);
@@ -543,7 +543,7 @@ int Server::sendOperatorPrivilegeError(int fd, const std::string &channel)
 {
     std::string message = ":localhost " + ERR_CHANOPRIVSNEEDED +
         " : Error[MODE]: You are not an operator in channel " + channel + "\r\n";
-    return (sendErrorMessage(fd, message));
+    return (sendMessage(fd, message));
 }
 
 /* sendChannelModeInfo: send RPL_CHANNELMODEIS message
@@ -554,14 +554,14 @@ int Server::sendChannelModeInfo(int fd, Channel *channel,
 {
     std::string message = ":localhost " + RPL_CHANNELMODEIS + " " + channelName 
 		+ " " + channelName + ": " + channel->get_mode() + "\r\n";
-    return (sendSuccessMessage(fd, message));
+    return (sendMessage(fd, message));
 }
 
 int Server::sendChannelNotFoundError(int fd, const std::string &channel)
 {
     std::string message = ":localhost " + ERR_NOSUCHCHANNEL 
 		+ " : Error[MODE]: Channel " + channel + " does not exist\r\n";
-    return (sendErrorMessage(fd, message));
+    return (sendMessage(fd, message));
 }
 
 // Debug delete later
@@ -613,7 +613,7 @@ int Server::cmd_mode(Client &client, std::string input)
 		std::string error = ":localhost " + ERR_UNKNOWNMODE 
 			+ " : Error[MODE]: Unknown mode " + mode 
 			+ " Usage: MODE <channel> [+|-][o|k|i|t|l] <argument>\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return (1);
 	}
 	return (0);
@@ -627,13 +627,13 @@ void	Server::cmd_pass(Client &client, std::string input)
 	{
 		std::string error = ":localhost " + ERR_ALREADYREGISTERED 
 			+ " : Error[PASS]: You are already authenticated\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return;
 	}
 	if (pass_validation(input))
 	{
 		std::string success = "Success[PASS]: You are now authenticated\r\n";
-		sendSuccessMessage(fd, success);
+		sendMessage(fd, success);
 		client.set_authenticated(true);
 		return;
 	}
@@ -641,12 +641,12 @@ void	Server::cmd_pass(Client &client, std::string input)
 	{
 		std::string error = ":localhost " + ERR_PASSWDMISMATCH 
 			+ " : Error[PASS]: Too many wrong attempts, disconnecting\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		disconnect_client(fd);
 	}
 	std::string error = ":localhost " + ERR_PASSWDMISMATCH 
 		+ " : Error[PASS]: Wrong password\r\n";
-	sendErrorMessage(fd, error);
+	sendMessage(fd, error);
 	client.pass_counter(1, 0);
 }
 
@@ -661,20 +661,20 @@ void	Server::cmd_user(Client &client, std::string input)
 	{
 		std::string error = ":localhost " + ERR_ALREADYREGISTERED 
 			+ " : Error[USER]: You are already registered\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return;
 	}
 	if (!client.get_authenticated())
 	{
 		std::string error = "Error[USER]: You are not authenticated. Input password first\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return;
 	}
 	if (!client.get_username().empty())
 	{
 		std::string error = ":localhost " + ERR_ALREADYREGISTERED 
 			+ " : Error[USER]: You already have a username\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return;
 	}
 	if (name_validation(username))
@@ -682,11 +682,11 @@ void	Server::cmd_user(Client &client, std::string input)
 		client.set_username(username);
 		std::string success = "Success[USER]: Username set to " 
 			+ username + "\r\n";
-		sendSuccessMessage(fd, success);
+		sendMessage(fd, success);
 		if (!client.get_nickname().empty())
 		{
 			success = "Success[USER]: You are now registered\r\n";
-			sendSuccessMessage(fd, success);
+			sendMessage(fd, success);
 			client.set_registered(true);
 		}
 		return;
@@ -695,7 +695,7 @@ void	Server::cmd_user(Client &client, std::string input)
 	{
 		std::string error = ":localhost " + ERR_NEEDMOREPARAMS 
 			+ " : Error[USER]: Username can't have spaces or symbols (except [-_[]{}\\|]), can't start with '#' or ':' and must be between 3 and 10 characters long\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 	}
 }
 
@@ -708,20 +708,20 @@ void	Server::cmd_nick(Client &client, std::string input)
 	{
 		std::string error = ":localhost " + ERR_ALREADYREGISTERED 
 			+ " : Error[NICK]: You are already registered\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return;
 	}
 	if (!client.get_authenticated())
 	{
 		std::string error = "Error[NICK]: You are not authenticated. Input password first\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return;
 	}
 	if (!client.get_nickname().empty())
 	{
 		std::string error = ":localhost " + ERR_ALREADYREGISTERED 
 			+ " : Error[NICK]: You already have a nickname\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return;
 	}
 	test = nick_validation(input);
@@ -729,11 +729,11 @@ void	Server::cmd_nick(Client &client, std::string input)
 	{
 		client.set_nickname(input);
 		std::string success = "Success[NICK]: Nickname set to " + input + "\r\n";
-		sendSuccessMessage(fd, success);
+		sendMessage(fd, success);
 		if (!client.get_username().empty())
 		{
 			success = "Success[NICK]: You are now registered\r\n";
-			sendSuccessMessage(fd, success);
+			sendMessage(fd, success);
 			client.set_registered(true);
 		}
 		return;
@@ -742,13 +742,13 @@ void	Server::cmd_nick(Client &client, std::string input)
 	{
 		std::string error = ":localhost " + ERR_ERRONEUSNICKNAME 
 			+ " : Error[NICK]: Nickname can't have spaces or symbols (except [-_[]{}\\|]), can't start with '#' or ':' and must be between 3 and 10 characters long\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 	}
 	else
 	{
 		std::string error = ":localhost " + ERR_NICKNAMEINUSE 
 			+ " : Error[NICK]: Nickname already in use, choose another\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 	}
 }
 
@@ -765,7 +765,7 @@ bool Server::checkBanned(Client &client, const std::string &input_channel_name,
 		std::string message = ":localhost " + ERR_BANNEDFROMCHAN +
 			" : Error[JOIN]: You (" + client.get_nickname()
 			+ ") are banned from channel " + input_channel_name + "\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (true);
 	}
 	return false;
@@ -784,9 +784,11 @@ bool Server::checkPassword(const std::string &input_channel_name,
 	{
 		if (it->get_password() != input_password)
 		{
-			std::string message = "Error[JOIN]: Wrong password for channel " +
-								  input_channel_name + "\r\n";
-			sendErrorMessage(fd, message);
+			// numerric reply
+			std::string message = ":localhost " + ERR_BADCHANNELKEY +
+				" : Error[JOIN]: Wrong password for channel " 
+				+ input_channel_name + "\r\n";
+			sendMessage(fd, message);
 			return (false);
 		}
 	}
@@ -811,7 +813,7 @@ bool Server::checkInviteOnly(Client &client,
 			std::string message = ":localhost " + ERR_INVITEONLYCHAN +
 				" : Error[JOIN]: Channel " + input_channel_name 
 				+ " is invite only\r\n";
-			sendErrorMessage(fd, message);
+			sendMessage(fd, message);
 			return (false);
 		}
 	}
@@ -831,7 +833,7 @@ bool Server::checkChannelFull(const std::string &input_channel_name, CH_IT &it,
 	{
 		std::string message = ":localhost " + ERR_CHANNELISFULL +
 			" : Error[JOIN]: Channel " + input_channel_name + " is full\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (false);
 	}
 	return (true);
@@ -871,9 +873,12 @@ bool Server::checkIfClientAlreadyInChannel(Client &client,
 	if (find(in_channel.begin(), in_channel.end(), 
 		client.get_client_fd()) != in_channel.end())
 	{
-		std::string message = "Error[JOIN]: " + client.get_nickname() 
+		// numerric reply
+		std::string message = ":localhost " + ERR_USERONCHANNEL +
+			" " + client.get_nickname() + " " + input_channel_name +
+			" : Error[JOIN]: " + client.get_nickname() 
 			+ " is already in channel " + input_channel_name + "\r\n";
-		sendErrorMessage(fd, message);
+		sendMessage(fd, message);
 		return (false);
 	}
 	return (true);
@@ -913,8 +918,9 @@ bool Server::checkClientRegistration(Client &client, int fd)
 {
 	if (!client.get_registered())
 	{
-		std::string message = "Error[JOIN]: You must be registered to join a channel\r\n";
-		sendErrorMessage(fd, message);
+		std::string message = ":localhost " + ERR_NOTREGISTERED +
+			" : Error[JOIN]: You must be registered to join a channel\r\n";
+		sendMessage(fd, message);
 		return (false);
 	}
 	return (true);
@@ -995,7 +1001,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	if (!client.get_registered())
 	{
 		error = "Error[PRIVMSG]: You must be registered to send a message\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return;
 	}
 	s >> dest;
@@ -1004,7 +1010,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	if (msg[0] != ':')
 	{
 		error = "Error[PRIVMSG]: Usage: /PRIVMSG <destination> :<message>\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return;
 	}
 	msg = msg.substr(1, msg.length() - 1);
@@ -1015,7 +1021,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 		{
 			error = ":localhost " + ERR_NOSUCHSERVER 
 				+ " : Error. Could not find destination\r\n";
-			sendErrorMessage(fd, error);
+			sendMessage(fd, error);
 			return;
 		}
 		// check if client is in channel
@@ -1026,7 +1032,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 			error = ":localhost " + ERR_CANNOTSENDTOCHAN 
 			+ " : Error[PRIVMSG]: You (" + client.get_nickname() 
 			+ ") are not in channel " + dest + "\r\n";
-			sendErrorMessage(fd, error);
+			sendMessage(fd, error);
 			return;
 		}
 		// check if client is banned
@@ -1035,7 +1041,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 			error = ":localhost " + ERR_CANNOTSENDTOCHAN 
 				+ " : Error[PRIVMSG]: You (" + client.get_nickname() 
 					+ ") are banned from channel " + dest + "\r\n";
-			sendErrorMessage(fd, error);
+			sendMessage(fd, error);
 			return;
 		}
 		ch_test->message(client, msg);
@@ -1048,65 +1054,20 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 	{
 		error = ":localhost " + ERR_NOSUCHSERVER 
 			+ " : Error. Could not find destination\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return;
 	}
 	fd = c_test->get_client_fd();
 	std::string	final_msg = ":" + client.get_nickname() + "!"
 		+ client.get_username() + "@" + "localhost" + " PRIVMSG "
 		+ c_test->get_nickname() + " :" + msg + "\r\n";
-	sendSuccessMessage(fd, final_msg);
+	sendMessage(fd, final_msg);
 }
 
-void	Server::cmd_part(Client &client, std::string input)
-{
-	int							fd = client.get_client_fd();
-	std::string 				nick = client.get_nickname();
-	std::string 				msg;
-	std::vector<std::string>	parts = getPartVector(input);
-
-	if (parts.empty())
-	{
-		msg = ":localhost " + ERR_NEEDMOREPARAMS + " : Error[PART]: Usage: /PART <channel> :<reason>\r\n";
-		sendMessage(fd, msg);
-		return;
-	}
-
-	std::string 				reason = parts.back();
-	CH_IT 						ch_it;
-
-	for (std::vector<std::string>::iterator	it1 = parts.begin(); it1 < parts.end() - 1; it1++)
-	{
-		ch_it = find(_channels.begin(), _channels.end(), *it1);
-		if (ch_it == _channels.end())
-		{
-			msg = ":localhost " + ERR_NOSUCHCHANNEL + " : Error[PART]: Channel " + *it1 + " does not exist\r\n";
-			sendMessage(fd, msg);
-			continue;
-		}
-		if (!ch_it->find_client(nick, "clients"))
-		{
-			msg = ":localhost " + ERR_NOTONCHANNEL + " : Error[PART]: You (" + nick + ") are not in channel " + *it1 + "\r\n";
-			sendMessage(fd, msg);
-			continue;
-		}
-		msg = nick + " has left the channel: " + reason;
-		ch_it->message(client, msg);
-		ch_it->message(client, msg, "PART");
-		msg = ":" + nick + "!" + client.get_username() + "@" + "localhost" + " PART " + *it1 + " :" + reason + "\r\n";
-		sendMessage(fd, msg);
-		msg = nick + " has quit the channel:";
-		ch_it->message(client, msg, "QUIT");
-		ch_it->remove_client(client);
-		if (ch_it->find_client(nick, "operators"))
-			ch_it->remove_client_from_clients_operator_vector(client);
-		if (ch_it->get_clients_in_channel().size() == 0)
-			_channels.erase(ch_it);
-		ch_it->check_operator();
-		sendChannelUserListMessage(ch_it.base(), client.get_nickname());
-	}
-}
-
+/* getPartVector
+** 1. Parses the input
+** 2. Returns a vector containing the channel names and the reason
+*/
 std::vector<std::string>	Server::getPartVector(std::string input)
 {
 	std::stringstream			s1(input);
@@ -1133,6 +1094,70 @@ std::vector<std::string>	Server::getPartVector(std::string input)
 	return (part_vector);
 }
 
+/* cmd_part: PART <channel>{,<channel>} [<reason>]
+** 1. Parses the input
+** 2. Checks if the client is registered
+** 3. Checks if the client is in the channel
+** 4. Checks if the client is banned
+** 5. Removes the client from the channel
+** 6. Sends a message to the client
+** 7. Sends a message to the channel
+*/
+void	Server::cmd_part(Client &client, std::string input)
+{
+	int							fd = client.get_client_fd();
+	std::string 				nick = client.get_nickname();
+	std::string 				msg;
+	std::vector<std::string>	parts = getPartVector(input);
+
+	if (parts.empty())
+	{
+		msg = ":localhost " + ERR_NEEDMOREPARAMS 
+			+ " : Error[PART]: Usage: /PART <channel> :<reason>\r\n";
+		sendMessage(fd, msg);
+		return;
+	}
+
+	std::string 				reason = parts.back();
+	CH_IT 						ch_it;
+
+	for (std::vector<std::string>::iterator	it1 = parts.begin(); 
+		it1 < parts.end() - 1; it1++)
+	{
+		ch_it = find(_channels.begin(), _channels.end(), *it1);
+		if (ch_it == _channels.end())
+		{
+			msg = ":localhost " + ERR_NOSUCHCHANNEL
+				+ " : Error[PART]: Channel " + *it1 + " does not exist\r\n";
+			sendMessage(fd, msg);
+			continue;
+		}
+		if (!ch_it->find_client(nick, "clients"))
+		{
+			msg = ":localhost " + ERR_NOTONCHANNEL 
+				+ " : Error[PART]: You (" + nick + ") are not in channel " + *it1 + "\r\n";
+			sendMessage(fd, msg);
+			continue;
+		}
+		msg = nick + " has left the channel: " + reason;
+		ch_it->message(client, msg);
+		ch_it->message(client, msg, "PART");
+		msg = ":" + nick + "!" + client.get_username() + "@" + "localhost" 
+			+ " PART " + *it1 + " :" + reason + "\r\n";
+		sendMessage(fd, msg);
+		msg = nick + " has quit the channel:";
+		ch_it->message(client, msg, "QUIT");
+		ch_it->remove_client(client);
+		if (ch_it->find_client(nick, "operators"))
+			ch_it->remove_client_from_clients_operator_vector(client);
+		if (ch_it->get_clients_in_channel().size() == 0)
+			_channels.erase(ch_it);
+		ch_it->check_operator();
+		sendChannelUserListMessage(ch_it.base(), client.get_nickname());
+	}
+}
+
+
 /* kickClientFromChannel: KICK <channel> <nickname> [<reason>]
 ** 1. remove client from channel
 ** 2. add client to banned list
@@ -1155,12 +1180,10 @@ int Server::kickClientFromChannel(Channel *channel, Client *client,
 	// Send message to client
 	if (reason.empty())
 	{
-		// numeric reply for hexchat
-	
 		message = ":" + client->get_nickname() + " KICK " + channel->get_name()
 			+ " " + client_to_kick->get_nickname() + " :This is Sparta!\r\n";
-		sendSuccessMessage(client_to_kick->get_client_fd(), message);
-		sendSuccessMessage(client->get_client_fd(), message);
+		sendMessage(client_to_kick->get_client_fd(), message);
+		sendMessage(client->get_client_fd(), message);
 		sendChannelUserListMessage(channel, client->get_nickname());
 		return (0);
 	}
@@ -1168,13 +1191,20 @@ int Server::kickClientFromChannel(Channel *channel, Client *client,
 	{
 		message = ":" + client->get_nickname() + " KICK " + channel->get_name()
 			+ " " + client_to_kick->get_nickname() + " :" + reason + "\r\n";
-		sendSuccessMessage(client_to_kick->get_client_fd(), message);
-		sendSuccessMessage(client->get_client_fd(), message);
+		sendMessage(client_to_kick->get_client_fd(), message);
+		sendMessage(client->get_client_fd(), message);
 		sendChannelUserListMessage(channel, client->get_nickname());
 		return (0);
 	}
 }
 
+/* kickClientFromChannel: KICK <channel> <nickname> [<reason>] (bot)
+** Note: This function is used by the bot only
+** 1. remove client from channel
+** 2. add client to banned list
+** 3. if client is in operator_channel, remove from operator_channel
+** 4. send message to client
+*/
 int Server::kickClientFromChannel(Channel *channel, Bot &bot, 
 	Client *client_to_kick, const std::string &reason)
 {
@@ -1194,7 +1224,7 @@ int Server::kickClientFromChannel(Channel *channel, Bot &bot,
 	// Send message to client
 	message = ":" + bot.get_name() + " KICK " + channel->get_name()
 		+ " " + client_to_kick->get_nickname() + " :" + reason + "\r\n";
-	sendSuccessMessage(client_to_kick->get_client_fd(), message);
+	sendMessage(client_to_kick->get_client_fd(), message);
 	sendChannelUserListMessage(channel, bot.get_name());
 	return (0);
 }
@@ -1215,7 +1245,7 @@ int Server::performChecks(Client &client, const std::string &channel_to_find,
 	{
 		std::string error = ":localhost " + ERR_NEEDMOREPARAMS 
 			+ " : Error[KICK]: Usage: KICK <channel> <nickname> [<reason>]\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	if (nickname[0] == ':')
@@ -1225,7 +1255,7 @@ int Server::performChecks(Client &client, const std::string &channel_to_find,
 	{
 		std::string error = ":localhost " + ERR_CANNOTSENDTOCHAN 
 			+ " : Error[KICK]: You can't kick yourself\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// Find the channel
@@ -1235,7 +1265,7 @@ int Server::performChecks(Client &client, const std::string &channel_to_find,
 		std::string error = ":localhost " + ERR_NOSUCHCHANNEL 
 			+ " : Error[KICK]: Channel " + channel_to_find 
 			+ " does not exist\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// Find if Client is in vector of clients operator_channel
@@ -1245,7 +1275,7 @@ int Server::performChecks(Client &client, const std::string &channel_to_find,
 		std::string error = ":localhost " + ERR_CHANOPRIVSNEEDED 
 			+ " : Error[KICK]: You are not an operator in channel " 
 			+ channel_to_find + "\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// find if nickname is in operator_channel
@@ -1255,7 +1285,7 @@ int Server::performChecks(Client &client, const std::string &channel_to_find,
 		std::string error = ":localhost " + ERR_CHANOPRIVSNEEDED 
 			+ " : Error[KICK]: " + nickname 
 			+ " is an operator in channel " + channel_to_find + "\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// Find the client to kick in the channel
@@ -1265,7 +1295,7 @@ int Server::performChecks(Client &client, const std::string &channel_to_find,
 		std::string error = ":localhost " + ERR_USERNOTINCHANNEL 
 			+ " : Error[KICK]: " + nickname + " is not in channel " 
 			+ channel_to_find + "\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
     return (0);
@@ -1329,7 +1359,7 @@ int Server::handleTopicCommand(Client &client, Channel *&channel,
 			message = ":localhost " + RPL_TOPIC 
 				+ " " + client_nickname + " " + channel_name 
 				+ " :" + channel->get_topic() + "\r\n";
-		sendSuccessMessage(client.get_client_fd(), message);
+		sendMessage(client.get_client_fd(), message);
 		return (0);
 	}
 	if (channel->get_topic_mode() == true 
@@ -1339,7 +1369,7 @@ int Server::handleTopicCommand(Client &client, Channel *&channel,
 		std::string success = ":localhost " + RPL_TOPIC 
 			+ " " + client_nickname + " " + channel_name 
 			+ " :" + topic + "\r\n";
-		sendSuccessMessage(client.get_client_fd(), success);
+		sendMessage(client.get_client_fd(), success);
 		channel->set_topic(topic);
 	}
 	else if (channel->get_topic_mode() == false 
@@ -1348,7 +1378,7 @@ int Server::handleTopicCommand(Client &client, Channel *&channel,
 		std::string success = ":localhost " + RPL_TOPIC 
 			+ " " + client_nickname + " " + channel_name 
 			+ " :" + topic + "\r\n";
-		sendSuccessMessage(client.get_client_fd(), success);
+		sendMessage(client.get_client_fd(), success);
 		channel->set_topic(topic);
 	}
 	else if (!channel->find_client(client_nickname, "operators"))
@@ -1356,7 +1386,7 @@ int Server::handleTopicCommand(Client &client, Channel *&channel,
 		std::string error = ":localhost " + ERR_CHANOPRIVSNEEDED 
 			+ " : Error[TOPIC]: " + client_nickname 
 			+ " is not an operator in channel " + channel_name + "\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (-1);
 	}
 	return (0);
@@ -1369,7 +1399,7 @@ int Server::handleTopicErrors(Client &client, const std::string &channel_to_find
 	{
 		std::string error = ":localhost " + ERR_NEEDMOREPARAMS 
 			+ " : Error[TOPIC]: Usage: TOPIC <channel> [<topic>]\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// Find the channel
@@ -1379,7 +1409,7 @@ int Server::handleTopicErrors(Client &client, const std::string &channel_to_find
 		std::string error = ":localhost " + ERR_NOSUCHCHANNEL 
 			+ " : Error[TOPIC]: Channel " + channel_to_find 
 			+ " does not exist\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	return (0);
@@ -1444,7 +1474,7 @@ int Server::handleInviteErrors(Client &client, const std::string &nickname,
 	{
 		std::string error = ":localhost " + ERR_NEEDMOREPARAMS 
 			+ " : Error[INVITE]: Usage: INVITE <nickname> <channel>\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// Find the channel
@@ -1454,7 +1484,7 @@ int Server::handleInviteErrors(Client &client, const std::string &nickname,
 		std::string error = ":localhost " + ERR_NOSUCHCHANNEL 
 			+ " : Error[INVITE]: Channel " + channel_to_find 
 			+ " does not exist\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// if client is not operator in channel
@@ -1463,7 +1493,7 @@ int Server::handleInviteErrors(Client &client, const std::string &nickname,
 		std::string error = ":localhost " + ERR_CHANOPRIVSNEEDED 
 			+ " : Error[INVITE]: You (" + client.get_nickname()
 			+ ") are not an operator in channel " + channel_to_find + "\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// find if client is already invited
@@ -1472,7 +1502,7 @@ int Server::handleInviteErrors(Client &client, const std::string &nickname,
 		std::string error = ":localhost " + ERR_USERONCHANNEL 
 			+ " : Error[INVITE]: Client " + nickname 
 			+ " is already invited to channel " + channel_to_find + "\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	// find if client is already in channel
@@ -1481,7 +1511,7 @@ int Server::handleInviteErrors(Client &client, const std::string &nickname,
 		std::string error = ":localhost " + ERR_USERONCHANNEL 
 			+ " : Error[INVITE]: Client " + nickname 
 			+ " is already in channel " + channel_to_find + "\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
 	return (0);
@@ -1513,43 +1543,20 @@ int Server::cmd_invite(Client &client, std::string input)
 	{
 		std::string message = "Error[INVITE]: user with nickname " + nickname 
 			+ " does not exist\r\n";
-		sendErrorMessage(client.get_client_fd(), message);
+		sendMessage(client.get_client_fd(), message);
 		return (1);
 	}
 	// Invite the client
 	channel->add_client_to_clients_invited_vector(*client_to_invite);
 	std::string message = "[INVITE] " + client.get_nickname() 
 		+ " has invited you to join " + channel->get_name() + "\r\n";
-	sendSuccessMessage(client_to_invite->get_client_fd(), message);
+	sendMessage(client_to_invite->get_client_fd(), message);
 	return (0);
 }
 
-/* sendSuccessMessage: send success message to client
- * 1. Send success message to client
+/*sendMessage: send message to client
+ * 1. Send message to client if error occurs return -1
  */
-int Server::sendSuccessMessage(int client_fd, const std::string	&successMessage)
-{
-	if (send(client_fd, successMessage.c_str(), successMessage.size(), MSG_NOSIGNAL) == -1)
-	{
-		std::cerr << RED << "Error: " << RESET << "send() failed" << std::endl;
-		return (-1);
-	}
-	return (0);
-}
-
-/* sendErrorMessage: send error message to client
- * 1. Send error message to client
- */
-int Server::sendErrorMessage(int client_fd, const std::string	&errorMessage)
-{
-	if (send(client_fd, errorMessage.c_str(), errorMessage.size(), MSG_NOSIGNAL) == -1)
-	{
-		std::cerr << RED << "Error: " << RESET << "send() failed" << std::endl;
-		return (-1);
-	}
-	return (0);
-}
-
 int Server::sendMessage(int client_fd, const std::string &msg)
 {
 	if (send(client_fd, msg.c_str(), msg.size(), MSG_NOSIGNAL) == -1)

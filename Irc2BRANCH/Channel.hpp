@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 12:52:55 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 20:01:07 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,5 +93,5 @@ class Channel
 		void				message(Client &client, std::string msg);
 		void				message(Client &client, std::string msg, std::string code);
 		void				info_message(std::string msg);
-		int 				sendSuccessMessage(int client_fd, const std::string	&successMessage);
+		int 				sendMessage(int client_fd, const std::string	&successMessage);
 };

@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/30 19:37:07 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/30 20:26:05 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,7 +201,7 @@ class Server
 		Server(int port, std::string password);
 		~Server();
 
-		//Startup
+		// init server
 		void		init_server(void);
 		int			create_socket(void);
 		int			unblock_socket(int fd);
@@ -235,7 +235,6 @@ class Server
 		int			cmd_join(Client &client, std::string input);
 		/*end JOIN funtions*/
 		void		cmd_privmsg(Client &client, std::string input);
-		void		cmd_part(Client &client, std::string input);
 
 		/* list funtions*/
 		std::vector<std::string>		parseArgsListCommand(std::string input);
@@ -258,8 +257,8 @@ class Server
 		int			cmd_invite(Client &client, std::string input);
 		/*end INVITE funtions*/
 		/*TOPIC funtions*/
-		int handleTopicCommand(Client &client, Channel *&channel, const std::string &topic);
-		int handleTopicErrors(Client &client, const std::string &channel_to_find, Channel *&channel);
+		int 		handleTopicCommand(Client &client, Channel *&channel, const std::string &topic);
+		int 		handleTopicErrors(Client &client, const std::string &channel_to_find, Channel *&channel);
 		void 		parseTopicCommand(std::istringstream &iss, std::string &channel_to_find, std::string &topic);
 		int			cmd_topic(Client &client, std::string input);
 		/*end TOPIC funtions*/
@@ -281,17 +280,17 @@ class Server
 		void 		printDebugInfo(const std::string &channel, const std::string &mode, const std::string &argument);
 		int			cmd_mode(Client &client, std::string input);
 		/*end mode functions*/
-		int			sendErrorMessage(int client_fd, const std::string& errorMessage);
-		int 		sendSuccessMessage(int client_fd, const std::string	&successMessage);
 		int 		sendMessage(int client_fd, const std::string &msg);
+		/*PART funtions*/
 		std::vector<std::string>	getPartVector(std::string input);
+		void		cmd_part(Client &client, std::string input);
+		/*end PART funtions*/
 
 		//Utils
 		void		sendChannelUserListMessage(Channel *channel, const std::string &argument);
 		int			is_client_admin(Client &client);
 		Channel		*findChannel(Client &client, const std::string& channelName);
 		Client		*find_client(Client &client, const std::string& nickname);
-		int 		kickClientFromChannel(Channel* channel, Client* client, Client *client_to_kick, const std::string& reason);
 		int			kickClientFromChannel(Channel *channel, Bot &bot, Client *client_to_kick, const std::string &reason);
 		int 		channel_name_validation(int client_fd, std::string check);
 		bool		pass_validation(std::string check) const;

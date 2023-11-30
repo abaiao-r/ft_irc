@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 19:34:36 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/30 20:01:07 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -389,11 +389,11 @@ void	Channel::info_message(std::string msg)
 	for (; it < _clients_in_channel.end(); it++)
 	{
 		fd = it->get_client_fd();
-		sendSuccessMessage(fd, msg);
+		sendMessage(fd, msg);
 	}
 }
 
-int Channel::sendSuccessMessage(int client_fd, const std::string &successMessage)
+int Channel::sendMessage(int client_fd, const std::string &successMessage)
 {
 	if (send(client_fd, successMessage.c_str(), successMessage.size(), MSG_NOSIGNAL) == -1)
 	{

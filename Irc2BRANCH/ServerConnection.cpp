@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConnection.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:38 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 13:31:31 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 20:01:19 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,13 +253,13 @@ int	Server::client_cmds(Client &client)
 		{
 			std::string success = ":localhost " + RPL_WELCOME + " " + client.get_nickname() 
 				+ " :Welcome to the Internet Relay Network\r\n";
-			sendSuccessMessage(client.get_client_fd(), success);
+			sendMessage(client.get_client_fd(), success);
 			std::string success2 = ":localhost " + RPL_ISUPPORT + " " + client.get_nickname() 
 				+ " :CHANTYPES=#\r\n";
-			sendSuccessMessage(client.get_client_fd(), success2);
+			sendMessage(client.get_client_fd(), success2);
 			std::string success3 = ":localhost " + RPL_ISUPPORT + " " + client.get_nickname() 
 				+ " :CHANMODES=i,t,k,o,l\r\n";
-			sendSuccessMessage(client.get_client_fd(), success3);
+			sendMessage(client.get_client_fd(), success3);
 		}
 		return (0);
 	}
@@ -307,7 +307,7 @@ int	Server::choose_cmd(Client &client, std::string in)
 		_Clippy.cmd_help(client);
 	else
 	{
-		sendErrorMessage(fd, "Error. Command not found\r\n");
+		sendMessage(fd, "Error. Command not found\r\n");
 		return (-1);
 	}
 	if (!s.eof())

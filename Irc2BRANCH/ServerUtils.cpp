@@ -6,17 +6,36 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:56 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 19:37:27 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/30 20:41:18 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
+/* Server: constructor
+** 1. set loop state to 1
+** 2. set server fd to -1
+** 3. set port to 0
+** 4. set password to empty string
+** 5. set max clients to 0
+** 6. set max fd to 0
+** 7. set fd set to empty
+** 8. set clients vector to empty
+** 9. set channels vector to empty
+*/
 bool	Server::pass_validation(std::string check) const
 {
 	return (check == _password);
 }
 
+/* name_validation: check if name is valid
+** 1. check if name is between 1 and 9 characters long
+** 2. check if name starts with '#' or ':'
+** 3. check if name has whitespaces
+** 4. check if name has invalid characters
+** 5. return true if name is valid
+** 6. return false if name is invalid
+*/
 bool	Server::name_validation(std::string check)
 {
 	int	len = check.size();
@@ -32,6 +51,13 @@ bool	Server::name_validation(std::string check)
 	return true;
 }
 
+/* nick_validation: check if nickname is valid
+** 1. check if nickname is valid
+** 2. check if nickname is already in use
+** 3. return 0 if nickname is valid and not in use
+** 4. return 1 if nickname is invalid
+** 5. return 2 if nickname is already in use
+*/
 int	Server::nick_validation(std::string check)
 {
 	if (!name_validation(check))
@@ -47,6 +73,11 @@ int	Server::nick_validation(std::string check)
 	return 0;
 }
 
+/* name_compare: compare two strings
+** 1. transform both strings to lowercase
+** 2. compare strings
+** 3. return 1 if strings are equal, 0 if not
+*/
 int	Server::name_compare(std::string check, std::string comp)
 {
 	std::cout << "Name to check is: " << check << " comparing against: " << comp << "\n";
@@ -58,6 +89,12 @@ int	Server::name_compare(std::string check, std::string comp)
 	return 0;
 }
 
+/* disconnect_client: remove client from server
+** 1. find client in _clients vector
+** 2. remove client from all channels
+** 3. close client's fd
+** 4. remove client from _clients vector
+*/
 void	Server::disconnect_client(int fd)
 {
 	C_IT	end = _clients.end();
@@ -70,6 +107,13 @@ void	Server::disconnect_client(int fd)
 	_clients.erase(match);
 }
 
+
+/* disconnect_client: remove client from server
+** 1. find client in _clients vector
+** 2. remove client from all channels
+** 3. close client's fd
+** 4. remove client from _clients vector
+*/
 void	Server::disconnect_client(Client &client)
 {
 	int		fd = client.get_client_fd();
@@ -83,6 +127,13 @@ void	Server::disconnect_client(Client &client)
 	_clients.erase(match);
 }
 
+/* leave_all_rooms: remove client from all channels
+** 1. iterate through all channels
+** 2. remove client from channel
+** 3. remove client from channel's clients operator vector
+** 4. check if channel is empty
+** 5. if channel is empty, remove channel
+*/
 void	Server::leave_all_rooms(Client &client)
 {
 	CH_IT	it = _channels.begin();
@@ -99,6 +150,9 @@ void	Server::leave_all_rooms(Client &client)
 	}
 }
 
+/* signal_handler: handle SIGINT signal
+** 1. set loop state to 0
+*/
 void	Server::signal_handler(int sig)
 {
 	if (sig == SIGINT)
@@ -121,7 +175,7 @@ int Server::channel_name_validation(int client_fd, std::string check)
 	if (check[0] != '#')
 	{
 		message = "Error[JOIN]: Channel name must start with '#'\r\n";
-		sendErrorMessage(client_fd, message);
+		sendMessage(client_fd, message);
 		return (1);
 	}
 	for (int i = 1; i < len; i++)
@@ -129,14 +183,14 @@ int Server::channel_name_validation(int client_fd, std::string check)
 		if (!std::isalnum(check[i]) && (check[i] != '_') && (check[i] != '-'))
 		{
 			message = "Error[JOIN]: Channel name can only contain alphanumeric characters, '_' and '-'\r\n";
-			sendErrorMessage(client_fd, message);
+			sendMessage(client_fd, message);
 			return (1);
 		}
 	}
 	if (len < 2 || len > 200)
 	{
 		message = "Error[JOIN]: Channel name must be between 2 and 200 characters long\r\n";
-		sendErrorMessage(client_fd, message);
+		sendMessage(client_fd, message);
 		return (1);
 	}
 	return (0);
@@ -146,13 +200,13 @@ int Server::channel_name_validation(int client_fd, std::string check)
  * 1. Check if client is administrator
  * 2. Send error message if client is not administrator
  */
-int Server::is_client_admin(Client &client)
+int Server::is_client_admin(Client &client) // Do we need this? Deprecated?
 {
 	if (!client.get_is_admin())
 	{
 		std::string error = "Error: " + client.get_nickname() 
 			+ " is not administrator\r\n";
-		sendErrorMessage(client.get_client_fd(), error);
+		sendMessage(client.get_client_fd(), error);
 		return (-1);
 	}
 	return 0;
@@ -175,6 +229,11 @@ Channel	*Server::findChannel(Client &client, const std::string	&channelName)
 	return &(*it);
 }
 
+/* find_client: find client
+ * 1. Find client by iterating through _clients
+ * 2. If client does not exist, send error message to client and return NULL
+ * else return client
+ */
 Client	*Server::find_client(Client &client, const std::string& nickname)
 {
 	(void)client;
@@ -186,7 +245,10 @@ Client	*Server::find_client(Client &client, const std::string& nickname)
 	return &(*it);
 }
 
-
+/* password_checker: check if password is valid
+ * 1. Check if password is between 3 and 12 characters
+ * 2. Check if password contains non-printable characters
+ */
 int	Server::password_checker(std::string password)
 {
 	// Check if password is between 3 and 12 characters
@@ -218,7 +280,7 @@ int	Server::password_checker(std::string password, int fd)
 	if (password.length() < 3 || password.length() > 12)
 	{
 		std::string error = "Error. Password must be between 3 and 12 characters\r\n";
-		sendErrorMessage(fd, error);
+		sendMessage(fd, error);
 		return (1);
 	}
 	// Check if password contains non-printable characters
@@ -227,13 +289,18 @@ int	Server::password_checker(std::string password, int fd)
 		if (!isprint(password[i]))
 		{
 			std::string error = "Error. Password must not contain non-printable characters\r\n";
-			sendErrorMessage(fd, error);
+			sendMessage(fd, error);
 			return (1);
 		}
 	}
 	return (0);
 }
 
+/* get_users_string: get users string
+ * 1. Get list of clients in channel
+ * 2. Iterate through list and add clients to string
+ * 3. Return string
+ */
 std::string	Server::get_users_string(Channel &channel)
 {
 	std::string			ret;
@@ -255,31 +322,44 @@ std::string	Server::get_users_string(Channel &channel)
 	return ret;
 }
 
+/* join_messages: send messages to client and channel
+ * 1. Send JOIN message to client
+ * 2. Send RPL_TOPIC message to client
+ * 3. Send RPL_NAMREPLY message to client
+ * 4. Send RPL_ENDOFNAMES message to client
+ * 5. Send JOIN message to channel
+ */
 void	Server::join_messages(Client &client, Channel &channel)
 {
 	std::string	message;
 	std::string	name = channel.get_name();
 	int			fd = client.get_client_fd();
 
-	message = ":" + client.get_nickname() + "!" + client.get_username() + "@" + "localhost" + " JOIN " + name + "\r\n";
-	sendSuccessMessage(fd, message);
-	message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " + name + " " + channel.get_topic() + "\r\n";
-	sendSuccessMessage(fd, message);
-	message = ":localhost " + RPL_NAMREPLY + " " + client.get_nickname() + " = " + name + " :" + get_users_string(channel) + "\r\n";
+	message = ":" + client.get_nickname() + "!" + client.get_username() + "@" 
+		+ "localhost" + " JOIN " + name + "\r\n";
+	sendMessage(fd, message);
+	message = ":localhost " + RPL_TOPIC + " " + client.get_nickname() + " " 
+		+ name + " " + channel.get_topic() + "\r\n";
+	sendMessage(fd, message);
+	message = ":localhost " + RPL_NAMREPLY + " " + client.get_nickname() + " = " 
+		+ name + " :" + get_users_string(channel) + "\r\n";
 	channel.info_message(message);
-	message = ":localhost " + RPL_ENDOFNAMES + " " + client.get_nickname() + " " + name + " :End of NAMES list\r\n";
+	message = ":localhost " + RPL_ENDOFNAMES + " " + client.get_nickname() + " " 
+		+ name + " :End of NAMES list\r\n";
 	channel.info_message(message);
 }
 
+/* sendChannelUserListMessage: send channel user list message
+ * 1. Send message to client with list of users in channel
+ * 2. Send message to client with end of names list
+ */
 void Server::sendChannelUserListMessage(Channel *channel, const std::string &argument)
 {
-    // Sending message: :localhost 353 andrebaiao = #tyu :list of clients_in_channel
     std::string userListMessage = ":localhost " + RPL_NAMREPLY + " " + argument
 		+ " = " + channel->get_name() + " :" + get_users_string(*channel) 
 		+ "\r\n";
     channel->info_message(userListMessage);
 
-    // Sending message: :localhost 366 andrebaiao #tyu :End of NAMES list
     std::string endOfNamesMessage = ":localhost " + RPL_ENDOFNAMES + " " 
 		+ argument + " " + channel->get_name() + " :End of NAMES list\r\n";
     channel->info_message(endOfNamesMessage);
