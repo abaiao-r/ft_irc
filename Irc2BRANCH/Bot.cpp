@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/26 09:32:48 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 13:12:55 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 14:51:44 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ std::string	Bot::get_name() const
 
 void	Bot::greeting(Client &client)
 {
-	sendBotMessage(client.get_client_fd(), "Hello, I'm Clippy. Type HALP to check what you can do.\r\n");
+	sendBotMessage(client.get_client_fd(), "Hello, I'm " + _name + ". Type HALP to check what you can do.\r\n");
 }
 
 void	Bot::cmd_help(Client &client)
