@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/26 09:32:48 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/29 13:28:49 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 09:10:49 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,26 +83,26 @@ int Bot::sendBotMessage(int client_fd, const std::string &msg)
 	return (0);
 }
 
-bool	Bot::big_brother(Channel *channel, Client &client, std::string msg)
+bool	Bot::big_brother(Channel &channel, Client &client, std::string msg)
 {
-	int strikes = client.get_strikes();
+	std::string	chan_msg = ":" + _name + "!" + _name + "@" + "localhost" + " PRIVMSG "
+							+ channel.get_name() + " :" + client.get_nickname();
 
 	std::transform(msg.begin(), msg.end(), msg.begin(), tolower);
 	for (unsigned int i = 0; i <= _naughty_words->size(); i++)
 	{
 		if (msg.find(_naughty_words[i]) != std::string::npos)
 		{
-			if (strikes == 1)
+			if (client.get_strikes() == 1)
 			{
 				sendBotMessage(client.get_client_fd(), "Strike two for bad language. You are now banned.\r\n");
-				if (channel)
-					channel->info_message(client.get_nickname() + ": Has been banned (Strike two for bad language).");
-				client.set_strikes(2);
+				chan_msg += ": Has been banned (Strike two for bad language).\r\n";
+				channel.info_message(chan_msg);
 				return true;
 			}
 			sendBotMessage(client.get_client_fd(), "Strike one for bad language. Next time you will be banned.\r\n");
-			if (channel)
-					channel->info_message(client.get_nickname() + ": Strike one for bad language. Next time there will be a ban.");
+			chan_msg += ": Strike one for bad language. Next time there will be a ban.\r\n";
+			channel.info_message(chan_msg);
 			client.set_strikes(1);
 			return false;
 		}

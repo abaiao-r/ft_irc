@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommands.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/29 21:52:39 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/30 09:02:25 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1031,7 +1031,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 			return;
 		}
 		ch_test->message(client, msg);
-		if (_Clippy.big_brother(ch_test, client, msg))
+		if (_Clippy.big_brother(*ch_test, client, msg))
 			kickClientFromChannel(ch_test, &ch_test->get_operator(), &client, "Profanity");
 		return;
 	}
@@ -1047,8 +1047,6 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 		+ client.get_username() + "@" + "localhost" + " PRIVMSG "
 		+ c_test->get_nickname() + " :" + msg + "\r\n";
 	sendSuccessMessage(fd, final_msg);
-	if (_Clippy.big_brother(NULL, client, msg))
-		kickClientFromChannel(ch_test, &ch_test->get_operator(), &client, "Profanity");
 }
 
 /* kickClientFromChannel: KICK <channel> <nickname> [<reason>]

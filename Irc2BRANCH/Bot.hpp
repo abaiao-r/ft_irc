@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/26 09:29:04 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/29 12:48:29 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 08:59:34 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,5 +30,5 @@ class Bot
 		void	greeting(Client &client);
 		void	cmd_help(Client &client);
 		int 	sendBotMessage(int client_fd, const std::string	&successMessage);
-		bool	big_brother(Channel *channel, Client &client, std::string msg);
+		bool	big_brother(Channel &channel, Client &client, std::string msg);
 };
