@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/11/30 18:28:01 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/30 18:51:31 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,15 +224,15 @@ class Server
 		void		cmd_user(Client &client, std::string input);
 		void		cmd_nick(Client &client, std::string input);
 		/* JOIN funtions*/
-		bool checkBanned(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
-		bool checkPassword(const std::string &input_channel_name, const std::string &input_password, CH_IT &it, int fd);
-		bool checkInviteOnly(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
-		bool checkChannelFull(const std::string &input_channel_name, CH_IT &it, int fd);
-		bool validateJoinConditions(Client &client, int fd, const std::string &input_channel_name, const std::string &input_password, CH_IT &it);
-		bool checkIfClientAlreadyInChannel(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
-		bool createAndJoinChannel(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
-		bool checkClientRegistration(Client &client, int fd);
-		bool validateJoinPreconditions(Client &client, int fd, const std::string &input_channel_name, CH_IT &it);
+		bool 		checkBanned(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
+		bool		checkPassword(const std::string &input_channel_name, const std::string &input_password, CH_IT &it, int fd);
+		bool		checkInviteOnly(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
+		bool		checkChannelFull(const std::string &input_channel_name, CH_IT &it, int fd);
+		bool		validateJoinConditions(Client &client, int fd, const std::string &input_channel_name, const std::string &input_password, CH_IT &it);
+		bool		checkIfClientAlreadyInChannel(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
+		bool		createAndJoinChannel(Client &client, const std::string &input_channel_name, CH_IT &it, int fd);
+		bool		checkClientRegistration(Client &client, int fd);
+		bool		validateJoinPreconditions(Client &client, int fd, const std::string &input_channel_name, CH_IT &it);
 		int			cmd_join(Client &client, std::string input);
 		/*end JOIN funtions*/
 		void		cmd_privmsg(Client &client, std::string input);
@@ -254,8 +254,8 @@ class Server
 		int 		cmd_kick(Client &client, std::string input);
 		/*end KICK funtions*/
 		/* INVITE funtions*/
-		int handleInviteErrors(Client &client, const std::string &channel_to_find, const std::string &nickname, Channel *&channel);
-		int 		cmd_invite(Client &client, std::string input);
+		int			handleInviteErrors(Client &client, const std::string &channel_to_find, const std::string &nickname, Channel *&channel);
+		int			cmd_invite(Client &client, std::string input);
 		/*end INVITE funtions*/
 		/*TOPIC funtions*/
 		int handleTopicCommand(Client &client, Channel *&channel, const std::string &topic);
