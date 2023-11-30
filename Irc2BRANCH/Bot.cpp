@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/26 09:32:48 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 09:10:49 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 13:12:55 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,11 @@ Bot &Bot::operator=(const Bot &copy)
 }
 
 Bot::~Bot() {}
+
+std::string	Bot::get_name() const
+{
+	return _name;
+}
 
 void	Bot::greeting(Client &client)
 {

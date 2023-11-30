@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerUtils.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:56 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/29 20:55:58 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/11/30 13:50:08 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,19 +65,35 @@ void	Server::disconnect_client(int fd)
 
 	if (match == end)
 		throw(std::runtime_error("Error. Could not find client"));
-	leave_all_rooms(fd);
+	leave_all_rooms(*match);
 	close(fd);
 	_clients.erase(match);
 }
 
-void	Server::leave_all_rooms(int fd)
+void	Server::disconnect_client(Client &client)
+{
+	int		fd = client.get_client_fd();
+	C_IT	end = _clients.end();
+	C_IT	match = std::find(_clients.begin(), end, fd);
+
+	if (match == end)
+		throw(std::runtime_error("Error. Could not find client"));
+	leave_all_rooms(client);
+	close(fd);
+	_clients.erase(match);
+}
+
+void	Server::leave_all_rooms(Client &client)
 {
 	CH_IT	it = _channels.begin();
-	Client	remove = *find(_clients.begin(), _clients.end(), fd).base();
+	Client	remove = *find(_clients.begin(), _clients.end(), client.get_client_fd()).base();
 
 	for (; it < _channels.end(); it++)
 	{
 		it->remove_client(remove);
+		it->remove_client_from_clients_operator_vector(remove);
+		it->check_operator();
+		sendChannelUserListMessage(it.base(), client.get_nickname());
 		if (it->get_clients_in_channel().size() == 0)
 			_channels.erase(it);
 	}

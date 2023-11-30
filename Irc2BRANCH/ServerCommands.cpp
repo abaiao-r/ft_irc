@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:50 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 09:02:25 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 13:53:56 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1032,7 +1032,7 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 		}
 		ch_test->message(client, msg);
 		if (_Clippy.big_brother(*ch_test, client, msg))
-			kickClientFromChannel(ch_test, &ch_test->get_operator(), &client, "Profanity");
+			kickClientFromChannel(ch_test, _Clippy, &client, "Profanity");
 		return;
 	}
 	c_test = find_client(client, dest);
@@ -1047,6 +1047,81 @@ void	Server::cmd_privmsg(Client &client, std::string input)
 		+ client.get_username() + "@" + "localhost" + " PRIVMSG "
 		+ c_test->get_nickname() + " :" + msg + "\r\n";
 	sendSuccessMessage(fd, final_msg);
+}
+
+void	Server::cmd_part(Client &client, std::string input)
+{
+	int							fd = client.get_client_fd();
+	std::string 				nick = client.get_nickname();
+	std::string 				msg;
+	std::vector<std::string>	parts = getPartVector(input);
+
+	if (parts.empty())
+	{
+		msg = ":localhost " + ERR_NEEDMOREPARAMS + " : Error[PART]: Usage: /PART <channel> :<reason>\r\n";
+		sendMessage(fd, msg);
+		return;
+	}
+
+	std::string 				reason = parts.back();
+	CH_IT 						ch_it;
+
+	for (std::vector<std::string>::iterator	it1 = parts.begin(); it1 < parts.end() - 1; it1++)
+	{
+		ch_it = find(_channels.begin(), _channels.end(), *it1);
+		if (ch_it == _channels.end())
+		{
+			msg = ":localhost " + ERR_NOSUCHCHANNEL + " : Error[PART]: Channel " + *it1 + " does not exist\r\n";
+			sendMessage(fd, msg);
+			continue;
+		}
+		if (!ch_it->find_client(nick, "clients"))
+		{
+			msg = ":localhost " + ERR_NOTONCHANNEL + " : Error[PART]: You (" + nick + ") are not in channel " + *it1 + "\r\n";
+			sendMessage(fd, msg);
+			continue;
+		}
+		msg = nick + " has left the channel: " + reason;
+		ch_it->message(client, msg);
+		ch_it->message(client, msg, "PART");
+		msg = ":" + nick + "!" + client.get_username() + "@" + "localhost" + " PART " + *it1 + " :" + reason + "\r\n";
+		sendMessage(fd, msg);
+		msg = nick + " has quit the channel:";
+		ch_it->message(client, msg, "QUIT");
+		ch_it->remove_client(client);
+		if (ch_it->find_client(nick, "operators"))
+			ch_it->remove_client_from_clients_operator_vector(client);
+		if (ch_it->get_clients_in_channel().size() == 0)
+			_channels.erase(ch_it);
+		ch_it->check_operator();
+		sendChannelUserListMessage(ch_it.base(), client.get_nickname());
+	}
+}
+
+std::vector<std::string>	Server::getPartVector(std::string input)
+{
+	std::stringstream			s1(input);
+	std::string					channel_names;
+	std::string					channel;
+	std::string					reason;
+	std::vector<std::string>	part_vector;
+
+	s1 >> channel_names;
+	if (!s1.eof())
+		s1 >> reason;
+	std::stringstream	s2(channel_names);
+	while (!s2.eof())
+	{
+		std::getline(s2, channel, ',');
+		if (!channel.empty())
+			part_vector.push_back(channel);
+	}
+	if (!reason.empty())
+	{
+		reason.erase(0, 1);
+		part_vector.push_back(reason);
+	}
+	return (part_vector);
 }
 
 /* kickClientFromChannel: KICK <channel> <nickname> [<reason>]
@@ -1087,6 +1162,30 @@ int Server::kickClientFromChannel(Channel *channel, Client *client,
 		sendChannelUserListMessage(channel, client->get_nickname());
 		return (0);
 	}
+}
+
+int Server::kickClientFromChannel(Channel *channel, Bot &bot, 
+	Client *client_to_kick, const std::string &reason)
+{
+	std::string message;
+	
+	// Remove client from channel
+	channel->remove_client(*(client_to_kick));
+	// add client_to_kick to banned list
+	channel->add_client_to_banned_vector(*(client_to_kick));
+	// if client is in operator_channel, remove from operator_channel
+	std::string client_to_kick_nickname = client_to_kick->get_nickname();
+	if (channel->find_client(client_to_kick_nickname, "operators"))
+	{
+		channel->remove_client_from_clients_operator_vector(*client_to_kick);
+		channel->check_operator();
+	}
+	// Send message to client
+	message = ":" + bot.get_name() + " KICK " + channel->get_name()
+		+ " " + client_to_kick->get_nickname() + " :" + reason + "\r\n";
+	sendSuccessMessage(client_to_kick->get_client_fd(), message);
+	sendChannelUserListMessage(channel, bot.get_name());
+	return (0);
 }
 
 /* performChecks: KICK <channel> <nickname> [<reason>]
@@ -1364,6 +1463,16 @@ int Server::sendSuccessMessage(int client_fd, const std::string	&successMessage)
 int Server::sendErrorMessage(int client_fd, const std::string	&errorMessage)
 {
 	if (send(client_fd, errorMessage.c_str(), errorMessage.size(), MSG_NOSIGNAL) == -1)
+	{
+		std::cerr << RED << "Error: " << RESET << "send() failed" << std::endl;
+		return (-1);
+	}
+	return (0);
+}
+
+int Server::sendMessage(int client_fd, const std::string &msg)
+{
+	if (send(client_fd, msg.c_str(), msg.size(), MSG_NOSIGNAL) == -1)
 	{
 		std::cerr << RED << "Error: " << RESET << "send() failed" << std::endl;
 		return (-1);

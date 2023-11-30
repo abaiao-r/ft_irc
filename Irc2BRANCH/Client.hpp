@@ -46,7 +46,7 @@ class Client
 
 		const int &get_strikes(void) const;
 		void set_strikes(const int &value);
-		
+
 		const bool &get_authenticated(void) const;
 		void set_authenticated(const bool &value);
 		

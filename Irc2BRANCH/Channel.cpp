@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/29 12:56:38 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 12:56:09 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -266,6 +266,15 @@ Client	&Channel::get_operator()
 	return (_clients_operator_channel[0]);
 }
 
+void	Channel::check_operator()
+{
+	if (_clients_operator_channel.size() == 0)
+	{
+		_clients_operator_channel.push_back(_clients_in_channel[0]);
+		_clients_in_channel[0].set_is_admin(true);		
+	}
+}
+
 /* remove_client_from_clients_operator_vector() removes a client from the list
  * of operators in the channel. */
 void	Channel::remove_client_from_clients_operator_vector(Client &client)
@@ -346,6 +355,22 @@ void	Channel::message(Client &client, std::string msg)
 	std::string	final_msg = ":" + client.get_nickname() + "!"
 	+ client.get_username() + "@" + "localhost" + " PRIVMSG "
 	+ _name + " :" + msg + "\r\n";
+
+	for (; it < _clients_in_channel.end(); it++)
+	{
+		if (*it == client)
+			continue;
+		fd = it->get_client_fd();
+		send(fd, final_msg.c_str(), final_msg.length(), MSG_NOSIGNAL);
+	}
+}
+
+void	Channel::message(Client &client, std::string msg, std::string code)
+{
+	std::vector<Client>::iterator		it = _clients_in_channel.begin();
+	int									fd;
+	std::string	final_msg = ":localhost! " + code + " " + client.get_nickname()
+							+ " " + _name + " :" + msg + "\r\n";
 
 	for (; it < _clients_in_channel.end(); it++)
 	{

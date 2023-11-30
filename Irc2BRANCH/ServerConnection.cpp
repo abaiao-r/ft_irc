@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConnection.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/24 08:29:38 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/26 12:29:26 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 13:31:31 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,9 @@ void	Server::connection()
 				if (match == _clients.end())
 				{
 					std::cout << "Error. Could not find client\n";
-					disconnect_client(match->get_client_fd());
+					disconnect_client(*match);
+					for (CH_IT it = _channels.begin(); it != _channels.end(); it++)
+						it->check_operator();
 					continue;
 				}
 				client_cmds(*match);
@@ -285,6 +287,8 @@ int	Server::choose_cmd(Client &client, std::string in)
 		cmd_join(client, input);
 	else if (cmd == "PRIVMSG")
 		cmd_privmsg(client, input);
+	else if (cmd == "PART")
+		cmd_part(client, input);
 	else if (cmd == "KICK")
 		cmd_kick(client, input);
 	else if (cmd == "INVITE")

@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:30:20 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/29 12:56:58 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 12:52:55 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ class Channel
 
 		std::vector<Client> &get_clients_operator_channel(void);
 		Client				&get_operator();
+		void				check_operator();
 		void 				add_client_to_clients_operator_vector(Client &client);
 		void 				remove_client_from_clients_operator_vector(Client &client);
 
@@ -90,6 +91,7 @@ class Channel
 
 		Client				*find_client(std::string nickname, std::string vector);
 		void				message(Client &client, std::string msg);
+		void				message(Client &client, std::string msg, std::string code);
 		void				info_message(std::string msg);
 		int 				sendSuccessMessage(int client_fd, const std::string	&successMessage);
 };

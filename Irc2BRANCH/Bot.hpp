@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/26 09:29:04 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/11/30 08:59:34 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/11/30 13:12:22 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,9 @@ class Bot
 	public:
 		Bot(std::string name);
 		~Bot();
-		void	greeting(Client &client);
-		void	cmd_help(Client &client);
-		int 	sendBotMessage(int client_fd, const std::string	&successMessage);
-		bool	big_brother(Channel &channel, Client &client, std::string msg);
+		std::string	get_name() const;
+		void		greeting(Client &client);
+		void		cmd_help(Client &client);
+		int 		sendBotMessage(int client_fd, const std::string	&successMessage);
+		bool		big_brother(Channel &channel, Client &client, std::string msg);
 };
