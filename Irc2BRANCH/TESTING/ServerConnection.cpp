@@ -3,42 +3,33 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConnection.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 08:59:41 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/04 13:33:52 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/05 10:11:17 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerConnection.hpp"
-#include "ServerCommands.hpp"
 
 int	ServerConnection::_loop_state = 1;
 
 ServerConnection::ServerConnection()
-	: _Clippy("Clippy") {}
-
-ServerConnection::ServerConnection(int server_fd)
-	: _Clippy("Clippy")
 {
-	std::signal(SIGINT, signal_handler);
-	std::cout << CYAN << "Parameter constructor ServerConnection called"
-		<< RESET << std::endl;
+	std::cout << CYAN << "Default constructor ServerConnection called" << RESET 
+		<< std::endl;
 }
 
 ServerConnection::~ServerConnection()
 {
 	std::cout << RED << "Destructor ServerConnection called" << RESET 
 		<< std::endl;
-	C_IT end = _clients.end();
-	for (C_IT it = _clients.begin(); it != end; it++)
-		close(it->get_client_fd());
 	close(_epoll_fd);
 	std::signal(SIGINT, SIG_DFL);
 }
 
 ServerConnection::ServerConnection(const ServerConnection &copy)
-	:_Clippy("Clippy")
+	:ServerCommands()
 {
 	std::cout << CYAN << "Copy constructor Server called" << RESET 
 			<< std::endl;
@@ -49,13 +40,12 @@ ServerConnection &ServerConnection::operator=(const ServerConnection &copy)
 {
 	std::cout << YELLOW << "Assignment operator Server called" << RESET 
 		<< std::endl;
-	if (this != &copy)
-		_server_fd = copy._server_fd;
+	(void)copy;
 	return *this;
 }
 
 
-void	ServerConnection::create_epoll()
+void	ServerConnection::create_epoll(int server_fd)
 {
 	memset(&_events, 0, sizeof(_events));
 	_epoll_fd = epoll_create1(0);
@@ -63,17 +53,16 @@ void	ServerConnection::create_epoll()
 		throw(std::runtime_error("Error when creating epoll"));
 	memset(&_main_event, 0, sizeof(_main_event));
 	_main_event.events = EPOLLIN;
-	_main_event.data.fd = _server_fd;
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _server_fd, &_main_event) == -1)
+	_main_event.data.fd = server_fd;
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, server_fd, &_main_event) == -1)
 		throw(std::runtime_error("Error in epoll_ctl"));
 }
 
-void	ServerConnection::connection()
+void	ServerConnection::connection(int server_fd)
 {
 	int				count;
 	int				client_fd;
 	C_IT			match;
-	ServerCommands	commands;
 
 	while (_loop_state)
 	{
@@ -152,9 +141,9 @@ void	ServerConnection::connection()
 		}
 		for (int i = 0; i < count; i++)
 		{
-			if (_events[i].data.fd == _server_fd)
+			if (_events[i].data.fd == server_fd)
 			{
-				client_connection();
+				client_connection(server_fd);
 				client_fd = _clients.back().get_client_fd();
 				_main_event.events = EPOLLIN;
 				_main_event.data.fd = client_fd;
@@ -177,17 +166,17 @@ void	ServerConnection::connection()
 						it->check_operator();
 					continue;
 				}
-				commands.client_cmds(*match);
+				client_cmds(*match);
 			}
 		}
 	}
 }
 
-void	ServerConnection::client_connection()
+void	ServerConnection::client_connection(int server_fd)
 {
 	Client		client;
 	socklen_t	len = SOCKLEN;
-	int			client_fd = accept(_server_fd, (struct sockaddr*)&client._client_addr, &len);
+	int			client_fd = accept(server_fd, (struct sockaddr*)&client._client_addr, &len);
 
 	if (client_fd == -1)
 		throw(std::runtime_error("Error. Could not accept client connection"));
@@ -268,14 +257,14 @@ void	ServerConnection::leave_all_rooms(Client &client)
  */
 void ServerConnection::sendChannelUserListMessage(Channel *channel, const std::string &argument)
 {
-    std::string userListMessage = ":localhost " + RPL_NAMREPLY + " " + argument
+	std::string userListMessage = ":localhost " + RPL_NAMREPLY + " " + argument
 		+ " = " + channel->get_name() + " :" + get_users_string(*channel) 
 		+ "\r\n";
-    channel->info_message(userListMessage);
+	channel->info_message(userListMessage);
 
-    std::string endOfNamesMessage = ":localhost " + RPL_ENDOFNAMES + " " 
+	std::string endOfNamesMessage = ":localhost " + RPL_ENDOFNAMES + " " 
 		+ argument + " " + channel->get_name() + " :End of NAMES list\r\n";
-    channel->info_message(endOfNamesMessage);
+	channel->info_message(endOfNamesMessage);
 }
 
 /* get_users_string: get users string

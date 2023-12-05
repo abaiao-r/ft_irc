@@ -3,13 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   ServerUtils.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 09:39:14 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/04 11:22:49 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/05 09:52:53 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 #include <iostream>
 #include <fcntl.h>
 #include "Client.hpp"

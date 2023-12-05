@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/12/04 13:34:21 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/05 10:10:56 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ Server::Server(int port, std::string password)
 	std::cout << CYAN << "Parameter constructor Server called" << RESET 
 		<< std::endl;
 	// check password
-	if (password_checker(password))
+	if (pass_validation(password))
 		throw(std::runtime_error(""));
 	memset(&_address, 0, SOCKLEN);
 	//sets the address family of the socket to IPv4.
@@ -45,6 +45,7 @@ Server::Server(int port, std::string password)
 
 /* Copy constructor */
 Server::Server(const Server &src)
+	:ServerConnection()
 {
 	std::cout << CYAN << "Copy constructor Server called" << RESET 
 		<< std::endl;
@@ -169,9 +170,11 @@ void Server::init_server(void) // use int
 		throw(std::runtime_error("Could not bind server fd"));
 	if (start_listening() == -1)
 		throw(std::runtime_error("Error while listening"));
+	create_epoll(_server_fd);
+	connection(_server_fd);
+}
 
-	ServerConnection connection(_server_fd);
-
-	connection.create_epoll();
-	connection.connection();
+bool	Server::pass_validation(std::string check) const
+{
+	return (check == _password);
 }

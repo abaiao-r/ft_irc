@@ -3,53 +3,44 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConnection.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 09:01:12 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/04 13:33:38 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/05 10:11:23 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include <iostream>
-#include <sys/epoll.h>
-#include <cstring>
 #include <vector>
-#include <algorithm>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <csignal>
-#include "Client.hpp"
-#include "Channel.hpp"
-#include "Bot.hpp"
-#include "Numerics.hpp"
-#include "Server.hpp"
+#include "ServerCommands.hpp"
+
 
 #define SOCKLEN sizeof(struct sockaddr_in)
 #define MAX_EVENTS 1024
 
-class ServerConnection: public Server
+class ServerConnection: public ServerCommands
 {
 	private:
+		ServerConnection(const ServerConnection &copy);
+		ServerConnection &operator=(const ServerConnection &copy);
+	protected:
 		int						_epoll_fd;
 		static int				_loop_state;
 		epoll_event				_main_event;
 		epoll_event				_events[MAX_EVENTS];
-		ServerConnection(const ServerConnection &copy);
-		ServerConnection &operator=(const ServerConnection &copy);
-	protected:
 		ServerConnection();
-		std::vector<Client>		_clients;
-		std::vector<Channel>	_channels;
-		Bot						_Clippy;
 	public:
-		ServerConnection(int server_fd);
-		virtual ~ServerConnection();
-		void		create_epoll();
-		void		connection();
-		void		client_connection();
+		virtual 	~ServerConnection();
+		void		create_epoll(int server_fd);
+		void		connection(int server_fd);
+		void		client_connection(int server_fd);
 		void		disconnect_client(int fd);
 		void		disconnect_client(Client &client);
 		void		leave_all_rooms(Client &client);

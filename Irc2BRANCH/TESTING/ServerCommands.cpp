@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommands.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 10:45:16 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/04 13:24:19 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/05 10:11:08 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerCommands.hpp"
 
 ServerCommands::ServerCommands()
+	: _Clippy("Clippy")
 {
 	std::cout << CYAN << "Default constructor ServerCommands called" << RESET 
 		<< std::endl;
@@ -22,9 +23,13 @@ ServerCommands::~ServerCommands()
 {
 	std::cout << RED << "Destructor ServerCommands called" << RESET 
 		<< std::endl;
+	C_IT end = _clients.end();
+	for (C_IT it = _clients.begin(); it != end; it++)
+		close(it->get_client_fd());
 }
 
 ServerCommands::ServerCommands(const ServerCommands &copy)
+	: _Clippy("Clippy")
 {
 	std::cout << CYAN << "Copy constructor ServerCommands called" << RESET 
 		<< std::endl;
@@ -325,25 +330,25 @@ int ServerCommands::cmd_list(Client &client, std::string input)
 */
 void ServerCommands::sendWhoReplyMessages(Client &client, Channel &channel)
 {
-    C_IT it = channel.get_clients_in_channel().begin();
-    C_IT end = channel.get_clients_in_channel().end();
-    std::string msg;
+	C_IT it = channel.get_clients_in_channel().begin();
+	C_IT end = channel.get_clients_in_channel().end();
+	std::string msg;
 
-    for (; it != end; it++)
-    {
-        std::string nick = it->get_nickname();
-        Client *curr = channel.find_client(nick, "operators");
-        std::string opr = curr ? " H" : " G";
-        std::string status = curr ? "@" : "+";
-        msg = ":localhost " + RPL_WHOREPLY + " " + it->get_nickname() + " " +
-              channel.get_name() + " ft_irc " + client.get_nickname() + opr +
-              status + " :1 " + it->get_username() + "\r\n";
-        sendMessage(client.get_client_fd(), msg);
-    }
+	for (; it != end; it++)
+	{
+		std::string nick = it->get_nickname();
+		Client *curr = channel.find_client(nick, "operators");
+		std::string opr = curr ? " H" : " G";
+		std::string status = curr ? "@" : "+";
+		msg = ":localhost " + RPL_WHOREPLY + " " + it->get_nickname() + " " +
+			  channel.get_name() + " ft_irc " + client.get_nickname() + opr +
+			  status + " :1 " + it->get_username() + "\r\n";
+		sendMessage(client.get_client_fd(), msg);
+	}
 
-    msg = ":localhost " + RPL_ENDOFWHO + " " + client.get_nickname() + " " +
-          channel.get_name() + " :End of WHO list\r\n";
-    sendMessage(client.get_client_fd(), msg);
+	msg = ":localhost " + RPL_ENDOFWHO + " " + client.get_nickname() + " " +
+		  channel.get_name() + " :End of WHO list\r\n";
+	sendMessage(client.get_client_fd(), msg);
 }
 
 /* cmd_who: /who #channel1
@@ -354,24 +359,24 @@ void ServerCommands::sendWhoReplyMessages(Client &client, Channel &channel)
 */
 int ServerCommands::cmd_who(Client &client, std::string input)
 {
-    if (input.empty())
-    {
-        std::string error = "Error[MODE]: No argument provided\r\n";
-        sendMessage(client.get_client_fd(), error);
-        return (1);
-    }
+	if (input.empty())
+	{
+		std::string error = "Error[MODE]: No argument provided\r\n";
+		sendMessage(client.get_client_fd(), error);
+		return (1);
+	}
 
-    Channel *channel = findChannel(client, input);
+	Channel *channel = findChannel(client, input);
 
-    if (!channel)
-    {
-        std::string error = ":localhost " + ERR_NOSUCHCHANNEL +
-            " : Error[MODE]: Channel " + input + " does not exist\r\n";
-        sendMessage(client.get_client_fd(), error);
-        return (1);
-    }
-    sendWhoReplyMessages(client, *channel);
-    return (0);
+	if (!channel)
+	{
+		std::string error = ":localhost " + ERR_NOSUCHCHANNEL +
+			" : Error[MODE]: Channel " + input + " does not exist\r\n";
+		sendMessage(client.get_client_fd(), error);
+		return (1);
+	}
+	sendWhoReplyMessages(client, *channel);
+	return (0);
 }
 
 /* handleModeMinusL: MODE <channel> -l
@@ -712,7 +717,7 @@ int ServerCommands::handleModePlusO(Client &client, Channel *channel,
 int  ServerCommands::handleMode(Client &client, Channel *channel, 
 	const std::string &mode, const std::string &argument, int fd)
 {
-    // Implement the logic for each mode
+	// Implement the logic for each mode
 	if (mode == "+o")
 		return (handleModePlusO(client, channel, argument, fd));
 	else if (mode == "-o")
@@ -742,9 +747,9 @@ int  ServerCommands::handleMode(Client &client, Channel *channel,
 */
 int ServerCommands::sendOperatorPrivilegeError(int fd, const std::string &channel)
 {
-    std::string message = ":localhost " + ERR_CHANOPRIVSNEEDED +
-        " : Error[MODE]: You are not an operator in channel " + channel + "\r\n";
-    return (sendMessage(fd, message));
+	std::string message = ":localhost " + ERR_CHANOPRIVSNEEDED +
+		" : Error[MODE]: You are not an operator in channel " + channel + "\r\n";
+	return (sendMessage(fd, message));
 }
 
 /* sendChannelModeInfo: send RPL_CHANNELMODEIS message
@@ -753,26 +758,26 @@ int ServerCommands::sendOperatorPrivilegeError(int fd, const std::string &channe
 int ServerCommands::sendChannelModeInfo(int fd, Channel *channel, 
 	const std::string &channelName)
 {
-    std::string message = ":localhost " + RPL_CHANNELMODEIS + " " + channelName 
+	std::string message = ":localhost " + RPL_CHANNELMODEIS + " " + channelName 
 		+ " " + channelName + ": " + channel->get_mode() + "\r\n";
-    return (sendMessage(fd, message));
+	return (sendMessage(fd, message));
 }
 
 int ServerCommands::sendChannelNotFoundError(int fd, const std::string &channel)
 {
-    std::string message = ":localhost " + ERR_NOSUCHCHANNEL 
+	std::string message = ":localhost " + ERR_NOSUCHCHANNEL 
 		+ " : Error[MODE]: Channel " + channel + " does not exist\r\n";
-    return (sendMessage(fd, message));
+	return (sendMessage(fd, message));
 }
 
 // Debug delete later
 void ServerCommands::printDebugInfo(const std::string &channel, const std::string &mode, const std::string &argument)
 {
-    std::cout << BOLDYELLOW << "cmd_mode" << std::endl;
-    std::cout << "channel_to_find: " << channel << "|" << std::endl;
-    std::cout << "mode: " << mode << "|" << std::endl;
-    std::cout << "argument: " << argument << "|" << std::endl;
-    std::cout << RESET << std::endl;
+	std::cout << BOLDYELLOW << "cmd_mode" << std::endl;
+	std::cout << "channel_to_find: " << channel << "|" << std::endl;
+	std::cout << "mode: " << mode << "|" << std::endl;
+	std::cout << "argument: " << argument << "|" << std::endl;
+	std::cout << RESET << std::endl;
 }
 
 /* cmd_mode: /mode #channel +o <nickname>
@@ -785,31 +790,31 @@ void ServerCommands::printDebugInfo(const std::string &channel, const std::strin
 */
 int ServerCommands::cmd_mode(Client &client, std::string input)
 {
-    std::istringstream iss(input);
-    std::string channel_to_find;
+	std::istringstream iss(input);
+	std::string channel_to_find;
 	std::string mode;
 	std::string argument;
 	std::string message;
-    int fd = client.get_client_fd();
+	int fd = client.get_client_fd();
 
-    // Parse input
-    iss >> channel_to_find >> mode >> argument;
+	// Parse input
+	iss >> channel_to_find >> mode >> argument;
 
-    // Debug
-    printDebugInfo(channel_to_find, mode, argument);
-    // Find the channel
-    Channel *channel = findChannel(client, channel_to_find);
-    if (!channel)
+	// Debug
+	printDebugInfo(channel_to_find, mode, argument);
+	// Find the channel
+	Channel *channel = findChannel(client, channel_to_find);
+	if (!channel)
 		return (sendChannelNotFoundError(fd, channel_to_find));
 
-    if (mode.empty())
+	if (mode.empty())
 		return (sendChannelModeInfo(fd, channel, channel_to_find));
-    // Find if Client is in the vector of clients operator_channel
-    std::string nickname = client.get_nickname();
-    if (!channel->find_client(nickname, "operators"))
+	// Find if Client is in the vector of clients operator_channel
+	std::string nickname = client.get_nickname();
+	if (!channel->find_client(nickname, "operators"))
 		return (sendOperatorPrivilegeError(fd, channel_to_find));
-    // Handle mode based on the mode string
-    if (handleMode(client, channel, mode, argument, fd) == 2)
+	// Handle mode based on the mode string
+	if (handleMode(client, channel, mode, argument, fd) == 2)
 	{
 		std::string error = ":localhost " + ERR_UNKNOWNMODE 
 			+ " : Error[MODE]: Unknown mode " + mode 
@@ -1499,7 +1504,7 @@ int ServerCommands::performChecks(Client &client, const std::string &channel_to_
 		sendMessage(client.get_client_fd(), error);
 		return (1);
 	}
-    return (0);
+	return (0);
 }
 
 /* parseKickCommand: KICK <channel> <nickname> [<reason>]
@@ -1511,12 +1516,12 @@ int ServerCommands::performChecks(Client &client, const std::string &channel_to_
 void ServerCommands::parseKickCommand(std::istringstream &iss, 
 	std::string &channel_to_find, std::string &nickname, std::string &reason)
 {
-    // Parse input
-    // Skip until finding '#'
-    while (iss.peek() != '#')
-        iss.ignore();
-    iss >> channel_to_find >> nickname;
-    std::getline(iss, reason);
+	// Parse input
+	// Skip until finding '#'
+	while (iss.peek() != '#')
+		iss.ignore();
+	iss >> channel_to_find >> nickname;
+	std::getline(iss, reason);
 }
 
 /* cmd_kick: kick client from channel (KICK <channel> <nickname> [<reason>])
@@ -1526,21 +1531,21 @@ void ServerCommands::parseKickCommand(std::istringstream &iss,
  */
 int ServerCommands::cmd_kick(Client &client, std::string input)
 {
-    std::istringstream iss(input);
-    std::string channel_to_find;
+	std::istringstream iss(input);
+	std::string channel_to_find;
 	std::string nickname;
 	std::string reason;
 
 	// Parse input
-    parseKickCommand(iss, channel_to_find, nickname, reason);
+	parseKickCommand(iss, channel_to_find, nickname, reason);
 
 	Channel *channel = NULL;
 	Client *client_to_kick = NULL;
-    if (performChecks(client, channel_to_find, nickname, channel, client_to_kick))
-        return (1);
-    if (kickClientFromChannel(channel, &client, client_to_kick, reason) == -1)
-        return (1);
-    return (0);
+	if (performChecks(client, channel_to_find, nickname, channel, client_to_kick))
+		return (1);
+	if (kickClientFromChannel(channel, &client, client_to_kick, reason) == -1)
+		return (1);
+	return (0);
 }
 
 int ServerCommands::handleTopicCommand(Client &client, Channel *&channel, 
@@ -1768,11 +1773,6 @@ int ServerCommands::sendMessage(int client_fd, const std::string &msg)
 	return (0);
 }
 
-bool	ServerCommands::pass_validation(std::string check) const
-{
-	return (check == _password);
-}
-
 /* name_validation: check if name is valid
 ** 1. check if name is between 1 and 9 characters long
 ** 2. check if name starts with '#' or ':'
@@ -1863,7 +1863,7 @@ void	ServerCommands::disconnect_client(Client &client)
 {
 	int		fd = client.get_client_fd();
 	C_IT	end = _clients.end();
-	C_IT	match = std::find(_clients.begin(), end, fd);
+	C_IT	match = find(_clients.begin(), end, fd);
 
 	if (match == end)
 		throw(std::runtime_error("Error. Could not find client"));
@@ -2063,12 +2063,12 @@ void	ServerCommands::join_messages(Client &client, Channel &channel)
  */
 void ServerCommands::sendChannelUserListMessage(Channel *channel, const std::string &argument)
 {
-    std::string userListMessage = ":localhost " + RPL_NAMREPLY + " " + argument
+	std::string userListMessage = ":localhost " + RPL_NAMREPLY + " " + argument
 		+ " = " + channel->get_name() + " :" + get_users_string(*channel) 
 		+ "\r\n";
-    channel->info_message(userListMessage);
+	channel->info_message(userListMessage);
 
-    std::string endOfNamesMessage = ":localhost " + RPL_ENDOFNAMES + " " 
+	std::string endOfNamesMessage = ":localhost " + RPL_ENDOFNAMES + " " 
 		+ argument + " " + channel->get_name() + " :End of NAMES list\r\n";
-    channel->info_message(endOfNamesMessage);
+	channel->info_message(endOfNamesMessage);
 }
