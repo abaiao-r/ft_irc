@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/12/05 10:11:02 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/05 14:07:32 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,5 +47,6 @@ class Server: public ServerConnection
 		int		set_socket_options(void);
 		int		bind_socket(void);
 		int		start_listening(void);
+		int		password_checker(std::string password) const;
 		bool	pass_validation(std::string check) const;
 };

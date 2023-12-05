@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 10:45:28 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/05 10:11:12 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/05 14:04:30 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,10 @@ class ServerCommands
 	private:
 		ServerCommands(const ServerCommands &copy);
 		ServerCommands &operator=(const ServerCommands &copy);
-	protected:
+	public:
 		std::vector<Client>		_clients;
 		std::vector<Channel>	_channels;
 		Bot						_Clippy;
-	public:
 		ServerCommands();
 		virtual			~ServerCommands();
 		int 			client_cmds(Client &client);
@@ -120,6 +119,7 @@ class ServerCommands
 		bool			name_validation(std::string check);
 		int				nick_validation(std::string check);
 		int				name_compare(std::string check, std::string comp);
+		int				password_checker(std::string password);
 		int				password_checker(std::string password, int fd);
 		std::string		get_users_string(Channel &channel);
 		void			disconnect_client(int fd);

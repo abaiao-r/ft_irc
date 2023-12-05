@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/12/05 10:10:56 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/05 14:07:57 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ Server::Server(int port, std::string password)
 	std::cout << CYAN << "Parameter constructor Server called" << RESET 
 		<< std::endl;
 	// check password
-	if (pass_validation(password))
+	if (password_checker(password))
 		throw(std::runtime_error(""));
 	memset(&_address, 0, SOCKLEN);
 	//sets the address family of the socket to IPv4.
@@ -172,6 +172,32 @@ void Server::init_server(void) // use int
 		throw(std::runtime_error("Error while listening"));
 	create_epoll(_server_fd);
 	connection(_server_fd);
+}
+
+/* password_checker: check if password is valid
+ * 1. Check if password is between 3 and 12 characters
+ * 2. Check if password contains non-printable characters
+ */
+int	Server::password_checker(std::string password) const
+{
+	// Check if password is between 3 and 12 characters
+	if (password.length() < 3 || password.length() > 12)
+	{
+		std::cerr << RED << "ERROR: " << RESET 
+			<< "Password must be between 3 and 12 characters" << std::endl;
+		return (1);
+	}
+	// Check if password contains non-printable characters
+	for (size_t i = 0; i < password.length(); i++)
+	{
+		if (!isprint(password[i]))
+		{
+			std::cerr << RED << "ERROR: " << RESET 
+				<< "Password must not contain non-printable characters" << std::endl;
+			return (1);
+		}
+	}
+	return (0);
 }
 
 bool	Server::pass_validation(std::string check) const
