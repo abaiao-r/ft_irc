@@ -1,23 +1,30 @@
-OK entao basicamente, COISAS A FAZER:
+<h1 align="center">
+	🌐 FT_IRC 🌐
+</h1>
 
-1- dar fix no login. A ordem pode ser aleatoria e nao pode ser como esta. Tambem adicionar a autenticacao por hexchat que esta no meu ficheiro Hexchat.cpp
+<p align="center">
+	<b><i> Bridging the Bytes for Seamless Conversations 🌉</i></b>
+</p>
 
-2- Adicionar todos os comandos. Todos estao presentes no Commands.cpp . So copiar accordingly
+<div align="center">
+<img alt="FT_IRC" src="https://github.com/joao-per/joao-per/blob/main/Badges/Ft_irc.png" />
+</div>
 
-3- Verificar que todas as variaveis guardadas (nome, username, etc) sao guardadas sem \r e \n
+## 🧠 About the project
+A basic implementation of an IRC server that handles authentication, user registration, and several chat commands. 🖥️
 
-4- Se sobrar tempo, testar com Hexchat, caso contrario, so com nc mesmo.
+## 🌟 Features
+🔒 **Authentication**: Authenticate users with a password.
 
-<<<<<<< HEAD
-🖋️ **Registration**: Register users by setting their nickname (NICK) username (USER) and realname!
+🖋️ **Registration**: Register users by setting their nickname (NICK) and real name (USER).
 
-📜 **Command Handling**: Process various commands like JOIN, PRIVMSG and MODE.
+📜 **Command Handling**: Process various commands like JOIN, MSG, and PRIVMSG.
 
 🧑‍🤝‍🧑 **Multi-Client Handling**: Uses poll() system call to handle multiple clients simultaneously.
 
 ## 🚀 Getting Started
 ### 🛠️ Prerequisites
-A C++ compiler with support for C++98 only.
+A C++ compiler with support for C++11 or newer.
 Basic knowledge of IRC protocols (optional).
 
 ### 📖 Compilation
@@ -36,27 +43,14 @@ For example:
 ```bash
 ./ircserv 6667 12345
 ```
-## 📖 Instructions
-PASS (password)
 
-NICK (nickname)
+## 💡 Implementation Details
+**Authentication**: Clients authenticate using the PASS command. Upon successful authentication, they register with NICK and USER.
 
-USER (username) (mode) (hostname) :(realname)
-
-**All available commands:** CREATE, JOIN, PRIVMSG, MODE(i,k,t,l,o)
+**Command Handling**: Processes commands like JOIN, MSG, and PRIVMSG.
 
 ## 🙏 Acknowledgments
 A huge thank you to my colleagues gacorrei and abaiao-r for their invaluable contributions and insights. This project wouldn't be the same without their assistance. 🙌
 
 ## 📝 License
 This project is licensed under the MIT License - see the LICENSE file for details.
-=======
-5- comandos a serem testados conforme a implementacao que fiz:
-CREATE #<nome da sala> <OPCIONAL: topico da sala>
-JOIN #<nome da sala>
-TOPIC #<nome da sala> <topico>
-KICK #<nome da sala> <user>
-INVITE #<nome da sala> <user>
-
-POR FAVOR QUALQUER DUVIDA, LIGUEM-ME, MANDEM-ME MENSAGEM, O QUE QUISEREM
->>>>>>> irc2
