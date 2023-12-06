@@ -6,7 +6,11 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
+<<<<<<< HEAD:src/Client.cpp
 /*   Updated: 2023/11/11 19:31:17 by joao-per         ###   ########.fr       */
+=======
+/*   Updated: 2023/11/07 21:53:39 by joao-per         ###   ########.fr       */
+>>>>>>> irc2:MasterBRANCH/src/Client.cpp
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +22,11 @@ Client::Client() {} // Constructor
 
 Client::~Client() {} // Destructor
 
+<<<<<<< HEAD:src/Client.cpp
+=======
+std::map<int, std::string> clientBuffers;  // FD -> Accumulated commands
+
+>>>>>>> irc2:MasterBRANCH/src/Client.cpp
 bool hasAllCommands(const std::string& buffer)
 {
 	return (buffer.find("CAPS") != std::string::npos &&
@@ -91,7 +100,11 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 						int bytesReceived = recv(clients[i].fd, buffer, sizeof(buffer) - 1, 0);
 						if (bytesReceived <= 0) 
 						{
+<<<<<<< HEAD:src/Client.cpp
 							std::cerr << RED << "Error reading from client or client disconnected." << RESET << std::endl;
+=======
+							std::cerr << "Error reading from client." << std::endl;
+>>>>>>> irc2:MasterBRANCH/src/Client.cpp
 							close(clients[i].fd);
 							clients.erase(clients.begin() + i);
 							i--;
@@ -99,7 +112,11 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 						}
 						buffer[bytesReceived] = '\0';
 						std::string initialCommand = std::string(buffer);
+<<<<<<< HEAD:src/Client.cpp
 						// DEBUG std::cout << "Received:" << initialCommand << std::endl;
+=======
+						std::cout << "Received:" << initialCommand << std::endl;
+>>>>>>> irc2:MasterBRANCH/src/Client.cpp
 						if (initialCommand.substr(0, 3) == "CAP")
 							clientBuffers[clients[i].fd] = initialCommand; // Store CAP command
 						if (clientBuffers.count(clients[i].fd))
@@ -107,7 +124,11 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 							// If we have a stored CAP command for this client, process both messages
 							if (!handle_hexchat(clientBuffers[clients[i].fd], initialCommand, *user, password, clients[i].fd))
 							{
+<<<<<<< HEAD:src/Client.cpp
 								std::cerr << RED << "Error: User failed Hexchat authentication." << RESET << std::endl;
+=======
+								std::cerr << "Error: User failed Hexchat authentication." << std::endl;
+>>>>>>> irc2:MasterBRANCH/src/Client.cpp
 								close(clients[i].fd);
 								clients.erase(clients.begin() + i);
 								i--;
@@ -122,7 +143,11 @@ void Client::handle_client(int server_fd, const std::string &password, char ** /
 								initialCommand.erase(initialCommand.find("\n"));
 							if (!authenticate_user(clients[i].fd, initialCommand, password, *user))
 							{
+<<<<<<< HEAD:src/Client.cpp
 								std::cerr << RED << "Error: User failed authentication." << RESET << std::endl;
+=======
+								std::cerr << "Error: User failed authentication." << std::endl;
+>>>>>>> irc2:MasterBRANCH/src/Client.cpp
 								close(clients[i].fd);
 								clients.erase(clients.begin() + i);
 								i--;

@@ -5,8 +5,13 @@
 #                                                     +:+ +:+         +:+      #
 #    By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
+<<<<<<< HEAD:Makefile
 #    Created: 2023/10/18 14:23:18 by abaiao-r          #+#    #+#              #
 #    Updated: 2023/11/06 17:13:27 by joao-per         ###   ########.fr        #
+=======
+#    Created: 2023/11/08 00:28:21 by joao-per          #+#    #+#              #
+#    Updated: 2023/11/08 00:28:22 by joao-per         ###   ########.fr        #
+>>>>>>> irc2:MasterBRANCH/Makefile
 #                                                                              #
 # **************************************************************************** #
 

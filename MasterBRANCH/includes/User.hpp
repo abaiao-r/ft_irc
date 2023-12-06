@@ -6,7 +6,11 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/18 14:51:29 by abaiao-r          #+#    #+#             */
+<<<<<<< HEAD:includes/User.hpp
 /*   Updated: 2023/11/09 16:25:43 by joao-per         ###   ########.fr       */
+=======
+/*   Updated: 2023/11/06 15:04:28 by joao-per         ###   ########.fr       */
+>>>>>>> irc2:MasterBRANCH/includes/User.hpp
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +28,21 @@ struct User
 	std::string username;
 	std::string realname;
 	std::string hostname;
+<<<<<<< HEAD:includes/User.hpp
 	bool		is_admin;
 	bool		has_authenticated;
 	bool		is_registered;
 	bool		user_registered;
 	bool		nick_registered;
 	int			fd;
+=======
+	bool is_admin;
+	bool has_authenticated;
+	bool is_registered;
+	bool user_registered;
+	bool nick_registered;
+	int fd;
+>>>>>>> irc2:MasterBRANCH/includes/User.hpp
 
 	User();
 };

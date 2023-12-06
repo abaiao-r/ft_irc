@@ -1,21 +1,14 @@
-<h1 align="center">
-	🌐 FT_IRC 🌐
-</h1>
+OK entao basicamente, COISAS A FAZER:
 
-<p align="center">
-	<b><i> Bridging the Bytes for Seamless Conversations 🌉</i></b>
-</p>
+1- dar fix no login. A ordem pode ser aleatoria e nao pode ser como esta. Tambem adicionar a autenticacao por hexchat que esta no meu ficheiro Hexchat.cpp
 
-<div align="center">
-<img alt="FT_IRC" src="https://github.com/joao-per/joao-per/blob/main/Badges/Ft_irc.png" />
-</div>
+2- Adicionar todos os comandos. Todos estao presentes no Commands.cpp . So copiar accordingly
 
-## 🧠 About the project
-A basic implementation of an IRC server that handles authentication, user registration, and several chat commands. 🖥️
+3- Verificar que todas as variaveis guardadas (nome, username, etc) sao guardadas sem \r e \n
 
-## 🌟 Features
-🔒 **Authentication**: Authenticate users with a password.
+4- Se sobrar tempo, testar com Hexchat, caso contrario, so com nc mesmo.
 
+<<<<<<< HEAD
 🖋️ **Registration**: Register users by setting their nickname (NICK) username (USER) and realname!
 
 📜 **Command Handling**: Process various commands like JOIN, PRIVMSG and MODE.
@@ -57,3 +50,13 @@ A huge thank you to my colleagues gacorrei and abaiao-r for their invaluable con
 
 ## 📝 License
 This project is licensed under the MIT License - see the LICENSE file for details.
+=======
+5- comandos a serem testados conforme a implementacao que fiz:
+CREATE #<nome da sala> <OPCIONAL: topico da sala>
+JOIN #<nome da sala>
+TOPIC #<nome da sala> <topico>
+KICK #<nome da sala> <user>
+INVITE #<nome da sala> <user>
+
+POR FAVOR QUALQUER DUVIDA, LIGUEM-ME, MANDEM-ME MENSAGEM, O QUE QUISEREM
+>>>>>>> irc2

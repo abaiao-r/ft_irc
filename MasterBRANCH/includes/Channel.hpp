@@ -18,6 +18,7 @@
 
 class Channel
 {
+<<<<<<< HEAD:includes/Channel.hpp
 	public:
 		bool					is_private;
 		bool					is_invite_only;
@@ -32,6 +33,14 @@ class Channel
 		std::vector<std::string> operator_list;
 
 		User admin;
+=======
+    public:
+        std::string name;
+        User admin; 
+        std::vector<User> users_in_channel;
+        std::string topic;
+
+>>>>>>> irc2:MasterBRANCH/includes/Channel.hpp
 };
 
 #endif
