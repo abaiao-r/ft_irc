@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/05 10:09:47 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 19:15:01 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,7 +268,7 @@ Client	&Channel::get_operator()
 
 void	Channel::check_operator()
 {
-	if (_clients_operator_channel.size() == 0)
+	if (_clients_operator_channel.size() == 0 && _clients_in_channel.size() > 0)
 	{
 		_clients_operator_channel.push_back(_clients_in_channel[0]);
 		_clients_in_channel[0].set_is_admin(true);		
