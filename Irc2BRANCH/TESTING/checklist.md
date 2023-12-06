@@ -848,14 +848,6 @@ INVITE
         Call cmd_invite with a malformed command (missing parameters).
         Verify that the operator client receives an error message indicating the correct usage of the INVITE command.
 
-    Test Case 8: Invite Multiple Clients
-        Create a channel.
-        Create an operator client and join the channel.
-        Create multiple non-operator clients.
-        Call cmd_invite to invite each non-operator client to the channel.
-        Verify that each non-operator client receives the invitation message.
-        Verify that each non-operator client is added to the list of invited clients in the channel.
-
 Test the moderator function of the bot
 
     Test Case 1: Clean Message
