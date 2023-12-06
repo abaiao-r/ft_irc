@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommands.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 10:45:16 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/06 18:17:37 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 19:16:49 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,8 @@ void ServerCommands::login(Client &client, const std::string &buffer)
 	if (cmds.find("PASS") == cmds.end()
 		&& cmds.find("USER") == cmds.end()
 		&& cmds.find("NICK") == cmds.end()
-		&& cmds.find("CAP") == cmds.end())
+		&& cmds.find("CAP") == cmds.end()
+		&& cmds.find("HALP") == cmds.end())
 		sendMessage(client.get_client_fd(), "ERROR :Login before using commands\r\n");
 	{
 		if (client.get_registered())
