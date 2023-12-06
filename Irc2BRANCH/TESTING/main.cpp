@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/26 10:20:34 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/06 17:22:54 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/12/06 17:31:23 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ int	main(int ac, char **av)
 	try
 	{
 		if (!isStrOnlyDigits(av[1]))
-			throw std::runtime_error("Port must be an integer");
+			throw std::runtime_error("Port must be am integer");
 		int port = safe_atoi(av[1]);
 		if (port < 1024 || port > 49151)
 			throw std::runtime_error("Port must be between 1024 and 49151");
