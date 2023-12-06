@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/26 09:32:48 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/06 18:18:23 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/12/06 19:04:06 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,14 +134,14 @@ void	Bot::cmd_help(Client &client)
 	sendBotMessage(fd, "NICK <nickname>\r\n");
 	sendBotMessage(fd, "JOIN <#channel>\r\n");
 	sendBotMessage(fd, "PRIVMSG <nickname | #channel> <message>\r\n");
-	if (client.get_is_admin())
-	{
-		sendBotMessage(fd, "Available operator commands:\r\n");
-		sendBotMessage(fd, "KICK <#channel> <nickname> [reason]\r\n");
-		sendBotMessage(fd, "INVITE <#channel> <nickname>\r\n");
-		sendBotMessage(fd, "TOPIC <#channel> [topic]\r\n");
-		sendBotMessage(fd, "MODE <#channel> <+|-><i|t|k|o|l> [argument]\r\n");
-	}
+	sendBotMessage(fd, "TOPIC <#channel>\r\n");
+	sendBotMessage(fd, "----------------------------------------\r\n");
+	sendBotMessage(fd, "If client is an operator:\r\n");
+	sendBotMessage(fd, "Available operator commands:\r\n");
+	sendBotMessage(fd, "KICK <#channel> <nickname> [reason]\r\n");
+	sendBotMessage(fd, "INVITE <#channel> <nickname>\r\n");
+	sendBotMessage(fd, "TOPIC <#channel> [topic]\r\n");
+	sendBotMessage(fd, "MODE <#channel> <+|-><i|t|k|o|l> [argument]\r\n");
 }
 
 /* sendBotMessage: sends a message to the client */

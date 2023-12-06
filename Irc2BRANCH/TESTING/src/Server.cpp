@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/12/06 09:49:16 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 20:09:31 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,8 @@
 Server::Server()
 	: _port(0), _server_fd(-1)
 {
-	std::cout << CYAN << "Default constructor Server called" << RESET 
-		<< std::endl;
+	//std::cout << CYAN << "Default constructor Server called" << RESET 
+	//	<< std::endl;
 	std::memset(&_address, 0, sizeof(_address));
 	_address.sin_family = AF_INET; // IPv4
 	_address.sin_addr.s_addr = INADDR_ANY; // Any available network interface
@@ -28,8 +28,8 @@ Server::Server()
 Server::Server(int port, std::string password)
 	: _port(port), _password(password)
 {
-	std::cout << CYAN << "Parameter constructor Server called" << RESET 
-		<< std::endl;
+	//std::cout << CYAN << "Parameter constructor Server called" << RESET 
+	//	<< std::endl;
 	// check password
 	if (password_checker(password))
 		throw(std::runtime_error(""));
@@ -44,27 +44,26 @@ Server::Server(int port, std::string password)
 }
 
 /* Copy constructor */
-Server::Server(const Server &src)
-	:ServerConnection()
+Server::Server(const Server &src):ServerConnection()
 {
-	std::cout << CYAN << "Copy constructor Server called" << RESET 
-		<< std::endl;
+	//std::cout << CYAN << "Copy constructor Server called" << RESET 
+	//	<< std::endl;
 	*this = src;
 }
 
 /* Destructor */
 Server::~Server()
 {
-	std::cout << RED << "Destructor Server called" << RESET 
-		<< std::endl;
+	//std::cout << RED << "Destructor Server called" << RESET 
+	//	<< std::endl;
 	close(_server_fd);
 }
 
 /* Assignment operator overload (Update) */
 Server &Server::operator=(const Server &src)
 {
-	std::cout << YELLOW << "Assignment operator Server called" << RESET 
-		<< std::endl;
+	//std::cout << YELLOW << "Assignment operator Server called" << RESET 
+	//	<< std::endl;
 	if (this != &src)
 	{
 		_port = src._port;

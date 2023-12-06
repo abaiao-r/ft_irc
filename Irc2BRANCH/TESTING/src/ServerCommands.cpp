@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommands.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 10:45:16 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/06 19:41:37 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/12/06 20:11:37 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,14 @@
 ServerCommands::ServerCommands()
 	: _Clippy("Clippy")
 {
-	std::cout << CYAN << "Default constructor ServerCommands called" << RESET 
-		<< std::endl;
+	//std::cout << CYAN << "Default constructor ServerCommands called" << RESET 
+	//	<< std::endl;
 }
 
 ServerCommands::~ServerCommands()
 {
-	std::cout << RED << "Destructor ServerCommands called" << RESET 
-		<< std::endl;
+	//std::cout << RED << "Destructor ServerCommands called" << RESET 
+	//	<< std::endl;
 	C_IT end = _clients.end();
 	for (C_IT it = _clients.begin(); it != end; it++)
 		close(it->get_client_fd());
@@ -31,16 +31,16 @@ ServerCommands::~ServerCommands()
 ServerCommands::ServerCommands(const ServerCommands &copy)
 	: _Clippy("Clippy")
 {
-	std::cout << CYAN << "Copy constructor ServerCommands called" << RESET 
-		<< std::endl;
+	//std::cout << CYAN << "Copy constructor ServerCommands called" << RESET 
+	//	<< std::endl;
 	*this = copy;
 }
 
 ServerCommands &ServerCommands::operator=(const ServerCommands &copy)
 {
 	(void)copy;
-	std::cout << CYAN << "Assignment operator ServerCommands called" << RESET 
-		<< std::endl;
+	//std::cout << CYAN << "Assignment operator ServerCommands called" << RESET 
+	//	<< std::endl;
 	return (*this);
 }
 
@@ -76,8 +76,8 @@ void ServerCommands::parseLoginLine(const std::string &line, std::map<std::strin
 	cmds[cmd].erase(cmds[cmd].find_last_not_of(" \t\n\r\f\v") + 1);
 
 	// Debug print: Display the command and its arguments.
-	std::cout << YELLOW << "cmd:" << cmd << "| input:" << input << "|"<< RESET << std::endl;
-	std::cout << ORANGE << "cmd:" << cmd << " input:" << input << RESET << std::endl;
+	//std::cout << YELLOW << "cmd:" << cmd << "| input:" << input << "|"<< RESET << std::endl;
+	//std::cout << ORANGE << "cmd:" << cmd << " input:" << input << RESET << std::endl;
 }
 
 
@@ -141,7 +141,7 @@ int	ServerCommands::client_cmds(Client &client)
 		return 0;
 	}
 	buffer[n] = 0;
-	std::cout << MAGENTA << "Received:" << buffer << RESET << ".\n";
+	std::cout << MAGENTA << "Received:" << buffer << RESET << "\n";
 	if (n > 0 && buffer[n - 1] == '\n')
 	{
 		buffer[n - 1] = 0;
@@ -806,7 +806,7 @@ int ServerCommands::cmd_mode(Client &client, std::string input)
 	iss >> channel_to_find >> mode >> argument;
 
 	// Debug
-	printDebugInfo(channel_to_find, mode, argument);
+	// printDebugInfo(channel_to_find, mode, argument);
 	// Find the channel
 	Channel *channel = findChannel(client, channel_to_find);
 	if (!channel)
@@ -1828,10 +1828,10 @@ int	ServerCommands::nick_validation(std::string check)
 */
 int	ServerCommands::name_compare(std::string check, std::string comp)
 {
-	std::cout << "Name to check is: " << check << " comparing against: " << comp << "\n";
+	//std::cout << "Name to check is: " << check << " comparing against: " << comp << "\n";
 	std::transform(check.begin(), check.end(), check.begin(), tolower);
 	std::transform(comp.begin(), comp.end(), comp.begin(), tolower);
-	std::cout << "After tolower: " << check << " and " << comp << "\n";
+	//std::cout << "After tolower: " << check << " and " << comp << "\n";
 	if (check == comp)
 		return 1;
 	return 0;

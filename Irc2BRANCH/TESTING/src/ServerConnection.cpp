@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConnection.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 08:59:41 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/06 11:47:21 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 19:54:03 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,14 @@ int	ServerConnection::_loop_state = 1;
 ServerConnection::ServerConnection()
 {
 	std::signal(SIGINT, signal_handler);
-	std::cout << CYAN << "Default constructor ServerConnection called" << RESET 
-		<< std::endl;
+	//std::cout << CYAN << "Default constructor ServerConnection called" << RESET 
+	//	<< std::endl;
 }
 
 ServerConnection::~ServerConnection()
 {
-	std::cout << RED << "Destructor ServerConnection called" << RESET 
-		<< std::endl;
+	//std::cout << RED << "Destructor ServerConnection called" << RESET 
+	//	<< std::endl;
 	close(_epoll_fd);
 	std::signal(SIGINT, SIG_DFL);
 }
@@ -32,15 +32,15 @@ ServerConnection::~ServerConnection()
 ServerConnection::ServerConnection(const ServerConnection &copy)
 	:ServerCommands()
 {
-	std::cout << CYAN << "Copy constructor Server called" << RESET 
-			<< std::endl;
+	//std::cout << CYAN << "Copy constructor Server called" << RESET 
+	//		<< std::endl;
 	*this = copy;
 }
 
 ServerConnection &ServerConnection::operator=(const ServerConnection &copy)
 {
-	std::cout << YELLOW << "Assignment operator Server called" << RESET 
-		<< std::endl;
+	//std::cout << YELLOW << "Assignment operator Server called" << RESET 
+	//	<< std::endl;
 	(void)copy;
 	return *this;
 }
