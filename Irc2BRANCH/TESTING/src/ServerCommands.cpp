@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 10:45:16 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/06 20:06:02 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/12/06 20:11:37 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,7 +141,7 @@ int	ServerCommands::client_cmds(Client &client)
 		return 0;
 	}
 	buffer[n] = 0;
-	std::cout << MAGENTA << "Received:" << buffer << RESET << ".\n";
+	std::cout << MAGENTA << "Received:" << buffer << RESET << "\n";
 	if (n > 0 && buffer[n - 1] == '\n')
 	{
 		buffer[n - 1] = 0;

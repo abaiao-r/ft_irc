@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/12/06 19:50:42 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/12/06 20:09:31 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,7 @@ Server::Server(int port, std::string password)
 }
 
 /* Copy constructor */
-Server::Server(const Server &src)
-	:ServerConnection()
+Server::Server(const Server &src):ServerConnection()
 {
 	//std::cout << CYAN << "Copy constructor Server called" << RESET 
 	//	<< std::endl;
