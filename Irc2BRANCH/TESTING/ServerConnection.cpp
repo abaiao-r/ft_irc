@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConnection.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 08:59:41 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/05 10:11:17 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 11:47:21 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ int	ServerConnection::_loop_state = 1;
 
 ServerConnection::ServerConnection()
 {
+	std::signal(SIGINT, signal_handler);
 	std::cout << CYAN << "Default constructor ServerConnection called" << RESET 
 		<< std::endl;
 }
@@ -44,7 +45,6 @@ ServerConnection &ServerConnection::operator=(const ServerConnection &copy)
 	return *this;
 }
 
-
 void	ServerConnection::create_epoll(int server_fd)
 {
 	memset(&_events, 0, sizeof(_events));
@@ -52,9 +52,14 @@ void	ServerConnection::create_epoll(int server_fd)
 	if (_epoll_fd == -1)
 		throw(std::runtime_error("Error when creating epoll"));
 	memset(&_main_event, 0, sizeof(_main_event));
+	add_epoll(server_fd);
+}
+
+void	ServerConnection::add_epoll(int fd)
+{
 	_main_event.events = EPOLLIN;
-	_main_event.data.fd = server_fd;
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, server_fd, &_main_event) == -1)
+	_main_event.data.fd = fd;
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, fd, &_main_event) == -1)
 		throw(std::runtime_error("Error in epoll_ctl"));
 }
 
@@ -66,72 +71,7 @@ void	ServerConnection::connection(int server_fd)
 
 	while (_loop_state)
 	{
-		// for debugging Print the number of clients connected, the number of channels,the clients connected,  the number of clients in each channel, the clients in each channel, the operations in each channel, the invites in each channel, the bans in each channel,
-		std::cout << "-----------SERVER INFO-----------\n";
-		// number of clients connected to the server
-		std::cout << "There are " << _clients.size() << " clients connected\n";
-		// clients connected to the server
-		if (_clients.size() > 0)
-		{
-			std::cout << "\nClients connected to the server:\n";
-			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
-			{
-				std::cout << it->get_nickname() << "\n";
-			}
-			std::cout << "\nClients authenticated to the server:\n";
-			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
-			{
-				if (it->get_authenticated() == true)
-					std::cout << it->get_nickname() << "\n";
-			}
-			std::cout << "\nClients registered to the server:\n";
-			for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
-			{
-				if (it->get_registered())
-					std::cout << it->get_nickname() << "\n";
-			}
-		}
-		// number of channels
-		std::cout << "\nThere are " << _channels.size() << " channels\n";
-		// names of the channels
-		if (_channels.size() > 0)
-		{
-			std::cout << "\nChannels:\n";
-			for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
-			{
-				std::cout << it->get_name() << "\n";
-			}
-		}
-		// clients in each channel, operations in each channel, invites in each channel, bans in each channel
-		if (_channels.size() > 0)
-		{
-			for (std::vector<Channel>::iterator it = _channels.begin(); it != _channels.end(); it++)
-			{
-				std::cout << "\nChannel " << it->get_name() << " has " << it->get_clients_in_channel().size() << " clients\n";
-				std::cout << "\nClients in channel " << it->get_name() << ":\n";
-				for (std::vector<Client>::iterator it2 = it->get_clients_in_channel().begin(); it2 != it->get_clients_in_channel().end(); it2++)
-				{
-					std::cout << it2->get_nickname() << "\n";
-				}
-				std::cout << "\nOperators in channel " << it->get_name() << ":\n";
-				for (std::vector<Client>::iterator it2 = it->get_clients_operator_channel().begin(); it2 != it->get_clients_operator_channel().end(); it2++)
-				{
-					std::cout << it2->get_nickname() << "\n";
-				}
-				std::cout << "\nInvites in channel " << it->get_name() << ":\n";
-				for (std::vector<Client>::iterator it2 = it->get_clients_invited_to_channel().begin(); it2 != it->get_clients_invited_to_channel().end(); it2++)
-				{
-					std::cout << it2->get_nickname() << "\n";
-				}
-				std::cout << "\nBans in channel " << it->get_name() << ":\n";
-				for (std::vector<Client>::iterator it2 = it->get_clients_banned().begin(); it2 != it->get_clients_banned().end(); it2++)
-				{
-					std::cout << it2->get_nickname() << "\n";
-				}
-			}
-		}
-		std::cout << "---------------------------------\n";
-		// end of debugging
+		info_print();
 		count = epoll_wait(_epoll_fd, _events, MAX_EVENTS, -1);
 		if (count == -1)
 		{
@@ -145,10 +85,7 @@ void	ServerConnection::connection(int server_fd)
 			{
 				client_connection(server_fd);
 				client_fd = _clients.back().get_client_fd();
-				_main_event.events = EPOLLIN;
-				_main_event.data.fd = client_fd;
-				if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &_main_event) == -1)
-					throw(std::runtime_error("Error in epoll_ctl"));
+				add_epoll(client_fd);
 			}
 			else if ((_events[i].events & EPOLLERR)
 				|| (_events[i].events & EPOLLHUP)
@@ -161,7 +98,7 @@ void	ServerConnection::connection(int server_fd)
 				if (match == _clients.end())
 				{
 					std::cout << "Error. Could not find client\n";
-					disconnect_client(*match);
+					disconnect_client(match->get_client_fd());
 					for (CH_IT it = _channels.begin(); it != _channels.end(); it++)
 						it->check_operator();
 					continue;
@@ -303,4 +240,57 @@ void	ServerConnection::signal_handler(int sig)
 		std::cout << std::endl;
 		_loop_state = 0;
 	}
+}
+
+void	ServerConnection::info_print()
+{
+	// for debugging Print the number of clients connected, the number of channels,the clients connected,  the number of clients in each channel, the clients in each channel, the operations in each channel, the invites in each channel, the bans in each channel,
+	std::cout << "-----------SERVER INFO-----------\n";
+	// number of clients connected to the server
+	std::cout << "There are " << _clients.size() << " clients connected\n";
+	// clients connected to the server
+	if (_clients.size() > 0)
+	{
+		std::cout << "\nClients connected to the server:\n";
+		for (C_IT it = _clients.begin(); it != _clients.end(); it++)
+			std::cout << it->get_nickname() << "\n";
+		std::cout << "\nClients authenticated to the server:\n";
+		for (C_IT it = _clients.begin(); it != _clients.end(); it++)
+			if (it->get_authenticated() == true)
+				std::cout << it->get_nickname() << "\n";
+		std::cout << "\nClients registered to the server:\n";
+		for (C_IT it = _clients.begin(); it != _clients.end(); it++)
+			if (it->get_registered())
+				std::cout << it->get_nickname() << "\n";
+	}
+	// number of channels
+	std::cout << "\nThere are " << _channels.size() << " channels\n";
+	// names of the channels
+	if (_channels.size() > 0)
+	{
+		std::cout << "\nChannels:\n";
+		for (CH_IT it = _channels.begin(); it != _channels.end(); it++)
+			std::cout << it->get_name() << "\n";
+	}
+	// clients in each channel, operations in each channel, invites in each channel, bans in each channel
+	if (_channels.size() > 0)
+	{
+		for (CH_IT it = _channels.begin(); it != _channels.end(); it++)
+		{
+			std::cout << "\nChannel " << it->get_name() << " has " << it->get_clients_in_channel().size() << " clients\n";
+			std::cout << "\nClients in channel " << it->get_name() << ":\n";
+			for (C_IT it2 = it->get_clients_in_channel().begin(); it2 != it->get_clients_in_channel().end(); it2++)
+				std::cout << it2->get_nickname() << "\n";
+			std::cout << "\nOperators in channel " << it->get_name() << ":\n";
+			for (C_IT it2 = it->get_clients_operator_channel().begin(); it2 != it->get_clients_operator_channel().end(); it2++)
+				std::cout << it2->get_nickname() << "\n";
+			std::cout << "\nInvites in channel " << it->get_name() << ":\n";
+			for (C_IT it2 = it->get_clients_invited_to_channel().begin(); it2 != it->get_clients_invited_to_channel().end(); it2++)
+				std::cout << it2->get_nickname() << "\n";
+			std::cout << "\nBans in channel " << it->get_name() << ":\n";
+			for (C_IT it2 = it->get_clients_banned().begin(); it2 != it->get_clients_banned().end(); it2++)
+				std::cout << it2->get_nickname() << "\n";
+		}
+	}
+	std::cout << "---------------------------------\n";
 }

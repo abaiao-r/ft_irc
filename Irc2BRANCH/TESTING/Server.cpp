@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:59:20 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/12/05 14:07:57 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 09:49:16 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,10 +127,10 @@ int Server::bind_socket(void)
 int Server::set_socket_options(void) // use int
 {
 	int opt = 1;
-	if (setsockopt(this->_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, 
+	if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, 
 		sizeof(opt)) == -1) 
 	{
-		close (this->_server_fd);
+		close (_server_fd);
 		return -1;
 	}
 	return 0;

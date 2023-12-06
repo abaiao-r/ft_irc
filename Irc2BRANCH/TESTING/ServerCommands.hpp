@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommands.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 10:45:28 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/05 14:04:30 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 13:50:06 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,35 +55,30 @@ class ServerCommands
 		bool			checkClientRegistration(Client &client, int fd);
 		bool			validateJoinPreconditions(Client &client, int fd, const std::string &input_channel_name, CH_IT &it);
 		int				cmd_join(Client &client, std::string input);
-		/*end JOIN funtions*/
+		/*PRIVMSG funtions*/
 		void			cmd_privmsg(Client &client, std::string input);
-
-		/* list funtions*/
-		std::vector<std::string>		parseArgsListCommand(std::string input);
+		/*LIST funtions*/
+		std::vector<std::string>	parseArgsListCommand(std::string input);
 		int 			cmdListNoArgs(Client &client);
 		int 			cmdListWithArg(Client &client, std::string input);
 		int 			cmd_list(Client &client, std::string input);
-		/*end list funtions*/
 		/* WHO funtions*/
 		void 			sendWhoReplyMessages(Client &client, Channel &channel);
 		int				cmd_who(Client &client, std::string input);
-		/*end WHO funtions*/
 		/*KICK funtions*/
 		int 			kickClientFromChannel(Channel* channel, Client* client, Client *client_to_kick, const std::string& reason);
+		int				kickClientFromChannel(Channel *channel, Bot &bot, Client *client_to_kick, const std::string &reason);
 		void 			parseKickCommand(std::istringstream &iss, std::string &channel_to_find, std::string &nickname, std::string &reason);
 		int 			performChecks(Client &client, const std::string &channel_to_find, std::string &nickname, Channel *&channel, Client *&client_to_kick);
 		int 			cmd_kick(Client &client, std::string input);
-		/*end KICK funtions*/
 		/* INVITE funtions*/
 		int				handleInviteErrors(Client &client, const std::string &channel_to_find, const std::string &nickname, Channel *&channel);
 		int				cmd_invite(Client &client, std::string input);
-		/*end INVITE funtions*/
 		/*TOPIC funtions*/
 		int 			handleTopicCommand(Client &client, Channel *&channel, const std::string &topic);
 		int 			handleTopicErrors(Client &client, const std::string &channel_to_find, Channel *&channel);
 		void 			parseTopicCommand(std::istringstream &iss, std::string &channel_to_find, std::string &topic);
 		int				cmd_topic(Client &client, std::string input);
-		/*end TOPIC funtions*/
 		/*mode funtions*/
 		int 			handleModeMinusL(Channel *channel, int fd);
 		int 			handleModePlusL(Channel *channel, std::string argument, int fd);
@@ -101,29 +96,23 @@ class ServerCommands
 		int 			sendChannelNotFoundError(int fd, const std::string &channel);
 		void 			printDebugInfo(const std::string &channel, const std::string &mode, const std::string &argument);
 		int				cmd_mode(Client &client, std::string input);
-		/*end mode functions*/
-		int 			sendMessage(int client_fd, const std::string &msg);
 		/*PART funtions*/
 		std::vector<std::string>	getPartVector(std::string input);
 		void			cmd_part(Client &client, std::string input);
-		/*end PART funtions*/
-
 		//Utils
+		int 			sendMessage(int client_fd, const std::string &msg);
 		void			sendChannelUserListMessage(Channel *channel, const std::string &argument);
 		int				is_client_admin(Client &client);
 		Channel			*findChannel(Client &client, const std::string& channelName);
 		Client			*find_client(Client &client, const std::string& nickname);
-		int				kickClientFromChannel(Channel *channel, Bot &bot, Client *client_to_kick, const std::string &reason);
 		int 			channel_name_validation(int client_fd, std::string check);
 		virtual bool	pass_validation(std::string check) const = 0;
 		bool			name_validation(std::string check);
 		int				nick_validation(std::string check);
 		int				name_compare(std::string check, std::string comp);
-		int				password_checker(std::string password);
 		int				password_checker(std::string password, int fd);
 		std::string		get_users_string(Channel &channel);
 		void			disconnect_client(int fd);
-		void			disconnect_client(Client &client);
 		void			leave_all_rooms(Client &client);
 		void			join_messages(Client &client, Channel &channel);
 };

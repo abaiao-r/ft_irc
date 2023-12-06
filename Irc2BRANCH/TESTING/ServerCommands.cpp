@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerCommands.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 10:45:16 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/05 14:06:57 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 14:13:50 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,7 +144,6 @@ int	ServerCommands::client_cmds(Client &client)
 	}
 	if (n > 1 && buffer[n - 2] == '\r')
 		buffer[n - 2] = 0;
-
 	// if client is not registered, check for login commands
 	if (!client.get_authenticated() || !client.get_registered())
 	{
@@ -291,7 +290,7 @@ int ServerCommands::cmdListNoArgs(Client &client)
 			+ it->get_topic() + "\r\n";
 		sendMessage(client.get_client_fd(), msg2);
 	}
-		return (0);
+	return (0);
 }
 
 /*cmd_list: /list #channel1,#channel2,#channel3 or /list
@@ -307,16 +306,10 @@ int ServerCommands::cmd_list(Client &client, std::string input)
 	sendMessage(client.get_client_fd(), msg);
 	// if input is empty, list all channels
 	if (input.empty() && _channels.size() > 0)
-	{
-		if (cmdListNoArgs(client) == 1)
-			return (1);
-	}
+		cmdListNoArgs(client);
 	// else, list channels that match input
 	else if (!input.empty() && _channels.size() > 0)
-	{
-		if (cmdListWithArg(client, input) == 1)
-			return (1);
-	}
+		cmdListWithArg(client, input);
 	std::string msg2 = ":localhost " + RPL_LISTEND + " " 
 		+ client.get_nickname() + " :End of /LIST\r\n";
 	sendMessage(client.get_client_fd(), msg2);
@@ -1079,7 +1072,7 @@ bool ServerCommands::checkIfClientAlreadyInChannel(Client &client,
 	if (find(in_channel.begin(), in_channel.end(), 
 		client.get_client_fd()) != in_channel.end())
 	{
-		// numerric reply
+		// numeric reply
 		std::string message = ":localhost " + ERR_USERONCHANNEL +
 			" " + client.get_nickname() + " " + input_channel_name +
 			" : Error[JOIN]: " + client.get_nickname() 
@@ -1101,7 +1094,6 @@ bool ServerCommands::createAndJoinChannel(Client &client,
 	{
 		if (channel_name_validation(fd, input_channel_name) == 1)
 			return (false);
-
 		// Create channel
 		Channel new_channel(input_channel_name);
 		_channels.push_back(new_channel);
@@ -1723,7 +1715,6 @@ int ServerCommands::handleInviteErrors(Client &client, const std::string &nickna
 	return (0);
 }
 
-
 /* cmd_invite: invite client to channel (INVITE <nickname> <channel>)
  * 1. Parse input into nickname and channel name
  * 2. Check if client is operator in channel
@@ -1852,26 +1843,6 @@ void	ServerCommands::disconnect_client(int fd)
 	_clients.erase(match);
 }
 
-
-/* disconnect_client: remove client from server
-** 1. find client in _clients vector
-** 2. remove client from all channels
-** 3. close client's fd
-** 4. remove client from _clients vector
-*/
-void	ServerCommands::disconnect_client(Client &client)
-{
-	int		fd = client.get_client_fd();
-	C_IT	end = _clients.end();
-	C_IT	match = find(_clients.begin(), end, fd);
-
-	if (match == end)
-		throw(std::runtime_error("Error. Could not find client"));
-	leave_all_rooms(client);
-	close(fd);
-	_clients.erase(match);
-}
-
 /* leave_all_rooms: remove client from all channels
 ** 1. iterate through all channels
 ** 2. remove client from channel
@@ -1956,9 +1927,7 @@ Channel	*ServerCommands::findChannel(Client &client, const std::string	&channelN
 
 	(void)client;
 	if (it == _channels.end())
-	{
-		return (NULL);
-	}
+		return NULL;
 	return &(*it);
 }
 

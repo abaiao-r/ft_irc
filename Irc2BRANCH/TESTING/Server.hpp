@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 15:58:00 by abaiao-r          #+#    #+#             */
-/*   Updated: 2023/12/05 14:07:32 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 13:06:50 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,13 +19,8 @@
 #include "ServerUtils.hpp"
 #include "colours.hpp"
 
-class Client;
-class Channel;
-class ServerConnection;
-
 #define SOCKLEN sizeof(struct sockaddr_in)
 #define MAX_REQUESTS 5
-#define MAX_RETRIES 3
 
 class Server: public ServerConnection
 {
@@ -39,7 +34,7 @@ class Server: public ServerConnection
 		Server &operator=(const Server &src);
 	public:
 		Server(int port, std::string password);
-		virtual ~Server();
+		~Server();
 
 		// init server
 		void	init_server(void);
