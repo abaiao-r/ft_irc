@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/26 10:20:34 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/06 17:31:23 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/12/06 17:41:20 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 #include "ServerUtils.hpp"
+#include "colours.hpp"
 
 int	main(int ac, char **av)
 {
@@ -23,7 +24,7 @@ int	main(int ac, char **av)
 	try
 	{
 		if (!isStrOnlyDigits(av[1]))
-			throw std::runtime_error("Port must be am integer");
+			throw std::runtime_error("Port must be an integer");
 		int port = safe_atoi(av[1]);
 		if (port < 1024 || port > 49151)
 			throw std::runtime_error("Port must be between 1024 and 49151");
@@ -31,7 +32,7 @@ int	main(int ac, char **av)
 	}
 	catch(const std::runtime_error &e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cerr << RED << e.what() << '\n' << RESET;
 	}
 	return 0;
 }

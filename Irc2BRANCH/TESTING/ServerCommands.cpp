@@ -6,7 +6,7 @@
 /*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 10:45:16 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/06 14:13:50 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 18:17:37 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,6 +106,15 @@ void ServerCommands::login(Client &client, const std::string &buffer)
 		cmd_nick(client, cmds["NICK"]);
 	if (cmds.find("USER") != cmds.end())
 		cmd_user(client, cmds["USER"]);
+	if (cmds.find("PASS") == cmds.end()
+		&& cmds.find("USER") == cmds.end()
+		&& cmds.find("NICK") == cmds.end()
+		&& cmds.find("CAP") == cmds.end())
+		sendMessage(client.get_client_fd(), "ERROR :Login before using commands\r\n");
+	{
+		if (client.get_registered())
+			client.set_authenticated(true);
+	}
 
 	// Clear the commands and input from the map.
 	cmds.clear();
@@ -1166,7 +1175,7 @@ int ServerCommands::cmd_join(Client &client, std::string input)
 	std::string message;
 	std::string input_channel_name;
 	std::string input_password;
-	std::vector<Client> in_channel;
+	std::vector<Client> in_channel;  
 
 	// Parsing input
 	std::stringstream ss(input);

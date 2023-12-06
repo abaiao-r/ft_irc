@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerUtils.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 09:39:52 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/05 10:11:27 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 17:38:48 by gacorrei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ int	safe_atoi(const char *nptr)
 		if (result > INT_MAX / 10 || (result == INT_MAX / 10 && (nptr[i]
 					- '0') > (sign == 1 ? INT_MAX % 10 : -(INT_MIN % 10))))
 		{
-			throw std::out_of_range("Integer overflow or underflow "
+			throw std::runtime_error("Integer overflow or underflow "
 					+ std::string(nptr));
 		}
 		result = result * 10 + (nptr[i] - '0');
