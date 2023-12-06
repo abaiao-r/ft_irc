@@ -6,7 +6,7 @@
 /*   By: joao-per <joao-per@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 10:45:16 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/06 19:16:49 by joao-per         ###   ########.fr       */
+/*   Updated: 2023/12/06 19:41:37 by joao-per         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,6 +106,8 @@ void ServerCommands::login(Client &client, const std::string &buffer)
 		cmd_nick(client, cmds["NICK"]);
 	if (cmds.find("USER") != cmds.end())
 		cmd_user(client, cmds["USER"]);
+	if (cmds.find("HALP") != cmds.end())
+		_Clippy.cmd_help(client);
 	if (cmds.find("PASS") == cmds.end()
 		&& cmds.find("USER") == cmds.end()
 		&& cmds.find("NICK") == cmds.end()
