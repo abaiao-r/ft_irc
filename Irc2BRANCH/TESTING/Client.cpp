@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42lisboa.com>   +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/12/05 10:10:04 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 16:17:45 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,11 +80,13 @@ void	Client::set_registered(const bool &value)
 	_registered = value;
 }
 
+/* get_strikes: return the strikes */
 const int &Client::get_strikes(void) const
 {
 	return (_strikes);
 }
 
+/* set_strikes: set the strikes */
 void Client::set_strikes(const int &value)
 {
 	_strikes = value;
@@ -139,36 +141,44 @@ void	Client::set_is_admin(const bool &value)
 	_is_admin = value;
 }
 
+/* get_cmd: return the cmd_buffer */
 std::string	Client::get_cmd() const
 {
 	return _cmd_buffer;
 }
 
+/* add_to_cmd: add to the cmd_buffer */
 void	Client::add_to_cmd(std::string str)
 {
 	_cmd_buffer += str;
 }
 
+/* clear_cmd: clear the cmd_buffer */
 void	Client::clear_cmd()
 {
 	_cmd_buffer.clear();
 }
 
+/* operator == (overload): compare two clients */
 bool Client::operator==(const Client &comp)
 {
-	return (_client_fd == comp._client_fd);// && _nickname == comp._nickname);
+	return (_client_fd == comp._client_fd);
 }
 
+/* operator == (overload): compare a client with a string */
 bool Client::operator==(const std::string &nick)
 {
 	return (_nickname == nick);
 }
 
+/* operator == (overload): compare a client with a int */
 bool Client::operator==(const int &comp)
 {
 	return (_client_fd == comp);
 }
 
+/* pass_counter: if flag == 1, increment tries, if flag == 2, set tries to val
+ * if flag == 0, return tries */
 int	Client::pass_counter(int flag, int val)
 {
 	if (flag == 1)
