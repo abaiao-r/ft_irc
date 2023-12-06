@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gacorrei <gacorrei@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/30 12:34:24 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/06 19:15:01 by gacorrei         ###   ########.fr       */
+/*   Updated: 2023/12/06 19:43:02 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,8 @@ Channel::Channel()
 	:_name(""), _password(""), _topic("No topic is set"), _topic_mode(false), 
 	_channel_limit(0), _channel_invite_only(false)
 {
-	std::cout << CYAN << "Channel: Default constructor called" << RESET
-		<< std::endl;
+	//std::cout << CYAN << "Channel: Default constructor called" << RESET
+	//	<< std::endl;
 	_vectors[0] = "clients";
 	_vectors[1] = "operators";
 	_vectors[2] = "banned";
@@ -29,8 +29,8 @@ Channel::Channel(std::string name)
 	:_name(name), _password(""), _topic("No topic is set"), _topic_mode(false), 
 		_channel_limit(0), _channel_invite_only(false)
 {
-	std::cout << CYAN << "Channel: Parameter constructor called" << RESET
-		<< std::endl;
+	//std::cout << CYAN << "Channel: Parameter constructor called" << RESET
+	//	<< std::endl;
 	_vectors[0] = "clients";
 	_vectors[1] = "operators";
 	_vectors[2] = "banned";
@@ -42,8 +42,8 @@ Channel::Channel(std::string name, std::string password)
 	:_name(name), _password(password), _topic("No topic is set"), _topic_mode(false),
 	_channel_limit(0), _channel_invite_only(false)
 {
-	std::cout << CYAN << "Channel: Parameter constructor called" << RESET
-		<< std::endl;
+	//std::cout << CYAN << "Channel: Parameter constructor called" << RESET
+	//	<< std::endl;
 	_vectors[0] = "clients";
 	_vectors[1] = "operators";
 	_vectors[2] = "banned";
@@ -53,15 +53,15 @@ Channel::Channel(std::string name, std::string password)
 /* Copy constructor */
 Channel::Channel(const Channel &copy)
 {
-	std::cout << CYAN << "Channel: Copy constructor called" << RESET
-		<< std::endl;
+	//std::cout << CYAN << "Channel: Copy constructor called" << RESET
+	//	<< std::endl;
 	*this = copy;
 }
 
 /* Destructor */
 Channel::~Channel(void)
 {
-	std::cout << RED << "Channel: Destructor called" << RESET << std::endl;
+	//std::cout << RED << "Channel: Destructor called" << RESET << std::endl;
 }
 
 /* Operator overload */
