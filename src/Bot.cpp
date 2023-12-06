@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/26 09:32:48 by gacorrei          #+#    #+#             */
-/*   Updated: 2023/12/06 19:04:06 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/12/06 23:27:44 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,10 +165,6 @@ int Bot::sendBotMessage(int client_fd, const std::string &msg)
 ** 4. if no, it sends the message to the channel */
 bool	Bot::big_brother(Channel &channel, Client &client, std::string msg)
 {
-	std::istringstream iss(msg);
-	std::vector<std::string> words;
-	std::string word;
-
 	if (getLoadNaughtyWordsFromFile() == false)
 	{
 		std::cerr << RED << "Error: " << RESET << "Naughty words not loaded" 
@@ -179,6 +175,9 @@ bool	Bot::big_brother(Channel &channel, Client &client, std::string msg)
 	+ " PRIVMSG " + channel.get_name() + " :" + client.get_nickname();
 
 	std::transform(msg.begin(), msg.end(), msg.begin(), tolower);
+	std::istringstream iss(msg);
+	std::vector<std::string> words;
+	std::string word;
 	// parse the msg
 	while (iss >> word)
 		words.push_back(word);
