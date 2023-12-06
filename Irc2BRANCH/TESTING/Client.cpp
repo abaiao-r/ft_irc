@@ -6,7 +6,7 @@
 /*   By: abaiao-r <abaiao-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/27 10:34:09 by joao-per          #+#    #+#             */
-/*   Updated: 2023/12/06 16:17:45 by abaiao-r         ###   ########.fr       */
+/*   Updated: 2023/12/06 19:46:26 by abaiao-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,30 +17,30 @@ Client::Client(void)
 	: _client_fd(-1), _authenticated(false), _registered(false), _tries(0),
 	_strikes(0), _nickname(""), _username(""), _is_admin(false)
 {
-	std::cout << CYAN << "Client: Default constructor called" << RESET 
-		<< std::endl;
+	//std::cout << CYAN << "Client: Default constructor called" << RESET 
+	//	<< std::endl;
 }
 
 /* copy constructor */
 Client::Client(const Client &copy)
 {
-	std::cout << CYAN << "Client: Copy constructor called" << RESET
-		<< std::endl;
+	//std::cout << CYAN << "Client: Copy constructor called" << RESET
+	//	<< std::endl;
 	*this = copy;
 }
 
 /* destructor */
 Client::~Client(void)
 {
-	std::cout << RED << "Client: Destructor called" << RESET 
-		<< std::endl;
+	//std::cout << RED << "Client: Destructor called" << RESET 
+	//	<< std::endl;
 }
 
 /* assignment operator */
 Client &Client::operator=(const Client &copy)
 {
-	std::cout << CYAN << "Client: Assignment operator called" << RESET
-		<< std::endl;
+	//std::cout << CYAN << "Client: Assignment operator called" << RESET
+	//	<< std::endl;
 	if (this != &copy) // this prevents self-assignment. Ex: Client c1; c1 = c1;
 	{
 		_client_fd = copy._client_fd;
