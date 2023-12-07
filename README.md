@@ -61,7 +61,7 @@ The "ft_irc" project demonstrates proficiency in C++98 and networking, showcasin
 
 ## License
 
-[MIT License](License)
+[MIT License](LICENSE)
 
 ## Subject Details
 
