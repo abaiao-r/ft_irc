@@ -2,16 +2,6 @@
 	🌐 FT_IRC 🌐
 </h1>
 
-<p align="center">
-	<b><i> Bridging the Bytes for Seamless Conversations 🌉</i></b>
-</p>
-
-<div align="center">
-<img alt="FT_IRC" src="https://github.com/joao-per/joao-per/blob/main/Badges/Ft_irc.png" />
-</div>
-
-# ft_irc Project
-
 ![IRC Logo](insert_logo_image_url_here)
 
 ## Description
