@@ -10,47 +10,68 @@
 <img alt="FT_IRC" src="https://github.com/joao-per/joao-per/blob/main/Badges/Ft_irc.png" />
 </div>
 
-## 🧠 About the project
-A basic implementation of an IRC server that handles authentication, user registration, and several chat commands. 🖥️
+# ft_irc Project
 
-## 🌟 Features
-🔒 **Authentication**: Authenticate users with a password.
+![IRC Logo](insert_logo_image_url_here)
 
-🖋️ **Registration**: Register users by setting their nickname (NICK) and real name (USER).
+## Description
 
-📜 **Command Handling**: Process various commands like JOIN, MSG, and PRIVMSG.
+The "ft_irc" project involves creating a robust IRC server using C++98, named "ircserv." This server enables real-time text-based communication over the Internet, supporting multiple clients concurrently with non-blocking I/O operations. The project emphasizes adherence to standards, robust error handling, and clean code practices.
 
-🧑‍🤝‍🧑 **Multi-Client Handling**: Uses poll() system call to handle multiple clients simultaneously.
+## Relevance
 
-## 🚀 Getting Started
-### 🛠️ Prerequisites
-A C++ compiler with support for C++11 or newer.
-Basic knowledge of IRC protocols (optional).
+This project showcases proficiency in C++98, network programming, and system-level operations. Developing a functional IRC server demonstrates the ability to work with complex systems, handle multiple connections efficiently, and implement secure communication protocols. These skills are directly applicable in roles requiring backend development, network engineering, and protocol implementation.
 
-### 📖 Compilation
-You can compile the project using:
+## Skills Involved
 
-```bash
-make
-```
+- C++
+- Network Programming
+- Non-blocking I/O
+- Error Handling
+- Clean Code Practices
 
-And then run the server:
-```bash
-./ircserv <port> <password>
-```
+## Features
 
-For example:
-```bash
-./ircserv 6667 12345
-```
+- Multi-client support
+- Non-blocking I/O operations
+- User authentication and nickname setting
+- Channel operations (join, private messaging)
+- Operator functionalities (KICK, INVITE, TOPIC, MODE)
+- Bonus features: File transfer and a bot (evaluated if mandatory part is flawless)
 
-## 💡 Implementation Details
-**Authentication**: Clients authenticate using the PASS command. Upon successful authentication, they register with NICK and USER.
+## Resources to Study
 
-**Command Handling**: Processes commands like JOIN, MSG, and PRIVMSG.
+- C++98 Documentation
+- Network Programming Resources
+- IRC Protocol Specifications
+- Clean Code Practices
 
-## 🙏 Acknowledgments
-A huge thank you to my colleagues gacorrei and abaiao-r for their invaluable contributions and insights. This project wouldn't be the same without their assistance. 🙌
+## Reference Client
 
-## 📝 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+HexChat is the reference IRC client used for evaluation.
+
+## How to Run
+
+1. Clone the repository: `git clone [repository_url]`
+2. Navigate to the project directory: `cd ft_irc`
+3. Compile the source files using the provided Makefile: `make`
+4. Run the IRC server with the specified port and password: `./ircserv <port> <password>`
+
+## Conclusion
+
+The "ft_irc" project demonstrates proficiency in C++98 and networking, showcasing the ability to build a reliable IRC server with essential features. It serves as a tangible example of practical skills relevant to roles involving backend development, network engineering, and system-level programming.
+
+## License
+
+[MIT License](License)
+
+## Subject Details
+
+[Project Subject Details](insert_subject_details_link_here)
+
+## Authors
+
+- André Francisco Baião Rolão Cândido da Silva
+- Gabriel Norberto Correia Guerra Franco
+- João Paulo Rodrigues Pereira
+
