@@ -31,14 +31,14 @@ This project showcases proficiency in C++98, network programming, and system-lev
 
 ## Resources to Study
 
-- C++98 Documentation
+- C++ Documentation
 - Network Programming Resources
 - IRC Protocol Specifications
 - Clean Code Practices
 
 ## Reference Client
 
-HexChat is the reference IRC client used for evaluation.
+HexChat is the reference IRC client used for this project.
 
 ## How to Run
 
@@ -46,6 +46,14 @@ HexChat is the reference IRC client used for evaluation.
 2. Navigate to the project directory: `cd ft_irc`
 3. Compile the source files using the provided Makefile: `make`
 4. Run the IRC server with the specified port and password: `./ircserv <port> <password>`
+5. Connect to the IRC server using HexChat:
+    - Open HexChat and enter your desired nickname and other details.
+    - Connect to the server using the server address and port specified earlier.
+    - Enter the provided password when prompted.
+
+6. Connect to the IRC server using `nc`:
+    - Open a terminal window.
+    - Use the following command to connect: `nc 127.0.0.1 <port>`
 
 ## Conclusion
 
