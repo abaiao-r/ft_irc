@@ -65,7 +65,7 @@ The "ft_irc" project demonstrates proficiency in C++98 and networking, showcasin
 
 ## Subject Details
 
-[Project Subject Details](insert_subject_details_link_here)
+[Project Subject Details](en.subject.pdf)
 
 ## Authors
 
