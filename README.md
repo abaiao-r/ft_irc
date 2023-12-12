@@ -1,8 +1,9 @@
 <h1 align="center">
 	🌐 FT_IRC 🌐
 </h1>
-
+<h1 align="center">
 ![IRC Logo](irc_logo.png)
+</h1>
 
 ## Description
 
@@ -27,7 +28,7 @@ This project showcases proficiency in C++98, network programming, and system-lev
 - User authentication and nickname setting
 - Channel operations (join, private messaging)
 - Operator functionalities (KICK, INVITE, TOPIC, MODE)
-- Bonus features: File transfer and a bot (evaluated if mandatory part is flawless)
+- Bonus features: File transfer and a bot (that let's you know the available commands and that moderates messages inside the channels)
 
 ## Resources to Study
 
