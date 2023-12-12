@@ -1,9 +1,9 @@
 <h1 align="center">
 	🌐 FT_IRC 🌐
 </h1>
-<h1 align="center">
+
 ![IRC Logo](irc_logo.png)
-</h1>
+
 
 ## Description
 
