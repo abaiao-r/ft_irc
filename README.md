@@ -2,7 +2,7 @@
 	🌐 FT_IRC 🌐
 </h1>
 
-![IRC Logo](insert_logo_image_url_here)
+![IRC Logo](irc_logo.png)
 
 ## Description
 
