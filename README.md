@@ -7,11 +7,11 @@
 
 ## Description
 
-The "ft_irc" project involves creating a robust IRC server using C++98, named "ircserv." This server enables real-time text-based communication over the Internet, supporting multiple clients concurrently with non-blocking I/O operations. The project emphasizes adherence to standards, robust error handling, and clean code practices.
+The "ft_irc" project involves creating a robust IRC server using C++, named "ircserv." This server enables real-time text-based communication over the Internet, supporting multiple clients concurrently with non-blocking I/O operations. The project emphasizes adherence to standards, robust error handling, and clean code practices.
 
 ## Relevance
 
-This project showcases proficiency in C++98, network programming, and system-level operations. Developing a functional IRC server demonstrates the ability to work with complex systems, handle multiple connections efficiently, and implement secure communication protocols. These skills are directly applicable in roles requiring backend development, network engineering, and protocol implementation.
+This project showcases proficiency in C++, network programming, and system-level operations. Developing a functional IRC server demonstrates the ability to work with complex systems, handle multiple connections efficiently, and implement secure communication protocols. These skills are directly applicable in roles requiring backend development, network engineering, and protocol implementation.
 
 ## Skills Involved
 
@@ -58,7 +58,7 @@ HexChat is the reference IRC client used for this project.
 
 ## Conclusion
 
-The "ft_irc" project demonstrates proficiency in C++98 and networking, showcasing the ability to build a reliable IRC server with essential features. It serves as a tangible example of practical skills relevant to roles involving backend development, network engineering, and system-level programming.
+The "ft_irc" project demonstrates proficiency in C++ and networking, showcasing the ability to build a reliable IRC server with essential features. It serves as a tangible example of practical skills relevant to roles involving backend development, network engineering, and system-level programming.
 
 ## License
 
