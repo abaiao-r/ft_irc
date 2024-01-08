@@ -32,10 +32,9 @@ This project showcases proficiency in C++, network programming, and system-level
 
 ## Resources to Study
 
-- C++ Documentation
-- Network Programming Resources
-- IRC Protocol Specifications
-- Clean Code Practices
+- C++ Documentation : [C++ Reference](https://en.cppreference.com/w/) | [Learn C++](https://www.learncpp.com)
+- Network Programming Resources : [rfc1459](https://www.rfc-editor.org/rfc/rfc1459)
+- IRC Protocol Specifications : [rfc1459](https://www.rfc-editor.org/rfc/rfc1459)
 
 ## Reference Client
 
