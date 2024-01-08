@@ -9,6 +9,8 @@
 
 The "ft_irc" project involves creating a robust IRC server using C++, named "ircserv." This server enables real-time text-based communication over the Internet, supporting multiple clients concurrently with non-blocking I/O operations. The project emphasizes adherence to standards, robust error handling, and clean code practices.
 
+[Video](https://www.linkedin.com/feed/update/urn:li:activity:7141443671475892224/)
+
 ## Relevance
 
 This project showcases proficiency in C++, network programming, and system-level operations. Developing a functional IRC server demonstrates the ability to work with complex systems, handle multiple connections efficiently, and implement secure communication protocols. These skills are directly applicable in roles requiring backend development, network engineering, and protocol implementation.
