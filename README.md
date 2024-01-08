@@ -32,8 +32,8 @@ This project showcases proficiency in C++, network programming, and system-level
 
 ## Resources to Study
 
-- C++ Documentation : [C++ Reference](https://en.cppreference.com/w/) | [Learn C++](https://www.learncpp.com)
-- Network Programming Resources : [socket programing]([https://www.rfc-editor.org/rfc/rfc1459](https://www.geeksforgeeks.org/socket-programming-cc/))
+- C++ Documentation : [C++ Reference](https://en.cppreference.com/w/) /| [Learn C++](https://www.learncpp.com)
+- Network Programming Resources : [socket programing](https://www.geeksforgeeks.org/socket-programming-cc)
 - IRC Protocol Specifications : [rfc1459](https://www.rfc-editor.org/rfc/rfc1459), [IRC Modern Protocol](https://modern.ircdocs.horse), 
 
 ## Reference Client
